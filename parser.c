@@ -27,8 +27,9 @@ char *Parser(FILE *input_code) {
 
     Scanner(input_code);
 
-    do token = ScannerGetToken();
-    while (!token);
+    do {
+        token = ScannerGetToken();
+    } while (token);
 
-    return NULL;
+    return "intermediate code should go here";
 }
