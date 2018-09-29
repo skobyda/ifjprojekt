@@ -8,7 +8,7 @@
  *  Denis Filo
  *
  * FILE: parser.c
- *  FILE AUTHOR: TODO
+ *  FILE AUTHOR: Simon Kobyda
  */
 
 /***SYSTEM FILES***/
@@ -16,20 +16,37 @@
 
 /***LOCAL FILES***/
 #include "scanner.h"
+#include "parser-semantic.h"
+#include "generator.h"
 
 /*
  * @input_code file with source code to be compiled
  *
  * Return: intermediate code
  */
-char *Parser(FILE *input_code) {
+char *Parser(FILE *inputCode) {
     TokenPtr token = NULL;
 
-    Scanner(input_code);
+    /* Pokes Scanner */
+    Scanner(inputCode);
 
+    /* Asks for tokens from scanner */
     do {
         token = ScannerGetToken();
     } while (token);
 
-    return "intermediate code should go here";
+    /* Creates symbolic table from tokens */
+    SymTablePtr table = SymTableInit();
+    //TODO
+
+    /* Runs semantic analysis over symbolic table */
+    //if (!ParserSemantic(table))
+        //TODO
+
+    /* Converts symbol table to intermediate code */
+    char *intermediateCode = Generator(table);
+    //if (!intermediateCode)
+        //TODO
+
+    return intermediateCode;
 }

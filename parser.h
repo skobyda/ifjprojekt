@@ -7,8 +7,15 @@
  *  Juraj Samuel Salon
  *  Denis Filo
  *
- * FILE: parser.c
- *  FILE AUTHOR: TODO
+ * FILE: parser.h
+ *  FILE AUTHOR: Simon Kobyda
  */
 
+#ifndef PARSER_H
+#define PARSER_H
+
+/* Runs Syntax analysis over code. 
+ */
 char *Parser(FILE *input_code);
+
+#endif

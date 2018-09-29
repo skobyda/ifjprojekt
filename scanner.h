@@ -11,6 +11,9 @@
  *  FILE AUTHOR:
  */
 
+#ifndef SCANNER_H
+#define SCANNER_H
+
 /***SYSTEM FILES***/
 #include <stdbool.h>
 
@@ -23,3 +26,5 @@ typedef Token *TokenPtr;
 bool Scanner(FILE *source_code);
 
 TokenPtr ScannerGetToken();
+
+#endif

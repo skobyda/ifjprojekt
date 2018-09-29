@@ -36,6 +36,6 @@ int main(int argc, char **argv) {
     return 0;
  error:
     //TODO
-    fprintf(stderr, "ERROR happened!\n");
+    fprintf(stderr, "THIS COMPILER DOESN'T WORK YET :)\n");
     return 0;
 }
