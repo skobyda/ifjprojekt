@@ -1,11 +1,11 @@
 # Programovacie pravidlá:
 * Na zarovanie blokov kódu používame 4 medzery, nie tabulátor
 * Slová v názvoch funkcií a premenných rozlišujeme podtržítkom, a nie názvom funkcie:
-používajte nazov_premennej, a nie nazovPremennej
+používajte nazovPremennej, a nie nazov_premennej
 * Funkcie sa budú začínať veľkým písmenom
 * Funkcie musia mať názov podľa príslišného modulu, napr funkcia v module scanner.c sa bude volat:
 ```
-Scanner_something_foo()
+ScannerSomethingFoo()
 ```
 * Všetky funkcie, ktoré sa nebudú používať mimo modulu, musia byť typu static, napr.:
 ```
