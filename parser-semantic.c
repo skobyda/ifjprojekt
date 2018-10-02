@@ -8,7 +8,7 @@
  *  Denis Filo
  *
  * FILE: parser-semantic.h
- *  FILE AUTHOR: 
+ *  FILE AUTHOR: Denis Filo(xfilod00)
  */
 
 /***SYSTEM FILES***/
