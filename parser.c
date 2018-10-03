@@ -24,11 +24,8 @@
  *
  * Return: intermediate code
  */
-char *Parser(FILE *inputCode) {
+char *Parser() {
     TokenPtr token = NULL;
-
-    /* Pokes Scanner */
-    Scanner(inputCode);
 
     /* Asks for tokens from scanner */
     do {

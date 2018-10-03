@@ -16,6 +16,6 @@
 
 /* Runs Syntax analysis over code. 
  */
-char *Parser(FILE *input_code);
+char *Parser();
 
 #endif

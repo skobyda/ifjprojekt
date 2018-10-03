@@ -17,6 +17,7 @@
 
 /***LOCAL FILES***/
 #include "parser.h"
+#include "scanner.h"
 
 int main(int argc, char **argv) {
     (void)(argc);
@@ -28,8 +29,11 @@ int main(int argc, char **argv) {
     if (!input_code)
         goto error;
 
+    /* Pokes Scanner*/
+    Scanner(input_code);
+
     //Kontrola prekladaca je predana parseru
-    intermediate_code = Parser(input_code);
+    intermediate_code = Parser();
     if (!intermediate_code)
         goto error;
 
