@@ -14,31 +14,75 @@
 /***SYSTEM FILES***/
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 /***LOCAL FILES***/
 #include "symtable.h"
 
+static unsigned int HashFunction(char* key) {
+    int val;
+    for (unsigned int i = 0; i < strlen(key); i++)
+        val += key[i];
+
+    return val % TABLESIZE;
+}
+
 SymTablePtr SymTableInit() {
-    //TODO
-    return NULL;
+    SymTablePtr table = NULL;
+    table = malloc(sizeof(struct SymTable));
+//    if (!table)
+        //TODO ERROR HANDLING
+
+    return table;
 }
 
 void SymTableDestroy(SymTablePtr table) {
-    (void)(table); //DELETE THIS LINE
-    //TODO
+    for (int i = 0; i < TABLESIZE; i++) {
+        SymbolPtr symbol = table->arr[i];
+
+        while(symbol) {
+            SymbolPtr tmp = symbol;
+            symbol = tmp->nextSymbol;
+            free(tmp->name);
+            free(tmp);
+        }
+    }
 }
 
-bool SymTableAddSymbol(SymTablePtr table, SymbolPtr symbol) {
-    (void)(table); //DELETE THIS LINE
-    (void)(symbol); //DELETE THIS LINE
-    //TODO
-    return false;
+void SymTableAddSymbol(SymTablePtr table, SymbolPtr symbol) {
+    //if (!symbol)
+        //TODO ERROR HANDLING
+
+    //if (!table)
+        //TODO ERROR HANDLING
+
+    unsigned int index = HashFunction(symbol->name);
+
+    SymbolPtr tmp = table->arr[index];
+
+    if (tmp) {
+        table->arr[index] = symbol;
+    } else {
+        while(tmp->nextSymbol)
+            tmp = tmp->nextSymbol;
+
+        tmp->nextSymbol = symbol;
+    }
 }
 
-bool SymTableRemoveSymbol(SymTablePtr table, SymbolPtr symbol) {
-    (void)(table); //DELETE THIS LINE
-    (void)(symbol); //DELETE THIS LINE
-    //TODO
-    return false;
+SymbolPtr SymTableFind(SymTablePtr table, char *name) {
+    //if (!name)
+        //TODO ERROR HANDLING
+
+    unsigned int index = HashFunction(name);
+    SymbolPtr symbol = table->arr[index];
+
+    while (symbol) {
+        if (!strcmp(symbol->name, name))
+            break;
+        symbol = symbol->nextSymbol;
+    }
+
+    return symbol;
 }
 

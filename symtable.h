@@ -17,23 +17,28 @@
 /***SYSTEM FILES***/
 #include <stdbool.h>
 
-typedef struct {
-    char *symbolName; //string
-    int type; //TODO enumerate types
-    int scope; //TODO enumerate scopes
-} Symbol;
+#define TABLESIZE 100
 
-typedef struct {
-    Symbol *symbols; //array
-    //TODO
-} SymTable;
+typedef struct Symbol *SymbolPtr;
+typedef struct SymTable *SymTablePtr;
 
-typedef Symbol *SymbolPtr;
-typedef SymTable *SymTablePtr;
+struct Symbol{
+    char* name;
+    int type;
+    unsigned int length;
+    bool declared;
+    int adress;
+    bool used;
+    SymbolPtr nextSymbol;
+};
+
+struct SymTable{
+    SymbolPtr arr[TABLESIZE];
+};
 
 SymTablePtr SymTableInit();
 void SymTableDestroy(SymTablePtr table);
-bool SymTableAddSymbol(SymTablePtr table, SymbolPtr symbol);
-bool SymTableRemoveSymbol(SymTablePtr table, SymbolPtr symbol);
+void SymTableAdd(SymTablePtr table, SymbolPtr symbol);
+SymbolPtr SymTableFind(SymTablePtr table, char* name);
 
 #endif
