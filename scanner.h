@@ -18,7 +18,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "ourstring.h"
 /*Structure for work with strings*/
 
 typedef struct {

@@ -18,6 +18,7 @@
 
 /***LOCAL FILES***/
 #include "scanner.h"
+#include "ourstring.h"
 
 /* Firstly, file with source code is passed to Scanner
  *
