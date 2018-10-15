@@ -23,7 +23,7 @@
 
 typedef struct {
 	char *sPtr;        // pointer to some string with /0 at the end
-	int length;        // lenght of the string
+	int length;        // number of letters in string
 	int Size;    // size of memory allocated for string
 } string;
 
