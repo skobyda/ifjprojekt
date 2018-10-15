@@ -18,8 +18,9 @@
 #include <stdbool.h>
 
 typedef struct {
-    int a; //REMOVE THIS LINE
-    //TODO
+	lexems lexem;   // type of the read word
+	unsigned line;  // line counter
+	string value;   // if an ID was found, contains it's name, if it was a number it has it's value. The same with a string.
 } Token;
 typedef Token *TokenPtr;
 
