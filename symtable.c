@@ -12,8 +12,9 @@
  */
 
 /***SYSTEM FILES***/
-#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 /***LOCAL FILES***/
@@ -30,8 +31,10 @@ static unsigned int HashFunction(char* key) {
 SymTablePtr SymTableInit() {
     SymTablePtr table = NULL;
     table = malloc(sizeof(struct SymTable));
-//    if (!table)
-        //TODO ERROR HANDLING
+    if (!table) {
+        fprintf(stderr, "SymTableInit: Allocation of symTable failed");
+        exit(1);
+    }
 
     return table;
 }
@@ -50,11 +53,15 @@ void SymTableDestroy(SymTablePtr table) {
 }
 
 void SymTableAddSymbol(SymTablePtr table, SymbolPtr symbol) {
-    //if (!symbol)
-        //TODO ERROR HANDLING
+    if (!symbol) {
+        fprintf(stderr, "SymTableAdd symbol: symbol passed as argument is NULL");
+        exit(1);
+    }
 
-    //if (!table)
-        //TODO ERROR HANDLING
+    if (!table) {
+        fprintf(stderr, "SymTableAddSymbol: table passed as argument is NULL");
+        exit(1);
+    }
 
     unsigned int index = HashFunction(symbol->name);
 
@@ -71,8 +78,10 @@ void SymTableAddSymbol(SymTablePtr table, SymbolPtr symbol) {
 }
 
 SymbolPtr SymTableFind(SymTablePtr table, char *name) {
-    //if (!name)
-        //TODO ERROR HANDLING
+    if (!name) {
+        fprintf(stderr, "SymTableFind: string passed as argument is NULL");
+        exit(1);
+    }
 
     unsigned int index = HashFunction(name);
     SymbolPtr symbol = table->arr[index];
