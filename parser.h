@@ -28,6 +28,8 @@ struct ParTree {
     int operation;
 };
 
+typedef struct ParTree ParTree;
+
 /* Runs Syntax analysis over code.
  */
 char *Parser();
