@@ -62,7 +62,7 @@ typedef enum {
 typedef struct {
 	lexems lexem;   // type of token
 	unsigned line;  // number of line
-	char* stringPtr;   // if it is ID, contains it's name, if it is  number it's a value. The same with a string.
+	char *name;   // if it is ID, contains it's name, if it is  number it's a value. The same with a string.
 } Token;
 typedef Token *TokenPtr;
 
