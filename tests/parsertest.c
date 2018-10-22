@@ -2,7 +2,8 @@
  * Test of Parser
  *
  * COMPILE:
- * gcc -pedantic -Wall -Wextra -parsertest.c -o parsertest
+ * If you want to compile your own test file, in Makefile change the parsertest word to your
+ * own filename
  *
  * TEAM:
  *  Simon Kobyda
@@ -147,4 +148,5 @@ int main() {
         failTestCount++;
 
     printf("%d TEST(S) FAILED!\n", failTestCount);
+    return 0;
 }
