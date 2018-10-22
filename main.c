@@ -17,27 +17,36 @@
 
 /***LOCAL FILES***/
 #include "parser.h"
+#include "parser-semantic.h"
 #include "scanner.h"
+#include "generator.h"
 
 int main(int argc, char **argv) {
     (void)(argc);
     (void)(argv);
-    FILE *input_code;
-    char *intermediate_code;
+    FILE *inputCode;
+    char* intermediateCode;
 
-    input_code = fopen("code.ifj18", "r");
-    if (!input_code)
+    inputCode = fopen("code.ifj18", "r");
+    if (!inputCode)
         goto error;
 
     /* Pokes Scanner*/
-    Scanner(input_code);
+    Scanner(inputCode);
 
-    //Kontrola prekladaca je predana parseru
-    intermediate_code = Parser();
-    if (!intermediate_code)
-        goto error;
+    ParTreePtr tree = Parser();
 
-    return 0;
+    /* Runs semantic analysis over symbolic table */
+    //if (!ParserSemantic(tree))
+        //TODO
+
+    /* Converts symbol table to intermediate code */
+    intermediateCode = Generator(tree);
+    //if (!intermediateCode)
+        //TODO
+
+    printf("INTERMEDIATE CODE IS:\n %s", intermediateCode);
+
  error:
     //TODO
     fprintf(stderr, "THIS COMPILER DOESN'T WORK YET :)\n");

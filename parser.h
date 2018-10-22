@@ -32,6 +32,6 @@ typedef struct ParTree ParTree;
 
 /* Runs Syntax analysis over code.
  */
-char *Parser();
+ParTreePtr Parser();
 
 #endif
