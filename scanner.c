@@ -12,8 +12,7 @@
  */
 
 /***SYSTEM FILES***/
-#include <stdio.h>
-#include <stdlib.h>
+
 #include <stdbool.h>
 
 /***LOCAL FILES***/
@@ -33,92 +32,174 @@ Scanner(FILE *sourceCode) {
 
     return true;
 }
-
+void ScannerWhite(FILE *sourceCode)
+{
+  char c=0;
+  do{
+  c=(char)fgetc(sourceCode);}
+  while(c==' ');
+  ungetc( c,  sourceCode);
+  return;
+}
 
 /*
  * Returns: The next token.
  * If there are no more tokens, returns NULL
  */
+ int ScannerTestKeyWord(FILE *sourceCode)
+ {int res;
+  ScannerWhite(sourceCode);
+  res=ScannerTestWord("def ",sourceCode);
+  if(res==1)return 20;
+  res=ScannerTestWord("do ",sourceCode);
+  if(res==1)return 21;
+  res=ScannerTestWord("else ",sourceCode);
+  if(res==1)return 22;
+  res=ScannerTestWord("end ",sourceCode);
+  if(res==1)return 23;
+  res=ScannerTestWord("if ",sourceCode);
+  if(res==1)return 24;
+  res=ScannerTestWord("not ",sourceCode);
+  if(res==1)return 25;
+  res=ScannerTestWord("then ",sourceCode);
+  if(res==1)return 26;
+  res=ScannerTestWord("while ",sourceCode);
+  if(res==1)return 27;
+  return 0;//!!!ATTENTION HERE IS RETURN 0
+ }
+/*static*/ int ScannerTestWord(char *str, FILE *sourceCode)
+  {
+      ScannerWhite(sourceCode);
+    char cmp;
+    int lenght1=strlen(str);
+    if(str==NULL)
+      return -1;
+    int step=0;
+    while(step!=lenght1){
+      cmp=(char)fgetc(sourceCode);
+      if(cmp==str[step])
+        step++;
+      else {
+        ungetc(cmp,sourceCode);
+        while(step-1)
+          ungetc(str[step-1],sourceCode);
+          step--;
+        return 0;
+      }
+    }
+  return 1;
 
- static lexems ScannerGetLex(FILE *sourceCode) {
+  }
+/* static*/ lexems ScannerGetLex(FILE *sourceCode) {
+   ScannerWhite(sourceCode);
    while(1)
      {char c;
-       c=getchar();
-       switch(c)
-{
+       c=(char)fgetc(sourceCode);
+       switch(c) {
         case '=': {
-          char next=getchar();
-          if(next=='=')
-            return 25;//==
-          else {
+        int res=ScannerTestWord("begin ",sourceCode);
+        if(res==1)
+          {
+            int state=0;
+            while(state!=2)
+            {
+              if(ScannerTestWord("end ",sourceCode)==1 && state==1)
+                state++;
+              else
+                state=0;
+              while(state!=1)
+              {
+                c=(char)fgetc(sourceCode);
+                if(c=='=')
+                  state++;
+              }
+            }
+            if(state==2) continue;
+
+          }
+
+        char next=(char)fgetc(sourceCode);
+        if(next=='=')
+          return EQ;//==
+        else {
           ungetc( next,  sourceCode);
-            return 26;//=
+          return ADDITION;//=
           }
         }
 
         case '!': {
-          char next=getchar();
+          char next=(char)fgetc(sourceCode);
           if(next=='=')
-            return 27;//!=
+            return NOTEQ;//!=
           else
             return -1;//CHYBA
         }
 
         case '+':
-          return 9;
+          return PLUS;
 
         case '-':
-          return 10;
+          return MINUS;
 
         case '*':
-          return 20;
+          return MULTIPLY;
 
         case '/': {
-          char next=getchar();
+          char next=(char)fgetc(sourceCode);
           if(next !=' ' || next <'1' || next>'9'){
           ungetc( next,  sourceCode);
             return -1;//CHYBA
           }
-          return 21 ;//DIVISION
+          return DIVISION ;//DIVISION
         }
 
         case '\n':
-          return 0;
+          return EOL;
 
         case ',':
-          return 17;
+          return COMA;
         case '(':
-          return 7;
+          return LEFT_B;
         case ')':
-          return 8;
+          return RIGHT_B;
         case '<': {
-          char next=getchar();
+          char next=(char)fgetc(sourceCode);
           if(next=='='){
-            return 23;
+            return LESSEQ;
           }
           else{
             ungetc( next,  sourceCode);
-            return 21;
+            return LESS;
           }
 
         case '>': {
-          char next=getchar();
+          char next=(char)fgetc(sourceCode);
           if(next=='='){
-            return 24;
+            return MOREEQ;
           }
           else {
           ungetc( next,  sourceCode);
-            return 22;
+            return MORE;
           }
         }
         case ' ':
           continue;
         case EOF:
-          return 1;
+          return EOFile;
+        case '#': {//COMMENT
+          char next=0;
+          while(next!='\n')
+            c=(char)fgetc(sourceCode);
+          continue;
+          }
+        case '"':{return STRING;//!!!!!!!!!!!!!!!!ATTENTION!!!!!!!!!!!! U must know that in scanner get token and u should get the string there to the  " " "
+        }
+
+
         default : {
           //ocividne to bude cosi ine ako jedno/dvoj znakove debiliny
-      //    ungetchar();
-          return 29;
+      ungetc( c,  sourceCode);
+          return PROBLEM;
 
          }
 }}
@@ -128,12 +209,13 @@ Scanner(FILE *sourceCode) {
 
 
 TokenPtr
-ScannerGetToken() {
+ScannerGetToken(FILE *sourceCode) {
     TokenPtr Token = NULL;
 
+int token=ScannerGetLex(sourceCode);
 
-
-
+if(token==NEXT)
+  return NULL;
 
 
 
