@@ -16,6 +16,7 @@
 
 /***LOCAL FILES***/
 #include "scanner.h"
+#include "parser.h"
 #include "parser-semantic.h"
 #include "generator.h"
 
@@ -24,7 +25,8 @@
  *
  * Return: intermediate code
  */
-char *Parser() {
+ParTreePtr
+Parser() {
     TokenPtr token = NULL;
 
     /* Asks for tokens from scanner */
@@ -32,18 +34,9 @@ char *Parser() {
         token = ScannerGetToken();
     } while (token);
 
-    /* Creates symbolic table from tokens */
-    SymTablePtr table = SymTableInit();
+    /* Creates Derivation tree from tokens */
+    ParTreePtr tree = NULL;
     //TODO
 
-    /* Runs semantic analysis over symbolic table */
-    //if (!ParserSemantic(table))
-        //TODO
-
-    /* Converts symbol table to intermediate code */
-    char *intermediateCode = Generator(table);
-    //if (!intermediateCode)
-        //TODO
-
-    return intermediateCode;
+    return tree;
 }

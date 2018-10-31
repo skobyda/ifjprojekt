@@ -15,14 +15,14 @@
 #include <stdlib.h>
 
 /***LOCAL FILES***/
-#include "symtable.h"
+#include "parser.h"
 
-/* Generates code from symbol table into intermediate code
- * @table symbol table
+/* Generates code from derivation tree into intermediate code
+ * @tree derivation tree
  * Returns: Intermediate code as a string
  */
-char *Generator(SymTablePtr table) {
-    (void)(table);
+char *Generator(ParTreePtr tree) {
+    (void)(tree);
 
     //TODO
 

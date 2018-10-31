@@ -18,13 +18,13 @@
 #include <stdbool.h>
 
 /***LOCAL FILES***/
-#include "symtable.h"
+#include "parser.h"
 
-/* Runs Semantic analysis over symbol table. Edits table, or
+/* Runs Semantic analysis over derivation tree.
  * throws some error if semantic bug was detected.
- * @table Pointer to symbol table. This table may be edited.
+ * @tree Pointer to derivation tree.
  * Returns: true in case of success, false in case of error
  */
-bool ParserSemantic(SymTablePtr table);
+bool ParserSemantic(ParTreePtr tree);
 
 #endif
