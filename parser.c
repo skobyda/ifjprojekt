@@ -292,7 +292,6 @@ static bool ParserExpression() {
  */
 ParTreePtr
 Parser() {
-
     /* First token should always be prog rule, so we call it */
     FUNCTIONCALL(ParserStatement);
 

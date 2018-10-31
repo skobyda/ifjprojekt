@@ -16,7 +16,7 @@
 #include <stdbool.h>
 
 /***LOCAL FILES***/
-#include "scanner.h"
+#include "../scanner.h"
 
 /* Firstly, file with source code is passed to Scanner
  *
