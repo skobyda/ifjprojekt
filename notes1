@@ -1,0 +1,13 @@
+- Definovat a napisat strukturu terminalov, ktore bude syntaxicky analyzator posielat semantickemu. V Zadani je definovane, ake vsetky prvky(funkcie, cykly, premenne...) v jazyku existuju. Treba definovat, ako bude kazdy prvok v tejto strukture zapisany. Treba aj upravit strukturu Symbol v symtable.h 
+	(Denis)
+
+
+- Definovat aku strukturu bude mat abstraktny strom.
+	(Samo, Denis)
+
+- Napisat funkcie,ktore budu jednotlive terminaly prekladat do kusok 3-adresneho kodu, pritom definovat, ake vsetky informacie generator ocakava od jednotlivych terminalov.
+	(Samo)
+
+
+
+
