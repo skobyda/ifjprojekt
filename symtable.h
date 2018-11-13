@@ -22,13 +22,34 @@
 typedef struct Symbol *SymbolPtr;
 typedef struct SymTable *SymTablePtr;
 
+typedef enum {
+    variable,
+    function,
+    parameter,
+    constant
+} identifType;
+
+typedef enum {
+    typeNone,
+    typeBool,
+    typeInt,
+    typeFloat,
+    typeString,
+} dataType;
+
+typedef union {
+    bool bVal;
+    int iVal;
+    float fVal;
+    char *sVal;
+} Value;
+
 struct Symbol{
     char* name;
-    int type;
-    unsigned int length;
-    bool declared;
-    int adress;
-    bool used;
+    identifType iType;
+    dataType dType;
+    bool defined;
+    unsigned int line;
     SymbolPtr nextSymbol;
 };
 
