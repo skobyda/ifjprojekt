@@ -1,21 +1,13 @@
 #TODO
-CC = gcc
-CFLAGS = -pedantic -Wall -Wextra
-OTHERCFILES = $(wildcard ../[^main]*.c)
-CFILES = TestScanner.c $(OTHERCFILES)
-OFILES = $(CFILES:.c=.o)
 
-all: TestScanner part-clean
+all: 
+	gcc -pedantic -std=c99 -Wall -Wextra -lm -o Test ../scanner.c TestScanner.c
 
-TestScanner: $(OFILES)
-	$(CC) $(CFLAGS) $^ -o $@
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $^ -o $@
+test: 	
+	gcc -pedantic -std=c99 -Wall -Wextra -lm -o Test ../scanner.c TestScanner.c
+	./Test test
 
 clean:
-	rm TestScanner
+	rm Test
 
-part-clean:
-	rm *.o
-	rm ../*.o
+
