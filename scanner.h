@@ -20,9 +20,9 @@
 
 typedef enum {
     EOL=0,//OK        //ok
-    EOFile=1,         //ok
-    ID=2,             //
-    STRING=3,         //nok but little ok
+    EOFILE=1,         //ok
+    IDENT=2,             //
+    STR=3,         //nok but little ok
     INT=4,            //
     FLOAT=5,          //
     NIL=6,            //
@@ -50,15 +50,42 @@ typedef enum {
     THEN=26,          //ok
     WHILE=27,         //ok
     COMA=28,//,       //ok
-    FUNCTION=29,//    //
-    NEXT=30, //for some functions only in lex. analyser
+    NEXT=29, //for some functions only in lex. analyser
 //    QUOTMARK,//"
 
     //EOL_ENUM,//HOW MUCH ITEMS IS THERE FOR TESTING
-	PROBLEM = -1
+	PROBLEML = -1,//PROBLEM WITH LEXEM
+  PROBLEMM=-2,//PROBLEM WITH MEMORY
+  PROBLEMC=-3//problem with char operations
 } lexems;
-lexems ScannerGetLex(FILE *sourceCode);
+typedef enum{
+START=0,//ok
+IDKEY,//ok
+ID,//ok
+NEWLINE,//ok
+LCOMMENT,//ok
+LCOMMENTEND,//ok
+STRING,//ok
+CHARCODEF,//ok
+CHARCODEL,//ok
+BCOMMENT,//ok
+BIGGER,//ok
+SMALLER,//ok
+EQUAL,//ok
+NEQ,//ok
+DOUBLECOM,//ok
+NUMBER=15,//ok
+DEXP,//ok
+DEXPD,//ok
+DEXPS,//ok
+DCOMD,
+PROBLEM,
+}states;
+//lexems ScannerGetLex(FILE *sourceCode);
+char* ScannerStradd(char* s,char *c);
+int ConvertHextoDec(char c);
 int ScannerTestKeyWord(FILE *sourceCode);
+void ScannerSkipLineE(FILE * sourceCode);
 /*Structure for work with strings*/
 typedef struct {
 	lexems lexem;   // type of token
@@ -66,12 +93,13 @@ typedef struct {
 	char *name;   // if it is ID, contains it's name, if it is  number it's a value. The same with a string.
 } Token;
 typedef Token *TokenPtr;
+int ScannerSaveNew(TokenPtr token,FILE *source,int lines,char* c,int next);
 
 bool Scanner(FILE *source_code);
 /*static*/
 
 /*static*/
 int ScannerTestWord(char *str, FILE *sourceCode);
-TokenPtr ScannerGetToken();
+TokenPtr ScannerGetToken(FILE *sourceCode);
 
 #endif

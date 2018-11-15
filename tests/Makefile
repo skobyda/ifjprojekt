@@ -15,7 +15,3 @@ parsertest: $(OFILES)
 
 clean:
 	rm parsertest
-
-part-clean:
-	rm *.o
-	rm ../*.o
