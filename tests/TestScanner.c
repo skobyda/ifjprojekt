@@ -117,27 +117,31 @@ int main(int argc, char *argv[])
 {
 
 FILE *ptr;
-ptr=malloc(sizeof(FILE));
+
 ptr=fopen(argv[1],"r");
-if(ptr==NULL)
-{
-  printf("Nepodarilo sa otvorit subor\n" );
-  return 0;
-}
 TokenPtr token;
-//printf("Otvoreny súbor\n");
-for(int i=0;i<70;i++)
+
+int i=0;
+  while((i<70) && (token->lexem!=EOFILE))
 {token=(ScannerGetToken(ptr));
-//printf("token prisiel\n");
+
+
 printf("Riadok : %d   --Token: ",(token)->line);
 PrintToken(token->lexem);//CHYBA
 if(token->lexem>-1)
-printf(" %s\n",(token)->stringPtr);
+printf(" ->%s<-\n",(token)->stringPtr);
 else
 printf("\n");
 
+free((token)->stringPtr);
 
+
+
+free(token);
+i++;
 }
+
+fclose(ptr);
 
 (void)(argc);
 return 1;}

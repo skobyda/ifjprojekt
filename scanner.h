@@ -80,12 +80,13 @@ DEXPD,//ok
 DEXPS,//ok
 DCOMD,
 PROBLEM,
+ENDFILE,
 }states;
 //lexems ScannerGetLex(FILE *sourceCode);
 char* ScannerStradd(char* s,char *c);
 int ConvertHextoDec(char c);
 int ScannerTestKeyWord(FILE *sourceCode);
-void ScannerSkipLineE(FILE * sourceCode);
+int ScannerSkipLineE(FILE * sourceCode);
 /*Structure for work with strings*/
 typedef struct {
 	lexems lexem;   // type of token
@@ -93,7 +94,7 @@ typedef struct {
 	char *name;   // if it is ID, contains it's name, if it is  number it's a value. The same with a string.
 } Token;
 typedef Token *TokenPtr;
-int ScannerSaveNew(TokenPtr token,FILE *source,int lines,char* c,int next);
+int ScannerSaveNew(TokenPtr token,FILE *source,int lines, char*c);
 
 bool Scanner(FILE *source_code);
 /*static*/
