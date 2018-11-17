@@ -122,7 +122,7 @@ if(argc==1)return 1;
     ptr=fopen(argv[1],"r");
     TokenPtr token;
     int i=0;
-    while((i<10) )
+    while((i<100) )
         {token=(ScannerGetToken(ptr));
         printf("Line: %d --Token: ",(token)->line);
         PrintToken(token->lexem);//CHYBA

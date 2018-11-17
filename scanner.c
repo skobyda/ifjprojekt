@@ -107,6 +107,7 @@ char *ScannerStradd( char *s, char* c ){
     s[length]=*c;
     s[length+1]=0;
     return s;
+
 }
 
 int ScannerTestW(char*str){
@@ -488,13 +489,15 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 ScannerWhite(sourceCode);
                 if(c=='='){
                     if(ScannerTestWord("end ",sourceCode)==1){
-                        state=START;
-                        c=(char)fgetc(sourceCode);
-                        if(c==EOF){
-                            token->lexem=EOFILE;
-                            token->line=n_lines;
-                            return token;
+                        printf("%c\n",c );
+                        while(c!='\n'){
+                            c=(char)fgetc(sourceCode);
+                            printf("v cycle %c\n",c );
+
                         }
+                        n_lines--;
+                        ungetc(c,sourceCode);
+                        state=START;
                         continue;
                     }
                 }
@@ -593,15 +596,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                     if((c>='0' && c<='9')||(c>='A'&&c<='F'))
                         code[0]=c;
                     else{
-                        code[0]='\\';
-                        code[1]='x';
-                        if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
-                            return token;
-                        if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
-                            return token;
-                        if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
-                            return token;
-                        state=STRING;
+                        state=PROBLEM;
                         continue;
                     }
                     c=(char)fgetc(sourceCode);
@@ -636,6 +631,10 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                         continue;
                     }
                 }
+                    else{
+                        state=STRING;
+                        continue;
+                    }
             }
             case BCOMMENT:{
                 while(c!='\n'){
