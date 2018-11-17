@@ -93,31 +93,20 @@ int ConvertHextoDec(char c){
 }
 
 char *ScannerStradd( char *s, char* c ){
-
-
-
-
     char *s2;
     int length= strlen(s);
-//    printf("dlzka je:%d\n",length );
-    if(length==0)
-    {
+    if(length==0){
         *s=*c;
-//        printf("v podmienke dlzka je:%d\n",length );
         return s;
-
     }
-
     s2=(char*)realloc(s,(length+1)*sizeof(char));
-    if(!s2) {
-        //free(s);
+    if(!s2){
         return NULL;
     }
     s=s2;
     s[length]=*c;
     s[length+1]=0;
     return s;
-
 }
 
 int ScannerTestW(char*str){
