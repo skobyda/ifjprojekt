@@ -85,6 +85,7 @@ ENDFILE,
 //lexems ScannerGetLex(FILE *sourceCode);
 char* ScannerStradd(char* s,char *c);
 int ConvertHextoDec(char c);
+int ScannerTestW(char*str);
 int ScannerTestKeyWord(FILE *sourceCode);
 int ScannerSkipLineE(FILE * sourceCode);
 /*Structure for work with strings*/

@@ -116,32 +116,30 @@ case -3:
 int main(int argc, char *argv[])
 {
 
-FILE *ptr;
 
-ptr=fopen(argv[1],"r");
-TokenPtr token;
+if(argc==1)return 1;
+    FILE *ptr;
+    ptr=fopen(argv[1],"r");
+    TokenPtr token;
+    int i=0;
+    while((i<10) )
+        {token=(ScannerGetToken(ptr));
+        printf("Line: %d --Token: ",(token)->line);
+        PrintToken(token->lexem);//CHYBA
+        if(token->lexem>-1)
+            printf("\t->%s<-\n",(token)->stringPtr);
+        else
+            printf("\n");
+        free(token->stringPtr);
+        if(token->lexem==EOFILE)
+            {free(token);
+            return 0;}
+        free(token);
+        i++;
+    }
+    fclose(ptr);
 
-int i=0;
-  while((i<70) && (token->lexem!=EOFILE))
-{token=(ScannerGetToken(ptr));
-
-
-printf("Riadok : %d   --Token: ",(token)->line);
-PrintToken(token->lexem);//CHYBA
-if(token->lexem>-1)
-printf(" ->%s<-\n",(token)->stringPtr);
-else
-printf("\n");
-
-free((token)->stringPtr);
-
-
-
-free(token);
-i++;
+    (void)argv;
+     (void)(argc);
+    return 1;
 }
-
-fclose(ptr);
-
-(void)(argc);
-return 1;}

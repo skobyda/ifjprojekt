@@ -1,4 +1,5 @@
-c !
+ca !
+print("\nVysledek␣je:", l, "\n")
 zz=b2=b!=b?=_a2
 b="\x4Fs\s\\\"ablabla\tblahblahb\nc"
 b=a
