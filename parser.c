@@ -28,7 +28,7 @@ TokenPtr token = NULL;
 static bool ParserStatement();
 static bool ParserDeclaration();
 static bool ParserIfStatement();
-static bool ParserFunctionDefinition();
+static bool ParserFunctionDeclaration();
 static bool ParserWhile();
 static bool ParserExpression();
 
@@ -36,32 +36,32 @@ static bool ParserExpression();
 int tokenCounter = 0;
 #define TOKENNUM 30
 Token DummyToken[TOKENNUM] = {
-    {ID, 1, "x"},
+    {IDENT, 1, "x"},
     {ADDITION, 1, NULL},
-    {ID, 1, "1"},
+    {IDENT, 1, "1"},
     {EOL, 1, NULL},
 
     {IF, 2, NULL},
-    {ID, 2, "x"},
+    {IDENT, 2, "x"},
     {THEN, 2, NULL},
     {EOL, 2, NULL},
 
-    {ID, 3, "x"},
+    {IDENT, 3, "x"},
     {ADDITION, 3, NULL},
-    {ID, 3, "2"},
+    {IDENT, 3, "2"},
     {EOL, 3, NULL},
 
     {ELSE, 4, NULL},
     {EOL, 4, NULL},
 
     {WHILE, 5, NULL},
-    {ID, 5, "x"},
+    {IDENT, 5, "x"},
     {DO, 5, NULL},
     {EOL, 5, NULL},
 
-    {ID, 6, "x"},
+    {IDENT, 6, "x"},
     {ADDITION, 6, NULL},
-    {ID, 6, "2"},
+    {IDENT, 6, "2"},
     {EOL, 6, NULL},
 
     {END, 7, NULL},
@@ -70,10 +70,10 @@ Token DummyToken[TOKENNUM] = {
     {END, 8, NULL},
     {EOL, 8, NULL},
 
-    {ID, 9, "y"},
+    {IDENT, 9, "y"},
     {ADDITION, 9, NULL},
-    {ID, 9, "A"},
-    {EOFile, 9, NULL},
+    {IDENT, 9, "A"},
+    {EOFILE, 9, NULL},
 };
 static TokenPtr DummyGetToken() {
     if (tokenCounter == TOKENNUM)
@@ -91,7 +91,7 @@ static TokenPtr DummyGetToken() {
 
 //TODO remove DummyGetToken()
 #define NEXTTOKEN do { \
-    token = DummyGetToken(); \
+    token = ScannerGetToken(); \
     if (!token) \
         return false; \
 } while(0)
@@ -104,7 +104,7 @@ static TokenPtr DummyGetToken() {
     NEXTTOKEN;
 
     switch (token->lexem) {
-        case EOFile:
+        case EOFILE:
             return true;
             break;
         default:
@@ -126,7 +126,7 @@ static bool ParserStatement() {
         case DEF:
             FUNCTIONCALL(ParserFunctionDeclaration);
             break;
-        case ID:
+        case IDENT:
             FUNCTIONCALL(ParserDeclaration);
             break;
         case IF:
@@ -138,7 +138,7 @@ static bool ParserStatement() {
         case EOL:
             FUNCTIONCALL(ParserStatement);
             break;
-        case EOFile:
+        case EOFILE:
         case ELSE:
         case END:
             break;
@@ -155,7 +155,7 @@ static bool ParserFunctionDeclaration() {
     printf("Function\n");
 
     NEXTTOKEN;
-    if (token->lexem != ID)
+    if (token->lexem != IDENT)
         printf("ERROR\n");
 
     NEXTTOKEN;
@@ -164,7 +164,7 @@ static bool ParserFunctionDeclaration() {
 
     NEXTTOKEN;
     while (token->lexem != RIGHT_B) {
-        if (token->lexem != ID)
+        if (token->lexem != IDENT)
             printf("ERROR\n");
         NEXTTOKEN;
     }
@@ -260,13 +260,13 @@ static bool ParserExpression() {
 
     NEXTTOKEN;
 
-    if (token->lexem != ID) {
+    if (token->lexem != IDENT) {
        printf("ERROR\n"); //TODO remove this condition after precedence p. will be implemented
        return false;
     }
     //TODO parser control for this expression will be handled to precedence parser
 
-    while (token->lexem != EOL && token->lexem != DO && token->lexem != THEN && token->lexem != EOFile)
+    while (token->lexem != EOL && token->lexem != DO && token->lexem != THEN && token->lexem != EOFILE)
         NEXTTOKEN;
 
     switch (token->lexem) {
@@ -276,7 +276,7 @@ static bool ParserExpression() {
         case THEN:
         case DO:
             break;
-        case EOFile:
+        case EOFILE:
             break;
         default:
             return false;
@@ -298,7 +298,7 @@ Parser() {
     // In case parser got out of parsing because of error,
     // we want to parse rest of the program anyway
     NEXTTOKEN;
-    while (token) {
+    while (token->lexem != EOFILE) {
         FUNCTIONCALL(ParserStatement);
     }
 

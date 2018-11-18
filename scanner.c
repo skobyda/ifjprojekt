@@ -18,6 +18,8 @@
 /***LOCAL FILES***/
 #include "scanner.h"
 
+FILE *sourceCode = NULL;
+
 /* Firstly, file with source code is passed to Scanner
  *
  * @sourceCode File with code written in IFJ18 language
@@ -25,15 +27,13 @@
  * Returns: true in case of success, false in case of error
  */
 bool
-Scanner(FILE *sourceCode) {
-    (void)(sourceCode); //REMOVE THIS LINE
-
-    //TODO
+Scanner(FILE *file) {
+    sourceCode = file;
 
     return true;
 }
 
-int ScannerSkipLineE(FILE * sourceCode){
+int ScannerSkipLineE(){
     char c;
     while(c!='\n')
      c=(char)fgetc(sourceCode);
@@ -44,7 +44,7 @@ int ScannerSkipLineE(FILE * sourceCode){
     return 0;
 }
 
-void ScannerWhite(FILE *sourceCode){
+void ScannerWhite(){
     char c=0;
     do
         c=(char)fgetc(sourceCode);
@@ -157,45 +157,44 @@ int ScannerTestW(char*str){
     return 0;
 }
 
-int ScannerSaveNew(TokenPtr token,FILE *source,int lines,char* c){
-    if(ScannerStradd((token)->stringPtr,c)==0){
+int ScannerSaveNew(TokenPtr token,int lines,char* c){
+    if(ScannerStradd((token)->name,c)==0){
         (token)->lexem=PROBLEMC;
         (token)->line=lines;
         return 0;
     }
-    (void)(source);
     return 1;
 }
-int ScannerTestKeyWord(FILE *sourceCode){
+int ScannerTestKeyWord(){
     int res;
-    res=ScannerTestWord("def ",sourceCode);
+    res=ScannerTestWord("def ");
     if(res==1)
         return 20;
-    res=ScannerTestWord("do ",sourceCode);
+    res=ScannerTestWord("do ");
     if(res==1)
         return 21;
-    res=ScannerTestWord("else ",sourceCode);
+    res=ScannerTestWord("else ");
     if(res==1)
         return 22;
-    res=ScannerTestWord("end ",sourceCode);
+    res=ScannerTestWord("end ");
     if(res==1)
         return 23;
-    res=ScannerTestWord("if ",sourceCode);
+    res=ScannerTestWord("if ");
     if(res==1)
         return 24;
-    res=ScannerTestWord("not ",sourceCode);
+    res=ScannerTestWord("not ");
     if(res==1)
         return 25;
-    res=ScannerTestWord("then ",sourceCode);
+    res=ScannerTestWord("then ");
     if(res==1)
         return 26;
-    res=ScannerTestWord("while ",sourceCode);
+    res=ScannerTestWord("while ");
     if(res==1)
         return 27;
     return 0;
  }
 
-int ScannerTestWord(char *str, FILE *sourceCode){
+int ScannerTestWord(char *str){
     char c;
      c=fgetc(sourceCode);
      ungetc(c,sourceCode);
@@ -238,20 +237,20 @@ int ScannerTestWord(char *str, FILE *sourceCode){
     return 1;
 }
 
-TokenPtr ScannerGetToken(FILE *sourceCode){
+TokenPtr ScannerGetToken(){
     static int n_lines=1;
     static int one=0;
     static states state=NEWLINE;
     static  char c;
     TokenPtr token=NULL;
     token=malloc(sizeof(Token));
-    (token)->stringPtr=malloc((sizeof(char))*50);
-    if(token==NULL|| (token)->stringPtr==NULL){//
+    (token)->name=malloc((sizeof(char))*50);
+    if(token==NULL|| (token)->name==NULL){//
         (token)->lexem=PROBLEMM;
         (token)->line=n_lines;
         return token;
     }
-    ScannerWhite(sourceCode);
+    ScannerWhite();
     if(one==0)
         c =(char)fgetc(sourceCode);
     if(c==EOF){
@@ -278,7 +277,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                     continue;
                 }
                 else if(c>='0' && c<='9'){
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -364,7 +363,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                     continue;
                 }
                 else if(c=='='){
-                    if(ScannerTestWord("begin ",sourceCode)==1){
+                    if(ScannerTestWord("begin ")==1){
                         state=PROBLEM;
                         continue;
                     }
@@ -399,7 +398,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                     (token)->lexem=IDENT;
                     (token)->line=n_lines;
                     if(c!=' ')
-                        if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                        if(ScannerSaveNew(token,n_lines,&c)==0)
                             return token;
                     if(c==' '||c==',')
                         ungetc(c,sourceCode);
@@ -408,7 +407,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 }
                 if((c>='A'&& c<='Z')||((c>='a')&& (c<='z'))||(c>='0'&& c<='9')||c=='_'){
                     state=ID;
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -428,25 +427,25 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 (token)->line=n_lines;
                 if(c==' '||c=='?'|| c=='!'){
                     if((c=='?'|| c=='!' )&&( c!=' '))
-                        if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                        if(ScannerSaveNew(token,n_lines,&c)==0)
                             return token;
                     if(c==' ')
                         ungetc(c,sourceCode);
-                    int smth=ScannerTestW(token->stringPtr);
+                    int smth=ScannerTestW(token->name);
                     if(smth!=0)
                         token->lexem=smth;
                     state=START;
                     return token;
                 }
                 else if(((c>='a') && (c<='z'))||((c>='A') && (c<='Z'))||((c>='0') && (c<='9'))){
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     continue;
                 }
                 else if((c==',')||(c==' ')||(c=='\n')||(c=='#')||(c=='(')||(c=='=')||(c=='!')||(c=='>')||(c=='<')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     ungetc(c,sourceCode);
-                    int smth=ScannerTestW(token->stringPtr);
+                    int smth=ScannerTestW(token->name);
                     if(smth!=0)
                         token->lexem=smth;
                     state =START;
@@ -487,7 +486,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                     continue;
                 }
                 else if(c=='='){
-                    if(ScannerTestWord("begin ",sourceCode)==1){
+                    if(ScannerTestWord("begin ")==1){
                         state=LCOMMENT;
                         continue;
                     }
@@ -515,9 +514,9 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 continue;
             }
             case LCOMMENTEND:{
-                ScannerWhite(sourceCode);
+                ScannerWhite();
                 if(c=='='){
-                    if(ScannerTestWord("end ",sourceCode)==1){
+                    if(ScannerTestWord("end ")==1){
                         //printf("%c\n",c );
                         while(c!='\n'){
                             c=(char)fgetc(sourceCode);
@@ -528,13 +527,16 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                         state=START;
                         continue;
                     }
+                    continue;
                 }
-                else
+                else {
                     state=LCOMMENT;
+                    continue;
+                }
             }
             case STRING:{
                 if(c!='\"' && c!='\\'){
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -565,7 +567,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 char code[2];
                 if(c=='s'){
                     c=' ';
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -577,7 +579,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                     continue;
                 }
                 if(c=='\\' || c=='\"'){
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -590,7 +592,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 }
                 if(c=='n'){
                     c='\n';
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -603,7 +605,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 }
                 if(c=='t'){
                     c='\t';
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -637,7 +639,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                         code[1]=c;
                         int a=ConvertHextoDec(code[0])*16+ConvertHextoDec(code[1]);
                         char b=a;
-                        if(ScannerSaveNew(token,sourceCode,n_lines,&b)==0)
+                        if(ScannerSaveNew(token,n_lines,&b)==0)
                             return token;
                         state=STRING;
                         c=(char)fgetc(sourceCode);
@@ -651,9 +653,9 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                     else{//convert 0 , c vratit
                         int a=ConvertHextoDec(code[0]);
                         char b=a;
-                        if(ScannerSaveNew(token,sourceCode,n_lines,&b)==0)
+                        if(ScannerSaveNew(token,n_lines,&b)==0)
                             return token;
-                        if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                        if(ScannerSaveNew(token,n_lines,&c)==0)
                             return token;
                         state=STRING;
                         continue;
@@ -727,7 +729,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
             case NUMBER:{
                 if(c=='.'){
                     state=DOUBLECOM;
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -739,7 +741,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 }//next
                 else if(c=='e'||c=='E'){
                     state=DEXP;
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -750,7 +752,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                     continue;
                 }
                 else if(c>='0' && c<='9'){
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -775,7 +777,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
             case DOUBLECOM:{
                 if(c>='0'&&c<='9'){
                     state=DCOMD;
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -792,7 +794,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
             }
             case DEXP:{
                 if((c=='+')||(c=='-')){
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -805,32 +807,32 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 }
                 if(c>='0'&&c<='9'){
                     state=DEXPD;
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
-                        c=(char)fgetc(sourceCode);
-                        if(c==EOF){
-                            token->lexem=EOFILE;
-                            token->line=n_lines;
-                            return token;
-                        }
-                        continue;
+                    c=(char)fgetc(sourceCode);
+                    if(c==EOF){
+                        token->lexem=EOFILE;
+                        token->line=n_lines;
+                        return token;
                     }
-                    else{
-                        state=PROBLEM;
-                        continue;
-                    }
+                    continue;
+                }
+                else{
+                    state=PROBLEM;
+                    continue;
+                }
                 }
             case DEXPD:{
                 if(c>='0'&& c<='9'){
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
-                        c=(char)fgetc(sourceCode);
-                        if(c==EOF){
-                            token->lexem=EOFILE;
-                            token->line=n_lines;
-                            return token;
-                        }
-                        continue;
+                    c=(char)fgetc(sourceCode);
+                    if(c==EOF){
+                        token->lexem=EOFILE;
+                        token->line=n_lines;
+                        return token;
+                    }
+                    continue;
                 }
                 else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')){
                     (token)->lexem=FLOAT;
@@ -846,14 +848,14 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
             }
             case DEXPS:{
                 if(c>='0'&& c<='9'){
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
-                        c=(char)fgetc(sourceCode);
-                        if(c==EOF){
-                            token->lexem=EOFILE;
-                            token->line=n_lines;
-                            return token;
-                        }
+                    c=(char)fgetc(sourceCode);
+                    if(c==EOF){
+                        token->lexem=EOFILE;
+                        token->line=n_lines;
+                        return token;
+                    }
                     continue;
                 }
                 else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')){
@@ -870,7 +872,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
             }
             case DCOMD:{
                 if(c=='e'||c=='E'){
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -881,7 +883,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 continue;
                 }
                 if(c<='9'&&c>='0'){
-                    if(ScannerSaveNew(token,sourceCode,n_lines,&c)==0)
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -904,7 +906,7 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 }
             }
             case PROBLEM:{
-                if(ScannerSkipLineE(sourceCode)==1){
+                if(ScannerSkipLineE()==1){
                     state=END;
                     continue;
                 }

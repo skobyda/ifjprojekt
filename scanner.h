@@ -86,8 +86,8 @@ ENDFILE,
 char* ScannerStradd(char* s,char *c);
 int ConvertHextoDec(char c);
 int ScannerTestW(char*str);
-int ScannerTestKeyWord(FILE *sourceCode);
-int ScannerSkipLineE(FILE * sourceCode);
+int ScannerTestKeyWord();
+int ScannerSkipLineE();
 /*Structure for work with strings*/
 typedef struct {//DANGER SHOULD NOT BE IN STRINGPTR []?
 	lexems lexem;   // type of token
@@ -95,13 +95,13 @@ typedef struct {//DANGER SHOULD NOT BE IN STRINGPTR []?
 	char *name;   // if it is ID, contains it's name, if it is  number it's a value. The same with a string.
 } Token;
 typedef Token *TokenPtr;
-int ScannerSaveNew(TokenPtr token,FILE *source,int lines, char*c);
+int ScannerSaveNew(TokenPtr token,int lines, char*c);
 
-bool Scanner(FILE *source_code);
+bool Scanner();
 /*static*/
 
 /*static*/
-int ScannerTestWord(char *str, FILE *sourceCode);
-TokenPtr ScannerGetToken(FILE *sourceCode);
+int ScannerTestWord(char *str);
+TokenPtr ScannerGetToken();
 
 #endif
