@@ -25,6 +25,7 @@
 TokenPtr token = NULL;
 
 //static bool ParserStatList();
+static bool ParserArguments();
 static bool ParserStatement();
 static bool ParserDeclaration();
 static bool ParserIfStatement();
@@ -33,6 +34,7 @@ static bool ParserWhile();
 static bool ParserExpression();
 
 /****** REMOVE THIS LATER ******/
+/*
 int tokenCounter = 0;
 #define TOKENNUM 30
 Token DummyToken[TOKENNUM] = {
@@ -81,6 +83,7 @@ static TokenPtr DummyGetToken() {
     else
         return &DummyToken[tokenCounter++];
 }
+*/
 /****** REMOVE THIS LATER ******/
 
 #define FUNCTIONCALL(function) do { \
@@ -89,9 +92,11 @@ static TokenPtr DummyGetToken() {
     } \
 } while(0)
 
-//TODO remove DummyGetToken()
 #define NEXTTOKEN do { \
-    token = DummyGetToken(); \
+    if (token) \
+        free (token->name); \
+    free(token); \
+    token = ScannerGetToken(); \
     if (!token) \
         return false; \
 } while(0)
@@ -115,13 +120,52 @@ static TokenPtr DummyGetToken() {
     return true;
 }*/
 
+/* Rule of LL gramar for Arguments of function calling.
+ */
+static bool ParserArguments() {
+    printf("Functioncall arguments\n");
+    bool flag = true; // set to true if expects Identificator, false if expects comma
+
+    /* Asks for tokens (arguments), until it sees right bracket */
+    NEXTTOKEN;
+    while (token->lexem != RIGHT_B) {
+        if (flag && token->lexem != IDENT) {
+            printf("ERROR\n");
+            goto end;
+        } else if (!flag && token->lexem != COMA) {
+            printf("ERROR\n");
+            goto end;
+        }
+
+        // to secure switching of argument/comma
+        flag = !flag;
+
+        NEXTTOKEN;
+    }
+
+    /* Expects end of line after right comma */
+    NEXTTOKEN;
+    if (token->lexem != EOL) {
+        printf("ERROR\n");
+        goto end;
+    }
+
+ end:
+    while (token->lexem != EOL)
+        NEXTTOKEN;
+    
+    /* Statement on another line */
+    FUNCTIONCALL(ParserStatement);
+
+    return true;
+}
+
 /* Rule of LL gramar for statement.
  */
 static bool ParserStatement() {
     printf("Statement\n");
 
     NEXTTOKEN;
-
     switch (token->lexem) {
         case DEF:
             FUNCTIONCALL(ParserFunctionDeclaration);
@@ -140,7 +184,10 @@ static bool ParserStatement() {
             break;
         case EOFILE:
         case ELSE:
+            printf("Else\n");
+            break;
         case END:
+            printf("End\n");
             break;
         default:
             return false;
@@ -153,30 +200,66 @@ static bool ParserStatement() {
  */
 static bool ParserFunctionDeclaration() {
     printf("Function\n");
+    bool flag = true; // set to true if expects identificator, false if expects comma
 
+    /* Expects name of function */
     NEXTTOKEN;
-    if (token->lexem != IDENT)
+    if (token->lexem != IDENT) {
         printf("ERROR\n");
+        while (token->lexem != EOL)
+            NEXTTOKEN;
+    }
 
+    /* Expects left bracked after function name */
     NEXTTOKEN;
-    if (token->lexem != LEFT_B)
+    if (token->lexem != LEFT_B) {
         printf("ERROR\n");
+        while (token->lexem != EOL)
+            NEXTTOKEN;
+    }
 
+    /* Reads parameters of function until it sees right bracket */
     NEXTTOKEN;
     while (token->lexem != RIGHT_B) {
-        if (token->lexem != IDENT)
+        if (flag && token->lexem != IDENT) {
             printf("ERROR\n");
+            while (token->lexem != EOL)
+                NEXTTOKEN;
+        } else if (!flag && token->lexem != COMA) {
+            printf("ERROR\n");
+            while (token->lexem != EOL)
+                NEXTTOKEN;
+        }
+
+        // to secure switching of argument/comma
+        flag = !flag;
         NEXTTOKEN;
     }
 
+    /* Expects end of line after right bracket */
     NEXTTOKEN;
-    if (token->lexem != RIGHT_B)
+    if (token->lexem != EOL) {
+        printf("ERROR\n");
+        while (token->lexem != EOL)
+            NEXTTOKEN;
+    }
+
+    /* Statement(s) inside a function (aka body of function) */
+    FUNCTIONCALL(ParserStatement);
+
+    /* Body of function should end with 'END' */
+    if (token->lexem != END)
         printf("ERROR\n");
 
+    /* Expects end of line after 'END' */
     NEXTTOKEN;
-    if (token->lexem != EOL)
+    if (token->lexem != EOL) {
         printf("ERROR\n");
+        while (token->lexem != EOL)
+            NEXTTOKEN;
+    }
 
+    /* Statements after function (rest of the program) */
     FUNCTIONCALL(ParserStatement);
 
     return true;
@@ -187,22 +270,51 @@ static bool ParserFunctionDeclaration() {
 static bool ParserIfStatement() {
     printf("If\n");
 
+    /* Function's condition can be parsed as expression */
     FUNCTIONCALL(ParserExpression);
+
+    /* Expects 'end' after function's condition */
     if (token->lexem != THEN)
         printf("ERROR\n");
 
+    /* Expects end of line after 'end' */
     NEXTTOKEN;
-    if (token->lexem != EOL)
+    if (token->lexem != EOL) {
         printf("ERROR\n");
+        while (token->lexem != EOL)
+            NEXTTOKEN;
+    }
 
+    /* Function's block of code */
     FUNCTIONCALL(ParserStatement);
 
-    if (token->lexem == ELSE)
-        FUNCTIONCALL(ParserStatement);
+    /* ELSE (optional) */
+    if (token->lexem == ELSE) {
+        /* Expects end of line after 'else' */
+        NEXTTOKEN;
+        if (token->lexem != EOL) {
+            printf("ERROR\n");
+            while (token->lexem != EOL)
+                NEXTTOKEN;
+        }
 
+        /* Else's block of code */
+        FUNCTIONCALL(ParserStatement);
+    }
+
+    /* Expects 'end' at the end of if/else statement  */
     if (token->lexem != END)
         printf("ERROR\n");
 
+    /* Expects end of line after 'end' */
+    NEXTTOKEN;
+    if (token->lexem != EOL) {
+        printf("ERROR\n");
+        while (token->lexem != EOL)
+            NEXTTOKEN;
+    }
+
+    /* Rest of the program */
     FUNCTIONCALL(ParserStatement);
 
     return true;
@@ -213,19 +325,37 @@ static bool ParserIfStatement() {
 static bool ParserWhile() {
     printf("While\n");
 
+    /* While's condition, can be parsed as Expression */
     FUNCTIONCALL(ParserExpression);
+
+    /* Expects 'do' after while's condition */
     if (token->lexem != DO)
         printf("ERROR\n");
 
+    /* Expects end of line after 'do' */
     NEXTTOKEN;
-    if (token->lexem != EOL)
+    if (token->lexem != EOL) {
         printf("ERROR\n");
+        while (token->lexem != EOL)
+            NEXTTOKEN;
+    }
 
+    /* While's block of code */
     FUNCTIONCALL(ParserStatement);
 
+    /* Expects 'end' at the end of while statement */
     if (token->lexem != END)
         printf("ERROR\n");
 
+    NEXTTOKEN;
+    /* Expects end of line after 'end' */
+    if (token->lexem != EOL) {
+        printf("ERROR\n");
+        while (token->lexem != EOL)
+            NEXTTOKEN;
+    }
+
+    /* Rest of the program */
     FUNCTIONCALL(ParserStatement);
 
     return true;
@@ -238,13 +368,13 @@ static bool ParserDeclaration() {
     printf("Declaration\n");
 
     NEXTTOKEN;
-
     switch (token->lexem) {
         case ADDITION: // It's declaration of variable
             FUNCTIONCALL(ParserExpression);
             break;
-        //case LEFTBRACKET: // It's declaration of function
-        //    FUNCTIONCALL(ParserArguments)
+        case LEFT_B: // It's declaration of function
+            FUNCTIONCALL(ParserArguments);
+            break;
         default:
             return false;
     }
@@ -259,14 +389,20 @@ static bool ParserExpression() {
     printf("Expression\n");
 
     NEXTTOKEN;
-
-    if (token->lexem != IDENT) {
+    if (token->lexem != IDENT &&
+        token->lexem != STR &&
+        token->lexem != INT &&
+        token->lexem != FLOAT &&
+        token->lexem != NIL) {
        printf("ERROR\n"); //TODO remove this condition after precedence p. will be implemented
        return false;
     }
     //TODO parser control for this expression will be handled to precedence parser
 
-    while (token->lexem != EOL && token->lexem != DO && token->lexem != THEN && token->lexem != EOFILE)
+    while (token->lexem != EOL &&
+           token->lexem != DO &&
+           token->lexem != THEN &&
+           token->lexem != EOFILE)
         NEXTTOKEN;
 
     switch (token->lexem) {
@@ -307,6 +443,10 @@ Parser() {
     /* Creates Derivation tree from tokens */
     ParTreePtr tree = NULL;
     //TODO
+
+    if (token) \
+        free (token->name); \
+    free(token);
 
     return tree;
 }
