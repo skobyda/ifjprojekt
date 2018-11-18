@@ -91,7 +91,7 @@ static TokenPtr DummyGetToken() {
 
 //TODO remove DummyGetToken()
 #define NEXTTOKEN do { \
-    token = ScannerGetToken(); \
+    token = DummyGetToken(); \
     if (!token) \
         return false; \
 } while(0)
