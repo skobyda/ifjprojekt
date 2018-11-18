@@ -122,24 +122,42 @@ if(argc==1)return 1;
     ptr=fopen(argv[1],"r");
     TokenPtr token;
     int i=0;
-    while((i<100) )
-        {token=(ScannerGetToken(ptr));
+    while((i<100) ){
+        token=(ScannerGetToken(ptr));
         printf("Line: %d --Token: ",(token)->line);
         PrintToken(token->lexem);//CHYBA
-        if(token->lexem>-1)
-            printf("\t->%s<-\n",(token)->stringPtr);
-        else
-            printf("\n");
+        if(token->lexem>-1){
+            if(token->stringPtr!=NULL){
+                int len;
+                len=strlen(token->stringPtr);
+                if(len==0){
+                    printf("\n");
+                    if(token->lexem==EOFILE){
+                        free(token->stringPtr);
+                        free(token);
+                        return 0;
+                    }
+                    //printf("\n");
+                    free(token->stringPtr);
+                    free(token);
+                    continue;
+                }
+                printf("\t->%s<-\n",(token)->stringPtr);
+            }
+        }
+         else
+             printf("\n");
         free(token->stringPtr);
-        if(token->lexem==EOFILE)
-            {free(token);
-            return 0;}
+        if(token->lexem==EOFILE){
+            free(token);
+            return 0;
+        }
         free(token);
         i++;
     }
     fclose(ptr);
 
     (void)argv;
-     (void)(argc);
+    (void)(argc);
     return 1;
 }

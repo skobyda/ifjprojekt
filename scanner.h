@@ -89,7 +89,7 @@ int ScannerTestW(char*str);
 int ScannerTestKeyWord(FILE *sourceCode);
 int ScannerSkipLineE(FILE * sourceCode);
 /*Structure for work with strings*/
-typedef struct {
+typedef struct {//DANGER SHOULD NOT BE IN STRINGPTR []?
 	lexems lexem;   // type of token
 	unsigned line;  // number of line
 	char *name;   // if it is ID, contains it's name, if it is  number it's a value. The same with a string.

@@ -94,23 +94,50 @@ int ConvertHextoDec(char c){
 
 char *ScannerStradd( char *s, char* c ){
     char *s2;
-    int length= strlen(s);
-    if(length==0){
-        *s=*c;
-        return s;
-    }
-    s2=(char*)realloc(s,(length+1)*sizeof(char));
+    // printf("tramtadaa\n" );
+    // if(s==NULL)
+    // {
+    //     s=(char*)malloc(sizeof(char));
+    //     *s=*c;
+    //     return s;
+    // }
+///////////////////////////////////////////////
+int length;
+    if(s!=NULL)
+        length= strlen(s);
+    if(length==0)
+        {
+            s[length]=*c;
+            s[length+1]=0;
+            return s;
+        }
+if(length>50){
+    s2=realloc(s,(length)*sizeof(char));//4
     if(!s2){
         return NULL;
     }
-    s=s2;
+    //free(s);
+    s=s2;}
+    s[length+1]=s[length];
     s[length]=*c;
-    s[length+1]=0;
     return s;
 
+//snprintf(s, sizeof(*s), "%s%c", s, *c);
+//return s;
+
+// printf("%s,%c\n",s,*c );
+//     size_t len = strlen(s);
+//      char *str2 = malloc(len + 1 + 1 ); /* one for extra char, one for trailing zero */
+//      strcpy(str2, s);
+//      str2[len] = *c;
+//      str2[len + 1] = '\0';
+//      printf("PO: %s,%c\n",s,*c );
+//      return s;
 }
 
 int ScannerTestW(char*str){
+    if(str==NULL)
+        return 0;
     if(strcmp(str,"def")==0)
         return 20;
     if(strcmp(str,"do")==0)
@@ -170,8 +197,10 @@ int ScannerTestKeyWord(FILE *sourceCode){
 
 int ScannerTestWord(char *str, FILE *sourceCode){
     char c;
-    c=fgetc(sourceCode);
-    ungetc(c,sourceCode);
+     c=fgetc(sourceCode);
+     ungetc(c,sourceCode);
+    if(str==NULL)
+        return 0;
     if(c==' ')
         return 0;
     if(str==NULL)
@@ -216,8 +245,8 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
     static  char c;
     TokenPtr token=NULL;
     token=malloc(sizeof(Token));
-    (token)->stringPtr=malloc(sizeof(char));
-    if(token==NULL || (token)->stringPtr==NULL){
+    (token)->stringPtr=malloc((sizeof(char))*50);
+    if(token==NULL|| (token)->stringPtr==NULL){//
         (token)->lexem=PROBLEMM;
         (token)->line=n_lines;
         return token;
@@ -489,11 +518,10 @@ TokenPtr ScannerGetToken(FILE *sourceCode){
                 ScannerWhite(sourceCode);
                 if(c=='='){
                     if(ScannerTestWord("end ",sourceCode)==1){
-                        printf("%c\n",c );
+                        //printf("%c\n",c );
                         while(c!='\n'){
                             c=(char)fgetc(sourceCode);
-                            printf("v cycle %c\n",c );
-
+                            //printf("v cycle %c\n",c );
                         }
                         n_lines--;
                         ungetc(c,sourceCode);
