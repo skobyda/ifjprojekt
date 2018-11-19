@@ -22,13 +22,15 @@
 typedef struct Symbol *SymbolPtr;
 typedef struct SymTable *SymTablePtr;
 
+extern SymTablePtr globalTable;
+
 typedef enum {
     variable,
     function,
     parameter,
-    constant
 } identifType;
 
+/*
 typedef enum {
     typeNone,
     typeBool,
@@ -42,14 +44,13 @@ typedef union {
     int iVal;
     float fVal;
     char *sVal;
-} Value;
+} Value; */
 
 struct Symbol{
     char* name;
     identifType iType;
-    dataType dType;
     bool defined;
-    unsigned int line;
+    SymTablePtr localTable; //local table for each function, if NULL then symbol is not function
     SymbolPtr nextSymbol;
 };
 
