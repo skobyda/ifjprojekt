@@ -20,6 +20,8 @@
 /***LOCAL FILES***/
 #include "symtable.h"
 
+SymTablePtr globalTable = NULL; //table contains all identifiers of functions
+
 static unsigned int HashFunction(char* key) {
     int val;
     for (unsigned int i = 0; i < strlen(key); i++)
