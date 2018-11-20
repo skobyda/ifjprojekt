@@ -20,6 +20,61 @@
 /***LOCAL FILES***/
 #include "parser.h"
 
+typedef enum {
+    WHILEST, //left node -> condition, right node -> block of statements
+    IFST, // left node -> condition, right node -> block of statements
+    ENDWHILE,
+    ENDIF,
+    BLOCKIF, // left node -> then statements, right node -> else statements
+    COMPARATOR, // left node -> left operand, right node -> right operand
+    FUNCTIONDEF, // left node -> argument(s), right node -> block of statements
+    FUNCTIONCALL, // left node -> argument(s)
+    ARGUMENT, // left node -> next argument
+    VARIABLE,
+    CONSTANT,
+    OPER, // left node -> left operand, right node -> right operand
+    STATEMENT, // left node -> current statement, right node -> next statement
+    ASSIGNMENT, // left node -> left hand side , right node -> right hand side of expression   
+} dataType;
+
+typedef enum {
+    EQU, //==
+    LT,  //<
+    GT,  //>
+    LOE, //<=
+    GOE, //>=
+    NEQE,//!=
+} compType;
+
+typedef enum {
+    OADD, //+
+    OSUB, //-
+    OMUL, //*
+    ODIV, // /
+} opType;
+
+typedef union {
+    bool bVal;
+    int iVal;
+    float fVal;
+    char *sVal;
+} Value;
+      
+typedef struct AbsTreeNode {
+    dataType dType;
+    compType cmpType;
+    opType oType;
+    char *name; //contains name of variable or function, otherwise NULL
+    bool declared; //if variable already exists -> TRUE
+    Value val; //if constanst contains its value
+    struct AbsTreeNode *left;
+    struct AbsTreeNode *right;
+    struct AbsTreeNode *parent;                                  
+} *ATreeNodePtr;
+
+// Initializes abstract tree before first usage
+void SemanticTreeInit (ATreeNodePtr *RootPtr);
+
 /* Runs Semantic analysis over derivation tree.
  * throws some error if semantic bug was detected.
  * @tree Pointer to derivation tree.
