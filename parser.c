@@ -129,10 +129,16 @@ static bool ParserArguments() {
     /* Asks for tokens (arguments), until it sees right bracket */
     NEXTTOKEN;
     while (token->lexem != RIGHT_B) {
-        if (flag && token->lexem != IDENT) {
+        if (flag && ( // argument
+            token->lexem != IDENT &&
+            token->lexem != STR &&
+            token->lexem != INT &&
+            token->lexem != NIL &&
+            token->lexem != FLOAT )
+            ) {
             printf("ERROR\n");
             goto end;
-        } else if (!flag && token->lexem != COMA) {
+        } else if (!flag && token->lexem != COMA) { // comma
             printf("ERROR\n");
             goto end;
         }
