@@ -16,10 +16,11 @@
 #include <stdbool.h>
 
 /***LOCAL FILES***/
-#include "scanner.h"
+#include "generator.h"
 #include "parser.h"
 #include "parser-semantic.h"
-#include "generator.h"
+#include "scanner.h"
+#include "stack.h"
 
 /* Always point to current token */
 TokenPtr token = NULL;
@@ -120,6 +121,52 @@ static TokenPtr DummyGetToken() {
     return true;
 }*/
 
+static void AuxPrintToken(TokenPtr token) {
+    char *lexem;
+    char *name;
+
+    switch (token->lexem) {
+        case EOL: lexem = "EOL"; break;
+        case EOFILE: lexem = "EOFILE"; break;
+        case IDENT: lexem = "IDENT"; break;
+        case STR: lexem = "STR"; break;
+        case INT: lexem = "INT"; break;
+        case FLOAT: lexem = "FLOAT"; break;
+        case NIL: lexem = "NIL"; break;
+        case LEFT_B: lexem = "LEFT_B"; break;
+        case RIGHT_B: lexem = "RIGHT_B"; break;
+        case PLUS: lexem = "PLUS"; break;
+        case MINUS: lexem = "MINUS"; break;
+        case MULTIPLY: lexem = "MULTIPLY"; break;
+        case DIVISION: lexem = "DIVISION"; break;
+        case LESS: lexem = "LESS"; break;
+        case MORE: lexem = "MORE"; break;
+        case LESSEQ: lexem = "LESSEQ"; break;
+        case MOREEQ: lexem = "MOREEQ"; break;
+        case EQ: lexem = "EQ"; break;
+        case ADDITION: lexem = "ADDITION"; break;
+        case NOTEQ: lexem = "NOTEQ"; break;
+        case DEF: lexem = "DEF"; break;
+        case DO: lexem = "DO"; break;
+        case ELSE: lexem = "ELSE"; break;
+        case END: lexem = "END"; break;
+        case IF: lexem = "IF"; break;
+        case NOT: lexem = "NOT"; break;
+        case THEN: lexem = "THEN"; break;
+        case WHILE: lexem = "WHILE"; break;
+        case COMA: lexem = "COMA"; break;
+        case NEXT: lexem = "NEXT"; break;
+        default: lexem = "UNKNOWN LEXEM"; break;
+    }
+
+    if(token->name)
+        name = token->name;
+    else
+        name = "NULL";
+
+    printf("Lexem: %s, Name: %s | ", lexem, name);
+}
+
 /* Rule of LL gramar for Arguments of function calling.
  */
 static bool ParserArguments() {
@@ -159,7 +206,7 @@ static bool ParserArguments() {
  end:
     while (token->lexem != EOL)
         NEXTTOKEN;
-    
+
     /* Statement on another line */
     FUNCTIONCALL(ParserStatement);
 
@@ -189,6 +236,7 @@ static bool ParserStatement() {
             FUNCTIONCALL(ParserStatement);
             break;
         case EOFILE:
+            break;
         case ELSE:
             printf("Else\n");
             break;
@@ -388,28 +436,155 @@ static bool ParserDeclaration() {
     return true;
 }
 
+static bool ParserExpressionCheckError(bool flag) {
+        if (flag &&
+            token->lexem != LEFT_B && // can expect left bracket instead of operand
+            token->lexem != IDENT &&
+            token->lexem != STR &&
+            token->lexem != INT &&
+            token->lexem != FLOAT &&
+            token->lexem != NIL) {
+
+            printf("ERROR\n");
+            while (token->lexem != EOL &&
+                   token->lexem != DO &&
+                   token->lexem != THEN &&
+                   token->lexem != EOFILE)
+                NEXTTOKEN;
+
+            return false;
+        } else if (!flag &&
+                    token->lexem != RIGHT_B && // can expect left bracket instead of operand
+                    token->lexem != PLUS &&
+                    token->lexem != MINUS &&
+                    token->lexem != MULTIPLY &&
+                    token->lexem != DIVISION &&
+                    token->lexem != LESS &&
+                    token->lexem != MORE &&
+                    token->lexem != LESSEQ &&
+                    token->lexem != MOREEQ &&
+                    token->lexem != EQ &&
+                    token->lexem != NOTEQ) {
+
+            printf("ERROR\n");
+            while (token->lexem != EOL &&
+                   token->lexem != DO &&
+                   token->lexem != THEN &&
+                   token->lexem != EOFILE)
+                NEXTTOKEN;
+            return false;
+        }
+
+        return true;
+}
+
+static bool ParserExpressionIsOperator(TokenPtr token) {
+    if (token->lexem == PLUS ||
+        token->lexem == MINUS ||
+        token->lexem == MULTIPLY ||
+        token->lexem == DIVISION ||
+        token->lexem == LESS ||
+        token->lexem == MORE ||
+        token->lexem == LESSEQ ||
+        token->lexem == MOREEQ ||
+        token->lexem == EQ ||
+        token->lexem == NOTEQ)
+        return true;
+    else
+        return false;
+}
+
+static bool ParserExpressionIsGreater(TokenPtr token1, TokenPtr token2) {
+    if ((token1->lexem == MULTIPLY || token1->lexem == DIVISION) &&
+        (token2->lexem != MULTIPLY || token2->lexem != DIVISION))
+        return true;
+    else
+        return false;
+}
+
+static StackPtr ParserExpressionRevInfixToPrefix(StackPtr RevInfixStack) {
+    StackPtr stackTmp = StackCreate();
+    StackPtr prefixStack = StackCreate();
+
+    TokenPtr token;
+
+    while ((token = StackPop(RevInfixStack)) != NULL) {
+        if (token->lexem == RIGHT_B) {
+            StackPush(stackTmp, token);
+        } else if (token->lexem == LEFT_B) {
+            TokenPtr tokenTmp = StackPop(stackTmp);
+            while (tokenTmp->lexem != RIGHT_B) {
+                StackPush(prefixStack, tokenTmp);
+                tokenTmp = StackPop(stackTmp);
+            }
+        } else if (ParserExpressionIsOperator(token)) {
+            TokenPtr tokenTmp = StackPop(stackTmp);
+            while (tokenTmp) {
+                if (ParserExpressionIsGreater(tokenTmp, token)) {
+                    StackPush(prefixStack, tokenTmp);
+                    tokenTmp = StackPop(stackTmp);
+                } else {
+                    StackPush(stackTmp, tokenTmp);
+                    break;
+                }
+            }
+            StackPush(stackTmp, token);
+        } else {
+            StackPush(prefixStack, token);
+        }
+    }
+
+    while ((token = StackPop(stackTmp)) != NULL)
+        StackPush(prefixStack, token);
+
+    return prefixStack;
+}
+
 /* Rule of LL gramar for expression.
  * This expression will handled by precedence parsing.
  */
 static bool ParserExpression() {
     printf("Expression\n");
 
-    NEXTTOKEN;
-    if (token->lexem != IDENT &&
-        token->lexem != STR &&
-        token->lexem != INT &&
-        token->lexem != FLOAT &&
-        token->lexem != NIL) {
-       printf("ERROR\n"); //TODO remove this condition after precedence p. will be implemented
-       return false;
-    }
-    //TODO parser control for this expression will be handled to precedence parser
+    bool flag = true;
 
+    StackPtr stack = StackCreate();
+
+    /* Reads operators and operadns of expression */
+    NEXTTOKEN;
     while (token->lexem != EOL &&
            token->lexem != DO &&
            token->lexem != THEN &&
-           token->lexem != EOFILE)
+           token->lexem != EOFILE) {
+        if (!ParserExpressionCheckError(flag)) {
+            flag = true;
+            break;
+        }
+
+        // push it to stack, so we get reversed expression
+        if(!StackPush(stack, token))
+           printf("ERROR: StackPush() Failed\n");
+
+        // to secure switching of operator and operand
+        if (token->lexem != LEFT_B && token->lexem != RIGHT_B)
+            flag = !flag;
         NEXTTOKEN;
+    }
+
+    // last token in expression is operator
+    if (flag == true)
+        printf("ERRORA\n");
+    else {
+        StackPtr infixStack = ParserExpressionRevInfixToPrefix(stack);
+        TokenPtr tokenToPrint;
+        printf("PREFIX: ");
+        while ((tokenToPrint = StackPop(infixStack)) != NULL)
+            AuxPrintToken(tokenToPrint);
+        printf("\n");
+
+    }
+
+    free(stack);
 
     switch (token->lexem) {
         case EOL:
