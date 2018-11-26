@@ -156,7 +156,10 @@ static void AuxPrintToken(TokenPtr token) {
         case WHILE: lexem = "WHILE"; break;
         case COMA: lexem = "COMA"; break;
         case NEXT: lexem = "NEXT"; break;
-        default: lexem = "UNKNOWN LEXEM"; break;
+        default: lexem = malloc(sizeof(char) * 3);
+                 sprintf(lexem, "%d", token->lexem); 
+                 break;
+
     }
 
     if(token->name)
@@ -384,12 +387,12 @@ static bool ParserWhile() {
 
     /* Expects 'do' after while's condition */
     if (token->lexem != DO)
-        printf("ERROR\n");
+        printf("ERRORB\n");
 
     /* Expects end of line after 'do' */
     NEXTTOKEN;
     if (token->lexem != EOL) {
-        printf("ERROR\n");
+        printf("ERRORC\n");
         while (token->lexem != EOL)
             NEXTTOKEN;
     }
@@ -445,7 +448,7 @@ static bool ParserExpressionCheckError(bool flag) {
             token->lexem != FLOAT &&
             token->lexem != NIL) {
 
-            printf("ERROR\n");
+            printf("ERROR1A\n");
             while (token->lexem != EOL &&
                    token->lexem != DO &&
                    token->lexem != THEN &&
@@ -466,12 +469,13 @@ static bool ParserExpressionCheckError(bool flag) {
                     token->lexem != EQ &&
                     token->lexem != NOTEQ) {
 
-            printf("ERROR\n");
+            printf("ERROR1B\n");
             while (token->lexem != EOL &&
                    token->lexem != DO &&
                    token->lexem != THEN &&
                    token->lexem != EOFILE)
                 NEXTTOKEN;
+
             return false;
         }
 
@@ -556,10 +560,8 @@ static bool ParserExpression() {
            token->lexem != DO &&
            token->lexem != THEN &&
            token->lexem != EOFILE) {
-        if (!ParserExpressionCheckError(flag)) {
-            flag = true;
-            break;
-        }
+        if (!ParserExpressionCheckError(flag))
+            return false;
 
         // push it to stack, so we get reversed expression
         if(!StackPush(stack, token))
