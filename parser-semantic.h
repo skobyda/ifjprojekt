@@ -23,19 +23,20 @@
 typedef enum {
     WHILEST, //left node -> condition, right node -> block of statements
     IFST, // left node -> condition, right node -> block of statements
-    ENDWHILE,
-    ENDIF,
+    //ENDWHILE,
+    //ENDIF,
     BLOCKIF, // left node -> then statements, right node -> else statements
     COMPARATOR, // left node -> left operand, right node -> right operand
     FUNCTIONDEF, // left node -> argument(s), right node -> block of statements
+    //ENDFUNCTION,
     FUNCTIONCALL, // left node -> argument(s)
     ARGUMENT, // left node -> next argument
     VARIABLE,
     CONSTANT,
     OPER, // left node -> left operand, right node -> right operand
     STATEMENT, // left node -> current statement, right node -> next statement
-    ASSIGNMENT, // left node -> left hand side , right node -> right hand side of expression   
-} dataType;
+    ASSIGNMENT, // left node -> right hand side , right node -> land hand side of expression   
+} nodeType;
 
 typedef enum {
     EQU, //==
@@ -61,12 +62,12 @@ typedef union {
 } Value;
       
 typedef struct AbsTreeNode {
-    dataType dType;
+    nodeType nType;
     compType cmpType;
     opType oType;
     char *name; //contains name of variable or function, otherwise NULL
     bool declared; //if variable already exists -> TRUE
-    Value val; //if constanst contains its value
+    Value val; //if constant contains its value
     struct AbsTreeNode *left;
     struct AbsTreeNode *right;
     struct AbsTreeNode *parent;                                  
