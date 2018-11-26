@@ -374,6 +374,9 @@ static bool ParserFunctionDeclaration() {
     if (token->lexem != END)
         printf("ERROR\n");
 
+    /* Semantic Action */
+    printf("SEMCALL: End of Function\n");
+
     /* Expects end of line after 'END' */
     NEXTTOKEN;
     if (token->lexem != EOL) {
@@ -434,6 +437,9 @@ static bool ParserIfStatement() {
     if (token->lexem != END)
         printf("ERROR\n");
 
+    /* Semantic Action */
+    printf("SEMCALL: End of IF block of code\n");
+
     /* Expects end of line after 'end' */
     NEXTTOKEN;
     if (token->lexem != EOL) {
@@ -476,6 +482,9 @@ static bool ParserWhile() {
     /* Expects 'end' at the end of while statement */
     if (token->lexem != END)
         printf("ERROR\n");
+
+    /* Semantic Action */
+    printf("SEMCALL: End of WHILE block of code\n");
 
     NEXTTOKEN;
     /* Expects end of line after 'end' */
