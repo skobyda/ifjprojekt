@@ -30,13 +30,16 @@ static unsigned int HashFunction(char* key) {
     return val % TABLESIZE;
 }
 
-SymTablePtr SymTableInit() {
+SymTablePtr SymTableInit(SymTablePtr ParentTable) {
     SymTablePtr table = NULL;
     table = malloc(sizeof(struct SymTable));
     if (!table) {
         fprintf(stderr, "SymTableInit: Allocation of symTable failed");
         exit(1);
     }
+    table->parentTable = ParentTable;
+    for (int i = 0; i < TABLESIZE; i++)
+        table->arr[i] = NULL;
 
     return table;
 }
@@ -44,7 +47,6 @@ SymTablePtr SymTableInit() {
 void SymTableDestroy(SymTablePtr table) {
     for (int i = 0; i < TABLESIZE; i++) {
         SymbolPtr symbol = table->arr[i];
-
         while(symbol) {
             SymbolPtr tmp = symbol;
             symbol = tmp->nextSymbol;
@@ -54,7 +56,7 @@ void SymTableDestroy(SymTablePtr table) {
     }
 }
 
-void SymTableAddSymbol(SymTablePtr table, SymbolPtr symbol) {
+void SymTableAdd(SymTablePtr table, SymbolPtr symbol) {
     if (!symbol) {
         fprintf(stderr, "SymTableAdd symbol: symbol passed as argument is NULL");
         exit(1);
@@ -69,7 +71,7 @@ void SymTableAddSymbol(SymTablePtr table, SymbolPtr symbol) {
 
     SymbolPtr tmp = table->arr[index];
 
-    if (tmp) {
+    if (!tmp) {
         table->arr[index] = symbol;
     } else {
         while(tmp->nextSymbol)
@@ -77,6 +79,7 @@ void SymTableAddSymbol(SymTablePtr table, SymbolPtr symbol) {
 
         tmp->nextSymbol = symbol;
     }
+
 }
 
 SymbolPtr SymTableFind(SymTablePtr table, char *name) {

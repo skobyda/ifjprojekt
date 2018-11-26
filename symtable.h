@@ -25,12 +25,11 @@ typedef struct SymTable *SymTablePtr;
 extern SymTablePtr globalTable;
 
 typedef enum {
-    variable,
-    function,
-    parameter,
+    VARIABLE,
+    FUNCTION,
 } identifType;
 
-/*
+/* TODO REMOVE LATER
 typedef enum {
     typeNone,
     typeBool,
@@ -49,16 +48,16 @@ typedef union {
 struct Symbol{
     char* name;
     identifType iType;
-    bool defined;
-    SymTablePtr localTable; //local table for each function, if NULL then symbol is not function
+    // bool defined; // TODO REMOVE LATER
     SymbolPtr nextSymbol;
 };
 
 struct SymTable{
     SymbolPtr arr[TABLESIZE];
+    SymTablePtr parentTable; // if NULL, current table is global table
 };
 
-SymTablePtr SymTableInit();
+SymTablePtr SymTableInit(SymTablePtr ParentTable);
 void SymTableDestroy(SymTablePtr table);
 void SymTableAdd(SymTablePtr table, SymbolPtr symbol);
 SymbolPtr SymTableFind(SymTablePtr table, char* name);
