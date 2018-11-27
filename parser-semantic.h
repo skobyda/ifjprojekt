@@ -26,15 +26,15 @@
 typedef enum {
     WHILEST, //left node -> condition, right node -> block of statements
     IFST, // left node -> condition, right node -> block of statements
-    //ENDWHILE,
-    //ENDIF,
+    ENDWHILE,
+    ENDIF,
     BLOCKIF, // left node -> then statements, right node -> else statements
     COMPARATOR, // left node -> left operand, right node -> right operand
     FUNCTIONDEF, // left node -> argument(s), right node -> block of statements
-    //ENDFUNCTION,
+    ENDFUNCTION,
     FUNCTIONCALL, // left node -> argument(s)
     ARGUMENT, // left node -> next argument
-    VARIABLE,
+    VARIABLEST,
     CONSTANT,
     OPER, // left node -> left operand, right node -> right operand
     STATEMENT, // left node -> current statement, right node -> next statement
