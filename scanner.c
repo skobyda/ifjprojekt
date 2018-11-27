@@ -255,6 +255,7 @@ TokenPtr ScannerGetToken(){
         c =(char)fgetc(sourceCode);
     if(c==EOF){
         token->lexem=EOFILE;
+        state=ENDFILE;
         token->line=n_lines;
         return token;
     }
@@ -282,6 +283,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -307,6 +309,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -337,6 +340,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -347,6 +351,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -357,6 +362,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -371,6 +377,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -382,6 +389,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -412,6 +420,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -457,9 +466,7 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case ENDFILE:{
-                token->lexem=EOFILE;
-                token->line=n_lines;
-                return token;
+                return NULL;
             }
             case NEWLINE:{
                 if(one==1)
@@ -480,6 +487,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -508,6 +516,7 @@ TokenPtr ScannerGetToken(){
                 c=(char)fgetc(sourceCode);
                 if(c==EOF){
                     token->lexem=EOFILE;
+                    state=ENDFILE;
                     token->line=n_lines;
                     return token;
                 }
@@ -541,6 +550,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -557,6 +567,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -572,6 +583,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -584,6 +596,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -597,6 +610,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -610,6 +624,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -620,6 +635,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -632,6 +648,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -645,6 +662,7 @@ TokenPtr ScannerGetToken(){
                         c=(char)fgetc(sourceCode);
                         if(c==EOF){
                             token->lexem=EOFILE;
+                            state=ENDFILE;
                             token->line=n_lines;
                             return token;
                         }
@@ -671,6 +689,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -734,6 +753,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -746,6 +766,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -757,6 +778,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -782,6 +804,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -799,6 +822,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -812,6 +836,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -829,6 +854,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -853,6 +879,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -877,6 +904,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -888,6 +916,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
