@@ -19,6 +19,9 @@
 
 /***LOCAL FILES***/
 #include "parser.h"
+#include "scanner.h"
+
+#define ARRAYSIZE 5
 
 typedef enum {
     WHILEST, //left node -> condition, right node -> block of statements
@@ -72,6 +75,21 @@ typedef struct AbsTreeNode {
     struct AbsTreeNode *right;
     struct AbsTreeNode *parent;                                  
 } *ATreeNodePtr;
+
+typedef struct {
+    unsigned line;
+    char *name;
+} FunIdent;
+
+typedef struct {
+    FunIdent *arrayI;
+    size_t used;
+    size_t size;
+} CArray;
+
+void SemanticInitArray (CArray *a, size_t initSize);
+void SemanticInsertArray (CArray *a, unsigned line, char *name);
+void freeArray (CArray *a);
 
 // Initializes abstract tree before first usage
 void SemanticTreeInit (ATreeNodePtr *RootPtr);
