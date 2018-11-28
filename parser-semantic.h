@@ -29,8 +29,8 @@ extern int exprAssignCompType;
 typedef enum {
     WHILEST, //left node -> condition, right node -> block of statements
     IFST, // left node -> condition, right node -> block of statements
-    ENDWHILE,
-    ENDIF,
+    ENDWHILEST,
+    ENDIFST,
     BLOCKIF, // left node -> then statements, right node -> else statements
     COMPARATOR, // left node -> left operand, right node -> right operand
     FUNCTIONDEF, // left node -> argument(s), right node -> block of statements

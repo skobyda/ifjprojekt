@@ -21,6 +21,7 @@
  * @tree derivation tree
  * Returns: Intermediate code as a string
  */
-char *Generator(ParTreePtr tree);
+
+
 
 #endif
