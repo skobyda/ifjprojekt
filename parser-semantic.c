@@ -78,10 +78,15 @@ bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, in
     return defined;
 }             
 
-//bool Semantic2ndDefControl() {
+/*bool Semantic2ndDefControl() {
 
-//    bool ok = false; //if all functions are defined, ok will be true
+    bool ok = false; //if all functions are defined, ok will be true
 
+    if (controlA.used > 0) {
+    unsigned found = 0;
+    SymbolPtr symbol;
+        for (int i = 0; i < controlA.used; i++) {
+            symbol = SymTableFind(*/
     
 
 void SemanticTreeInit (ATreeNodePtr *RootPtr) {
