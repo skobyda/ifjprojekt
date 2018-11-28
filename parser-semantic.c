@@ -29,7 +29,7 @@
  */
 
 CArray controlA;
-//controlA.size = 0;
+bool ArrayInit = false;
 
 void SemanticInitArray (CArray *a, size_t initSize) {
     
@@ -44,8 +44,9 @@ void SemanticInsertArray (CArray *a, unsigned line, char *name) {
         a->size += ARRAYSIZE;
         a->arrayI = (FunIdent *)realloc (a->arrayI, a->size * sizeof(FunIdent));
     }
-    a->arrayI[a->used++].line = line;
-    a->arrayI[a->used++].name = name;
+    a->arrayI[a->used].line = line;
+    a->arrayI[a->used].name = name;
+    a->used++;
 }
 
 void freeArray (CArray *a) {
@@ -65,15 +66,23 @@ bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, in
     if (!symbol)
         defined = true;
 
-    else if (varOrFun) {
-        if (controlA.size == 0)
+    else if (varOrFun) { //if identifier is function name
+        if (!ArrayInit){
             SemanticInitArray (&controlA, ARRAYSIZE);
+            ArrayInit = true;
+        }
         
         SemanticInsertArray (&controlA, line, name);
     }
     
     return defined;
 }             
+
+//bool Semantic2ndDefControl() {
+
+//    bool ok = false; //if all functions are defined, ok will be true
+
+    
 
 void SemanticTreeInit (ATreeNodePtr *RootPtr) {
     *RootPtr = NULL;
