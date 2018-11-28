@@ -94,14 +94,6 @@ int ConvertHextoDec(char c){
 
 char *ScannerStradd( char *s, char* c ){
     char *s2;
-    // printf("tramtadaa\n" );
-    // if(s==NULL)
-    // {
-    //     s=(char*)malloc(sizeof(char));
-    //     *s=*c;
-    //     return s;
-    // }
-///////////////////////////////////////////////
 int length;
     if(s!=NULL)
         length= strlen(s);
@@ -121,18 +113,6 @@ if(length>50){
     s[length+1]=s[length];
     s[length]=*c;
     return s;
-
-//snprintf(s, sizeof(*s), "%s%c", s, *c);
-//return s;
-
-// printf("%s,%c\n",s,*c );
-//     size_t len = strlen(s);
-//      char *str2 = malloc(len + 1 + 1 ); /* one for extra char, one for trailing zero */
-//      strcpy(str2, s);
-//      str2[len] = *c;
-//      str2[len + 1] = '\0';
-//      printf("PO: %s,%c\n",s,*c );
-//      return s;
 }
 
 int ScannerTestW(char*str){
@@ -287,6 +267,7 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
+                        printf("okay0\n");
                     state=NUMBER;
                     continue;
                 }
@@ -469,6 +450,7 @@ TokenPtr ScannerGetToken(){
                 return NULL;
             }
             case NEWLINE:{
+                printf("here %c\n",c );
                 if(one==1)
                     one=0;
                 if(c=='\n'){
@@ -495,6 +477,9 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c=='='){
                     if(ScannerTestWord("begin ")==1){
+                        while(c!='\n')
+                            c=(char)fgetc(sourceCode);
+                            token->line++;
                         state=LCOMMENT;
                         continue;
                     }
@@ -697,7 +682,7 @@ TokenPtr ScannerGetToken(){
                 n_lines++;
                 token->lexem=EOL;
                 token->line=n_lines-1;
-                state=START;
+                state=NEWLINE;
                 return token;
             }
             case BIGGER:{
@@ -745,7 +730,7 @@ TokenPtr ScannerGetToken(){
                 state=START;
                 return token;
             }
-            case NUMBER:{
+            case NUMBER:{    printf("okay1\n");
                 if(c=='.'){
                     state=DOUBLECOM;
                     if(ScannerSaveNew(token,n_lines,&c)==0)
@@ -770,6 +755,7 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
+
                     continue;
                 }
                 else if(c>='0' && c<='9'){
@@ -784,7 +770,7 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-                else if((c=='#')||(c==' ')|(c=='\n')){
+                else if((c=='#')||(c==' ')||(c=='\n')||(c=='(')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=INT;
                     (token)->line=n_lines;
                     state=START;
@@ -860,7 +846,7 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')){
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c=='(')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
@@ -883,14 +869,8 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
+                    state=DEXPD;//WARNING NOT DCOMD BECAUSE IT CAN BE 1e+5e2
                     continue;
-                }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')){
-                    (token)->lexem=FLOAT;
-                    (token)->line=n_lines;
-                    ungetc(c,sourceCode);
-                    state=START;
-                    return token;
                 }
                 else{
                     state=PROBLEM;
@@ -922,7 +902,7 @@ TokenPtr ScannerGetToken(){
                     }
                 continue;
                 }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')){
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c=='(')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
