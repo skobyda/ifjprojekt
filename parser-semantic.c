@@ -56,7 +56,11 @@ void freeArray (CArray *a) {
     a->size = 0;
 }
 
-//varOrFun -> 0 = variable, 1 = function
+/*Funtion checks if all used variables and functions are already defined.
+ *If they are not defined, function returns false.
+ *If function is not defined, it will be checked again at the end of parsing.
+ *varOrFun -> 0 = variable, 1 = function
+ */
 bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun){
     
     bool defined = false;
@@ -76,8 +80,11 @@ bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, in
     }
     
     return defined;
-}             
-
+}
+             
+/*Function checks if all used functions in code are defined.
+ *It checks only those functions that were called before their definition.
+ */
 bool Semantic2ndDefControl() {
 
     bool ok = false; //if all functions are defined, ok will be true
@@ -95,7 +102,6 @@ bool Semantic2ndDefControl() {
     }
     return ok;
 }
-
 
 
 void SemanticTreeInit (ATreeNodePtr *RootPtr) {
