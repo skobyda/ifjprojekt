@@ -30,13 +30,18 @@
 
 CArray controlA;
 static bool ArrayInit = false;
-static int condState = 0;//0 comparator, 1 left expression, 2 right expression
-int condComp; //0 stands for != and == , 1 stands for others
+/*0 comparator, 1 left expression, 2 right expression, 3 full control, 4 reset*/
+static int condState = 0;
+/*0 stands for != and == , 1 stands for others*/
+int condComp; 
+/*0 stands for strings, 1 for int or float, 2 for unknown, 3 reset*/
+static int leftExprComp = 2; 
+static int rightExprComp = 3;
 
-/*0 stands for strings, 1 for int or float, 2 for unknown*/
-static int leftExprComp; 
-static int rightExprComp;
-
+/*0 stands for plus(+), 1 for others(*,/,-), 2 for none */
+int exprOperator = 2;
+/*0 stands for strings, 1 for int or float, 2 for unkown, 3 set*/
+int exprAssignCompType = 2;
 
 void SemanticInitArray (CArray *a, size_t initSize) {
     
@@ -217,6 +222,74 @@ void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token) {
     }
     
 }
+
+void SemanticOperatorSet (TokenPtr token) {
+
+    if (token->lexem == PLUS && exprOperator != 1)
+        exprOperator = 0;
+    else if (token->lexem == MINUS ||
+             token->lexem == MULTIPLY ||
+             token->lexem == DIVISION)
+        exprOperator = 1;
+
+}        
+
+void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprAssignType) {
+
+    if (token->lexem == INT || token->lexem == FLOAT)
+        *exprAssignType = 1;
+    
+    else if (token->lexem == STR)
+        *exprAssignType = 0;
+
+    else if (token->lexem == IDENT) {
+        bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
+        if (defined) {
+            SymbolPtr symbol = SymTableFind(currTable, token->name);
+            switch (symbol->dType) {
+                case typeUnknown:
+                    *exprAssignType = 2;
+                    break;
+                case typeInt:
+                    *exprAssignType = 1;
+                    break;
+                case typeFloat:
+                    *exprAssignType = 1;
+                    break;
+                case typeString:
+                    *exprAssignType = 0;
+                    break;
+                default:
+                    *exprAssignType = 2;
+            }
+        }
+        else {
+            printf("ERROR: Using undefined variable '%s' on the line: %u\n",token->name, token->line);
+        }
+    }
+}
+
+void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
+
+    if (token->lexem >= 9 && token->lexem <= 12)
+        SemanticOperatorSet (token);
+
+    else if (token->lexem >= 2 && token->lexem <= 5 && exprAssignCompType == 2)
+        SemanticExprAssignTypeSet (currTable, token, &exprAssignCompType);
+
+    else {
+        int currentExprType;
+        SemanticExprAssignTypeSet (currTable, token, &currentExprType);
+        if (currentExprType != exprAssignCompType &&
+            currentExprType != 2 &&
+            exprAssignCompType != 2)
+            printf("ERROR: Incompatible operands in expression on the line: %u\n", token->line);
+        else if (currentExprType == 0 && exprOperator == 1)
+            printf("ERROR: Invalid operandor in string expression on the line: %u\n", token->line);
+    }
+}
+                
+
 void SemanticTreeInit (ATreeNodePtr *RootPtr) {
     *RootPtr = NULL;
 }
