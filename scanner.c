@@ -34,7 +34,7 @@ Scanner(FILE *file) {
 }
 
 int ScannerSkipLineE(){
-    char c;
+    char c=0;
     while(c!='\n')
      c=(char)fgetc(sourceCode);
     if(c==EOF){
@@ -93,7 +93,7 @@ int ConvertHextoDec(char c){
 }
 
 char *ScannerStradd( char *s, char* c ){
-    char *s2;
+    //char *s2=NULL;
     // printf("tramtadaa\n" );
     // if(s==NULL)
     // {
@@ -102,22 +102,38 @@ char *ScannerStradd( char *s, char* c ){
     //     return s;
     // }
 ///////////////////////////////////////////////
-int length;
-    if(s!=NULL)
-        length= strlen(s);
+    int length=0;
+    if(s==NULL|| c==NULL)
+        return NULL;
+
+    while(s[length]!='\0')
+        length++;
+
+
     if(length==0)
         {
             s[length]=*c;
-            s[length+1]=0;
+            s[length+1]='\0';
+
             return s;
         }
-if(length>50){
-    s2=realloc(s,(length)*sizeof(char));//4
-    if(!s2){
-        return NULL;
+
+    if(length>50){
+        // s2=realloc(s,(length+1)*sizeof(char));//4
+        //FROM THERE
+                char *str[2];
+                str[0]=c;
+                str[1]='\0';
+                strcat(s,*str);
+                printf("Moje nove S=%s,moje pismeno by malo byt :%s\n",s,*str);
+                return s;
+                // //TO
+        // if(!s2)
+            // return NULL;
+        // }
+        //free(s);
+        // s=s2;
     }
-    //free(s);
-    s=s2;}
     s[length+1]=s[length];
     s[length]=*c;
     return s;
@@ -163,6 +179,7 @@ int ScannerSaveNew(TokenPtr token,int lines,char* c){
         (token)->line=lines;
         return 0;
     }
+
     return 1;
 }
 int ScannerTestKeyWord(){
@@ -204,7 +221,10 @@ int ScannerTestWord(char *str){
         return 0;
     if(str==NULL)
         return -1;
-    int lenght1=strlen(str);
+    //int lenght1=strlen(str);
+    int lenght1=0;
+    while(str[lenght1]!='\0')
+        lenght1++;
     char cmp[lenght1+1];
     int step=0;
     while(step!=lenght1){
@@ -244,12 +264,19 @@ TokenPtr ScannerGetToken(){
     static  char c;
     TokenPtr token=NULL;
     token=malloc(sizeof(Token));
-    (token)->name=malloc((sizeof(char))*50);
-    if(token==NULL|| (token)->name==NULL){//
+    if(token==NULL){//
         (token)->lexem=PROBLEMM;
         (token)->line=n_lines;
         return token;
     }
+    (token)->name=malloc((sizeof(char))*50);
+    if(token->name==NULL){//
+        (token)->lexem=PROBLEMM;
+        (token)->line=n_lines;
+        return token;
+    }
+    token->name[0]='\0';
+    //printf("here\n" );
     ScannerWhite();
     if(one==0)
         c =(char)fgetc(sourceCode);
@@ -261,6 +288,7 @@ TokenPtr ScannerGetToken(){
     while(1){
         switch(state){
             case START:{
+                //printf("weird,%c\n",c );
                 if(c=='#'){
                     state=BCOMMENT;
                     continue;
@@ -285,6 +313,7 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
+                    //printf("weird, %s\n",token->name );
                     state=NUMBER;
                     continue;
                 }
@@ -364,9 +393,11 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c=='='){
                     if(ScannerTestWord("begin ")==1){
+
                         state=PROBLEM;
                         continue;
                     }
+
                     state=EQUAL;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
@@ -487,6 +518,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c=='='){
                     if(ScannerTestWord("begin ")==1){
+                        //printf("here we are\n" );
                         state=LCOMMENT;
                         continue;
                     }
@@ -535,6 +567,26 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case STRING:{
+                if(c==' '){
+                    c='\\';
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
+                        return token;
+                    c='3';
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
+                        return token;
+                    c='2';
+                    if(ScannerSaveNew(token,n_lines,&c)==0)
+                        return token;
+                    c=(char)fgetc(sourceCode);
+                    printf("now %c\n",c );
+                    if(c==EOF){
+                        token->lexem=EOFILE;
+                        token->line=n_lines;
+                        return token;
+                    }
+                    continue;
+                }
+
                 if(c!='\"' && c!='\\'){
                     if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
@@ -762,10 +814,13 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-                else if((c=='#')||(c==' ')|(c=='\n')){
+                else if((c=='#')||(c==' ')||(c=='\n')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=INT;
                     (token)->line=n_lines;
-                    state=START;
+                    if(c=='\n')
+                        state=NEWLINE;
+                    else
+                        state=START;
                     ungetc(c,sourceCode);
                     return token;
                 }
@@ -834,11 +889,14 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')){
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
-                    state=START;
+                    if(c=='\n')
+                        state=NEWLINE;
+                    else
+                        state=START;
                     return token;
                 }
                 else{
@@ -858,13 +916,16 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')){
-                    (token)->lexem=FLOAT;
-                    (token)->line=n_lines;
-                    ungetc(c,sourceCode);
-                    state=START;
-                    return token;
-                }
+                // else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                //     (token)->lexem=FLOAT;
+                //     (token)->line=n_lines;
+                //     ungetc(c,sourceCode);
+                //     if(c=='\n')
+                //         state=NEWLINE;
+                //     else
+                //         state=START;
+                //     return token;
+                // }
                 else{
                     state=PROBLEM;
                     continue;
@@ -893,11 +954,14 @@ TokenPtr ScannerGetToken(){
                     }
                 continue;
                 }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')){
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
-                    state=START;
+                    if(c=='\n')
+                        state=NEWLINE;
+                    else
+                        state=START;
                     return token;
                 }
                 else{

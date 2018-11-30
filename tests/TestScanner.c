@@ -113,13 +113,18 @@ case -3:
 
 
 }
+
+FILE* sourceCode;
 int main(int argc, char *argv[])
 {
 
 
 if(argc==1)return 1;
-    FILE *ptr;
+    FILE *ptr=NULL;
     ptr=fopen(argv[1],"r");
+    if(ptr==NULL)
+     return 0;
+    sourceCode=ptr;
     TokenPtr token;
     int i=0;
     while((i<100) ){
@@ -127,29 +132,34 @@ if(argc==1)return 1;
         printf("Line: %d --Token: ",(token)->line);
         PrintToken(token->lexem);//CHYBA
         if(token->lexem>-1){
-            if(token->stringPtr!=NULL){
+            if(token->name!=NULL){
                 int len;
-                len=strlen(token->stringPtr);
+                len=strlen(token->name);
+                while(token->name[len]!='\0')
+                    len++;
                 if(len==0){
                     printf("\n");
                     if(token->lexem==EOFILE){
-                        free(token->stringPtr);
+                        //printf("zatvorim\n");
+                        free(token->name);
                         free(token);
+                        fclose(ptr);
                         return 0;
                     }
                     //printf("\n");
-                    free(token->stringPtr);
+                    free(token->name);
                     free(token);
                     continue;
                 }
-                printf("\t->%s<-\n",(token)->stringPtr);
+                printf("\t->%s<-\n",(token)->name);
             }
         }
          else
              printf("\n");
-        free(token->stringPtr);
+        free(token->name);
         if(token->lexem==EOFILE){
             free(token);
+            fclose(ptr);
             return 0;
         }
         free(token);
@@ -159,5 +169,6 @@ if(argc==1)return 1;
 
     (void)argv;
     (void)(argc);
+    (void)sourceCode;
     return 1;
 }
