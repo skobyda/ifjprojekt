@@ -29,7 +29,14 @@
  */
 
 CArray controlA;
-bool ArrayInit = false;
+static bool ArrayInit = false;
+static int condState = 0;//0 comparator, 1 left expression, 2 right expression
+int condComp; //0 stands for != and == , 1 stands for others
+
+/*0 stands for strings, 1 for int or float, 2 for unknown*/
+static int leftExprComp; 
+static int rightExprComp;
+
 
 void SemanticInitArray (CArray *a, size_t initSize) {
     
@@ -46,6 +53,7 @@ void SemanticInsertArray (CArray *a, unsigned line, char *name) {
     }
     a->arrayI[a->used].line = line;
     a->arrayI[a->used].name = name;
+    a->arrayI[a->used].defined = false;
     a->used++;
 }
 
@@ -61,6 +69,7 @@ void freeArray (CArray *a) {
  *If function is not defined, it will be checked again at the end of parsing.
  *varOrFun -> 0 = variable, 1 = function
  */
+//TODO dokoncit pre vstavane funkcie, mozno aj na to upravit symtab
 bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun){
     
     bool defined = false;
@@ -74,8 +83,7 @@ bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, in
         if (!ArrayInit){
             SemanticInitArray (&controlA, ARRAYSIZE);
             ArrayInit = true;
-        }
-        
+        } 
         SemanticInsertArray (&controlA, line, name);
     }
     
@@ -94,8 +102,10 @@ bool Semantic2ndDefControl() {
     SymbolPtr symbol = NULL;
         for (unsigned i = 0; i < controlA.used; i++) {
             symbol = SymTableFind(globalTable, controlA.arrayI[i].name);
-            if (symbol != NULL)
+            if (symbol != NULL) {
+                controlA.arrayI[i].defined = true;
                 found++;
+            }
         }
     if (found == controlA.used)
         ok = true;
@@ -103,7 +113,95 @@ bool Semantic2ndDefControl() {
     return ok;
 }
 
+/*Sets type of comparator for conditions*/
+void SemanticCondCompSet(TokenPtr token) {
 
+    if (token->lexem >= 13 && token->lexem <= 16)
+        condComp = 1;
+
+    else if (token->lexem == EQ || token->lexem == NOTEQ)
+        condComp = 0;
+}
+
+/*Sets data type of expression in codition*/
+void SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
+
+    if (token->lexem == INT || token->lexem == FLOAT)
+        *exprComp = 1;
+    
+    else if (token->lexem == STR)
+        *exprComp = 0;
+
+    else if (token->lexem == IDENT) {
+        bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
+        if (defined) {
+            SymbolPtr symbol = SymTableFind(currTable, token->name);
+            switch (symbol->dType) {
+                case typeUnknown:
+                    *exprComp = 2;
+                    break;
+                case typeInt:
+                    *exprComp = 1;
+                    break;
+                case typeFloat:
+                    *exprComp = 1;
+                    break;
+                case typeString:
+                    *exprComp = 0;
+                    break;
+                default:
+                    *exprComp = 2;
+            }
+        }
+        else {
+            printf("ERROR: Using undefined variable: %s on the line: %u\n",token->name, token->line);
+        }
+    } 
+}
+
+/*condComp 0 stands for != and == , 1 stands for others
+ *exprComp 0 stands for strings, 1 for int or float, 2 for unknown
+ */
+bool SemanticCondControl() {
+    bool condOK = false;
+
+    if (leftExprComp == rightExprComp || leftExprComp == 2 || rightExprComp == 2)
+        condOK = true;
+    else if (condComp == 0)
+        condOK = true;
+    
+    return condOK;            
+}    
+
+void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token) {
+
+    bool condOK;    
+
+    switch (condState) {
+        case 0: 
+            SemanticCondCompSet(token);
+            condState = 1;
+            break;
+        case 1:
+            SemanticExprCompSet(currTable, token, &leftExprComp);
+            condState = 2;
+            break;
+        case 2:
+            SemanticExprCompSet(currTable, token, &rightExprComp);
+            condOK = SemanticCondControl();
+            break;
+    }
+    
+    if (condState == 2) {
+        if(condOK)
+            printf("Condition is OK!\n");
+        else
+            printf("ERROR: Using invalid operator or operands in condition on the line: %u\n", token->line);
+
+        condState = 0;
+    }
+    
+}
 void SemanticTreeInit (ATreeNodePtr *RootPtr) {
     *RootPtr = NULL;
 }

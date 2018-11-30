@@ -8,7 +8,7 @@
  *  Denis Filo
  *
  * FILE: parser-semantic.h
- *  FILE AUTHOR:
+ *  FILE AUTHOR: Denis Filo
  */
 
 #ifndef PARSERSEMANTIC_H
@@ -79,6 +79,7 @@ typedef struct AbsTreeNode {
 typedef struct {
     unsigned line;
     char *name;
+    bool defined;
 } FunIdent;
 
 typedef struct {

@@ -8,7 +8,7 @@
  *  Denis Filo
  *
  * FILE: symtable.h
- *  FILE AUTHOR: Simon Kobyda
+ *  FILE AUTHOR: Simon Kobyda, Denis Filo
  */
 
 #ifndef SYMTABLE_H
@@ -29,15 +29,16 @@ typedef enum {
     FUNCTION,
 } identifType;
 
-/* TODO REMOVE LATER
+
 typedef enum {
-    typeNone,
-    typeBool,
+    //typeNone,
+    //typeBool,
+    typeUnknown,
     typeInt,
     typeFloat,
     typeString,
 } dataType;
-
+/*TODO REMOVE LATER
 typedef union {
     bool bVal;
     int iVal;
@@ -48,6 +49,7 @@ typedef union {
 struct Symbol{
     char* name;
     identifType iType;
+    dataType dType;//contains last assigned data type, only for variables
     // bool defined; // TODO REMOVE LATER
     SymbolPtr nextSymbol;
 };
