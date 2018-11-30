@@ -20,6 +20,7 @@
 /***LOCAL FILES***/
 #include "parser.h"
 #include "scanner.h"
+#include "symtable.h"
 
 #define ARRAYSIZE 5
 
@@ -91,6 +92,9 @@ typedef struct {
 void SemanticInitArray (CArray *a, size_t initSize);
 void SemanticInsertArray (CArray *a, unsigned line, char *name);
 void freeArray (CArray *a);
+
+bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun);
+void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token);
 
 // Initializes abstract tree before first usage
 void SemanticTreeInit (ATreeNodePtr *RootPtr);

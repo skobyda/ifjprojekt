@@ -70,15 +70,17 @@ void freeArray (CArray *a) {
  *varOrFun -> 0 = variable, 1 = function
  */
 //TODO dokoncit pre vstavane funkcie, mozno aj na to upravit symtab
+//TODO nevie najst symbol z tabulky pri volani
 bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun){
     
     bool defined = false;
     
-    SymbolPtr symbol = SymTableFind(currTable, name);
+    SymbolPtr symbol = NULL;
+    symbol = SymTableFind(currTable, name);
 
-    if (symbol != NULL)
+    if (symbol != NULL) 
         defined = true;
-
+    
     else if (varOrFun) { //if identifier is function name
         if (!ArrayInit){
             SemanticInitArray (&controlA, ARRAYSIZE);
@@ -134,6 +136,10 @@ void SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
 
     else if (token->lexem == IDENT) {
         bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
+        /*SymbolPtr symbol = NULL;
+        symbol = SymTableFind(currTable, token->name);
+        if (symbol != NULL) //for debbuging
+            printf("je v tabulke symbolov\n");*/
         if (defined) {
             SymbolPtr symbol = SymTableFind(currTable, token->name);
             switch (symbol->dType) {
@@ -154,7 +160,7 @@ void SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
             }
         }
         else {
-            printf("ERROR: Using undefined variable: %s on the line: %u\n",token->name, token->line);
+            printf("ERROR: Using undefined variable '%s' on the line: %u\n",token->name, token->line);
         }
     } 
 }
@@ -173,10 +179,18 @@ bool SemanticCondControl() {
     return condOK;            
 }    
 
+/*Makes full control of condition in if or while statement
+ *now in parser called in parserExpression like SemanticFullCondControl(currentTable, tokenToPrint);
+ *calling could change a bit in parser
+ */
 void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token) {
 
-    bool condOK;    
+    bool condOK;
 
+    if ((token->lexem >= 13 && token->lexem <= 16) ||
+         token->lexem == EQ ||   
+         token->lexem == NOTEQ)
+        condState = 0;
     switch (condState) {
         case 0: 
             SemanticCondCompSet(token);
@@ -189,16 +203,17 @@ void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token) {
         case 2:
             SemanticExprCompSet(currTable, token, &rightExprComp);
             condOK = SemanticCondControl();
+            condState = 3;
             break;
     }
     
-    if (condState == 2) {
+    if (condState == 3) {
         if(condOK)
             printf("Condition is OK!\n");
         else
             printf("ERROR: Using invalid operator or operands in condition on the line: %u\n", token->line);
 
-        condState = 0;
+        condState = 4;
     }
     
 }
