@@ -113,7 +113,10 @@ case -3:
 
 
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
 FILE* sourceCode;
 int main(int argc, char *argv[])
 {
@@ -122,19 +125,27 @@ int main(int argc, char *argv[])
 if(argc==1)return 1;
     FILE *ptr=NULL;
     ptr=fopen(argv[1],"r");
+<<<<<<< HEAD
     if(ptr==NULL)
      return 0;
+=======
+>>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
     sourceCode=ptr;
     TokenPtr token;
     int i=0;
     while((i<100) ){
+
         token=(ScannerGetToken(ptr));
+        //printf("here\n" );
         printf("Line: %d --Token: ",(token)->line);
+        // printf("here\n" );
         PrintToken(token->lexem);//CHYBA
+        // printf("here\n" );
         if(token->lexem>-1){
             if(token->name!=NULL){
                 int len;
                 len=strlen(token->name);
+<<<<<<< HEAD
                 while(token->name[len]!='\0')
                     len++;
                 if(len==0){
@@ -149,6 +160,18 @@ if(argc==1)return 1;
                     //printf("\n");
                     free(token->name);
                     free(token);
+=======
+                if(len==0){
+                    printf("\n");
+                    if(token->lexem==EOFILE){
+                        //free(token->name);
+                        //free(token);
+                        return 0;
+                    }
+                    //printf("\n");
+                    //free(token->name);
+                    //free(token);
+>>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
                     continue;
                 }
                 printf("\t->%s<-\n",(token)->name);
@@ -156,7 +179,11 @@ if(argc==1)return 1;
         }
          else
              printf("\n");
+<<<<<<< HEAD
         free(token->name);
+=======
+        //free(token->name);
+>>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
         if(token->lexem==EOFILE){
             free(token);
             fclose(ptr);

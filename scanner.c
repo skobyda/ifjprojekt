@@ -93,6 +93,7 @@ int ConvertHextoDec(char c){
 }
 
 char *ScannerStradd( char *s, char* c ){
+<<<<<<< HEAD
     //char *s2=NULL;
     // printf("tramtadaa\n" );
     // if(s==NULL)
@@ -110,6 +111,12 @@ char *ScannerStradd( char *s, char* c ){
         length++;
 
 
+=======
+    char *s2;
+int length;
+    if(s!=NULL)
+        length= strlen(s);
+>>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
     if(length==0)
         {
             s[length]=*c;
@@ -137,18 +144,6 @@ char *ScannerStradd( char *s, char* c ){
     s[length+1]=s[length];
     s[length]=*c;
     return s;
-
-//snprintf(s, sizeof(*s), "%s%c", s, *c);
-//return s;
-
-// printf("%s,%c\n",s,*c );
-//     size_t len = strlen(s);
-//      char *str2 = malloc(len + 1 + 1 ); /* one for extra char, one for trailing zero */
-//      strcpy(str2, s);
-//      str2[len] = *c;
-//      str2[len + 1] = '\0';
-//      printf("PO: %s,%c\n",s,*c );
-//      return s;
 }
 
 int ScannerTestW(char*str){
@@ -282,6 +277,7 @@ TokenPtr ScannerGetToken(){
         c =(char)fgetc(sourceCode);
     if(c==EOF){
         token->lexem=EOFILE;
+        state=ENDFILE;
         token->line=n_lines;
         return token;
     }
@@ -310,10 +306,15 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
+<<<<<<< HEAD
                     //printf("weird, %s\n",token->name );
+=======
+                        printf("okay0\n");
+>>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
                     state=NUMBER;
                     continue;
                 }
@@ -336,6 +337,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -366,6 +368,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -376,6 +379,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -386,6 +390,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -402,6 +407,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -413,6 +419,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -443,6 +450,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -488,11 +496,10 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case ENDFILE:{
-                token->lexem=EOFILE;
-                token->line=n_lines;
-                return token;
+                return NULL;
             }
             case NEWLINE:{
+                printf("here %c\n",c );
                 if(one==1)
                     one=0;
                 if(c=='\n'){
@@ -511,6 +518,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -518,7 +526,13 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c=='='){
                     if(ScannerTestWord("begin ")==1){
+<<<<<<< HEAD
                         //printf("here we are\n" );
+=======
+                        while(c!='\n')
+                            c=(char)fgetc(sourceCode);
+                            token->line++;
+>>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
                         state=LCOMMENT;
                         continue;
                     }
@@ -540,6 +554,7 @@ TokenPtr ScannerGetToken(){
                 c=(char)fgetc(sourceCode);
                 if(c==EOF){
                     token->lexem=EOFILE;
+                    state=ENDFILE;
                     token->line=n_lines;
                     return token;
                 }
@@ -593,6 +608,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -609,6 +625,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -624,6 +641,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -636,6 +654,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -649,6 +668,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -662,6 +682,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -672,6 +693,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -684,6 +706,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -697,6 +720,7 @@ TokenPtr ScannerGetToken(){
                         c=(char)fgetc(sourceCode);
                         if(c==EOF){
                             token->lexem=EOFILE;
+                            state=ENDFILE;
                             token->line=n_lines;
                             return token;
                         }
@@ -723,6 +747,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -730,7 +755,7 @@ TokenPtr ScannerGetToken(){
                 n_lines++;
                 token->lexem=EOL;
                 token->line=n_lines-1;
-                state=START;
+                state=NEWLINE;
                 return token;
             }
             case BIGGER:{
@@ -778,7 +803,7 @@ TokenPtr ScannerGetToken(){
                 state=START;
                 return token;
             }
-            case NUMBER:{
+            case NUMBER:{    printf("okay1\n");
                 if(c=='.'){
                     state=DOUBLECOM;
                     if(ScannerSaveNew(token,n_lines,&c)==0)
@@ -786,6 +811,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -798,9 +824,11 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
+
                     continue;
                 }
                 else if(c>='0' && c<='9'){
@@ -809,12 +837,17 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
                     continue;
                 }
+<<<<<<< HEAD
                 else if((c=='#')||(c==' ')||(c=='\n')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+=======
+                else if((c=='#')||(c==' ')||(c=='\n')||(c=='(')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+>>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
                     (token)->lexem=INT;
                     (token)->line=n_lines;
                     if(c=='\n')
@@ -837,6 +870,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -854,6 +888,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -867,6 +902,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -884,12 +920,17 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
                     continue;
                 }
+<<<<<<< HEAD
                 else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+=======
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c=='(')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+>>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
@@ -911,11 +952,14 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
+                    state=DEXPD;//WARNING NOT DCOMD BECAUSE IT CAN BE 1e+5e2
                     continue;
                 }
+<<<<<<< HEAD
                 // else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                 //     (token)->lexem=FLOAT;
                 //     (token)->line=n_lines;
@@ -926,6 +970,8 @@ TokenPtr ScannerGetToken(){
                 //         state=START;
                 //     return token;
                 // }
+=======
+>>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
                 else{
                     state=PROBLEM;
                     continue;
@@ -938,6 +984,7 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
@@ -949,12 +996,17 @@ TokenPtr ScannerGetToken(){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
+                        state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
                 continue;
                 }
+<<<<<<< HEAD
                 else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+=======
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c=='(')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+>>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
