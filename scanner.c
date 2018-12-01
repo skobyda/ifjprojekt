@@ -27,6 +27,26 @@
         return token; \
 } while(0)
 
+#define SAVENEWCHAR do { \
+    if((c<=32)|| (c==92)||(c==35)) \
+        {char var=c; \
+            int out=0; \
+            c='\\'; \
+            SAVENEW; \
+            out=((var%100)-(var%10))/10; \
+            if(out!=0){ \
+                c=out+'0'; \
+                SAVENEW; \
+            } \
+            out=(var%10); \
+            c=out+'0'; \
+            SAVENEW; \
+        } \
+    else{ \
+        SAVENEW; \
+    } \
+} while(0)
+
 FILE *sourceCode = NULL;
 
 /* Firstly, file with source code is passed to Scanner
@@ -519,25 +539,9 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case STRING:{
-                if(c==' '){
-                    c='\\';
-                    SAVENEW;
-                    c='3';
-                    SAVENEW;
-                    c='2';
-                    SAVENEW;
-                    c=(char)fgetc(sourceCode);
-                    //printf("now %c\n",c );
-                    if(c==EOF){
-                        token->lexem=EOFILE;
-                        token->line=n_lines;
-                        return token;
-                    }
-                    continue;
-                }
 
                 if(c!='\"' && c!='\\'){
-                    SAVENEW;
+                    SAVENEWCHAR;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
@@ -569,7 +573,7 @@ TokenPtr ScannerGetToken(){
                 char code[2];
                 if(c=='s'){
                     c=' ';
-                    SAVENEW;
+                    SAVENEWCHAR;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
@@ -581,7 +585,7 @@ TokenPtr ScannerGetToken(){
                     continue;
                 }
                 if(c=='\\' || c=='\"'){
-                    SAVENEW;
+                    SAVENEWCHAR;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
@@ -594,7 +598,7 @@ TokenPtr ScannerGetToken(){
                 }
                 if(c=='n'){
                     c='\n';
-                    SAVENEW;
+                    SAVENEWCHAR;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
@@ -607,7 +611,7 @@ TokenPtr ScannerGetToken(){
                 }
                 if(c=='t'){
                     c='\t';
-                    SAVENEW;
+                    SAVENEWCHAR;
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
@@ -619,7 +623,9 @@ TokenPtr ScannerGetToken(){
                     continue;
                 }
                 if(c=='x'){
+
                     c=(char)fgetc(sourceCode);
+
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -633,21 +639,21 @@ TokenPtr ScannerGetToken(){
                         continue;
                     }
                     c=(char)fgetc(sourceCode);
+
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
                         token->line=n_lines;
                         return token;
                     }
-                    if((c>='0' && c<='9')||(c>='A'&&c<='F')){//convert 0.1
+                    if(((c>='0') && (c<='9'))||((c>='A')&&(c<='F'))){
                         code[1]=c;
                         int a=ConvertHextoDec(code[0])*16+ConvertHextoDec(code[1]);
-                        char c=a;//CHANGE IS HERE DELETE WARNING WAS b=a
-                        // if(ScannerSaveNew(token,n_lines,&c)==0)//HERE ALSO WARNING DELETE
-                        //     return token;//HERE TOO
-                        SAVENEW;
+                        c=a;
+                        SAVENEWCHAR;
                         state=STRING;
                         c=(char)fgetc(sourceCode);
+
                         if(c==EOF){
                             token->lexem=EOFILE;
                             state=ENDFILE;
@@ -656,14 +662,17 @@ TokenPtr ScannerGetToken(){
                         }
                         continue;
                     }
-                    else{//convert 0 , c vratit
+                    else{
+                        //convert 0 , c vratit
                         int a=ConvertHextoDec(code[0]);
                         //char b=a;
                         char b=c;
-                        c=a;
-                        SAVENEW;
+                        c=a+'0';
+                        //printf("TUNA %c\n",c );
+                        SAVENEWCHAR;
                         c=b;
-                        SAVENEW;
+                        //printf("TUNA2 %c\n",c );
+                        SAVENEWCHAR;
                         state=STRING;
                         continue;
                     }
@@ -761,11 +770,7 @@ TokenPtr ScannerGetToken(){
                     continue;
                 }
                 else if(c>='0' && c<='9'){
-                    // if(ScannerSaveNew(token,n_lines,&c)==0)
-                    //     return token;
-                    //printf("%d, %c\n",strlenght,c );
                     SAVENEW;
-                    //printf("2hy %d, %c\n",strlenght,c );
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
@@ -777,9 +782,6 @@ TokenPtr ScannerGetToken(){
                 }
 
                 else if((c=='#')||(c==' ')||(c=='\n')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
-
-
-
                     (token)->lexem=INT;
                     (token)->line=n_lines;
                     if(c=='\n')
@@ -854,7 +856,6 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-
                 else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
 
                     (token)->lexem=FLOAT;
@@ -913,9 +914,7 @@ TokenPtr ScannerGetToken(){
                     }
                 continue;
                 }
-
                 else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
-
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
