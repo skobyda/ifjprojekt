@@ -40,8 +40,8 @@ static int rightExprComp = 3;
 
 /*0 stands for plus(+), 1 for others(*,/,-), 2 for none */
 int exprOperator = 2;
-/*0 stands for strings, 1 for int or float, 2 for unkown, 3 set*/
-int exprAssignCompType = 2;
+/*0 stands for strings, 1 for int or float, 2 for unkown, 3 reset(outside from parser)*/
+int exprAssignCompType = 3;
 
 void SemanticInitArray (CArray *a, size_t initSize) {
     
@@ -223,6 +223,7 @@ void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token) {
     
 }
 
+/*Sets type of operator in assignment expression control*/
 void SemanticOperatorSet (TokenPtr token) {
 
     if (token->lexem == PLUS && exprOperator != 1)
@@ -232,8 +233,9 @@ void SemanticOperatorSet (TokenPtr token) {
              token->lexem == DIVISION)
         exprOperator = 1;
 
-}        
-
+}
+        
+/*Sets data type of expression in assignment*/
 void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprAssignType) {
 
     if (token->lexem == INT || token->lexem == FLOAT)
@@ -269,12 +271,17 @@ void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprA
     }
 }
 
+/*Makes control of assignment expression
+ *now in parser called in parserExpression like SemanticExprAssignCotrol(currentTable, tokenToPrint);
+ *calling could change a bit in parser
+ *TODO parser has to "reset" exprAssignCompType with value 3 after full Control
+ */
 void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
 
     if (token->lexem >= 9 && token->lexem <= 12)
         SemanticOperatorSet (token);
 
-    else if (token->lexem >= 2 && token->lexem <= 5 && exprAssignCompType == 2)
+    else if (token->lexem >= 2 && token->lexem <= 5 && exprAssignCompType >= 2)
         SemanticExprAssignTypeSet (currTable, token, &exprAssignCompType);
 
     else {
@@ -285,7 +292,7 @@ void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
             exprAssignCompType != 2)
             printf("ERROR: Incompatible operands in expression on the line: %u\n", token->line);
         else if (currentExprType == 0 && exprOperator == 1)
-            printf("ERROR: Invalid operandor in string expression on the line: %u\n", token->line);
+            printf("ERROR: Invalid operator in expression with string on the line: %u\n", token->line);
     }
 }
                 
