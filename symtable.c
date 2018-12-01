@@ -23,7 +23,7 @@
 SymTablePtr globalTable = NULL; //table contains all identifiers of functions
 
 static unsigned int HashFunction(char* key) {
-    int val;
+    int val = 0;
     for (unsigned int i = 0; i < strlen(key); i++)
         val += key[i];
 
@@ -68,7 +68,6 @@ void SymTableAdd(SymTablePtr table, SymbolPtr symbol) {
     }
 
     unsigned int index = HashFunction(symbol->name);
-
     SymbolPtr tmp = table->arr[index];
 
     if (!tmp) {
