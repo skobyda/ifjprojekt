@@ -30,6 +30,19 @@ StackPtr StackCreate() {
     return stack;
 }
 
+void StackDestroy(StackPtr stack) {
+    if (!stack)
+        return;
+
+    printf("STACK TOP JE %d\n", stack->top);
+    for (int i = 0; i < stack->top; i++) {
+        free(stack->arr[i]->name);
+        free(stack->arr[i]);
+    }
+
+    free(stack);
+}
+
 bool StackPush(StackPtr stack, TokenPtr token) {
     TokenPtr newtoken = malloc(sizeof(Token));
     if (!newtoken)

@@ -624,6 +624,12 @@ static StackPtr ParserExpressionRevInfixToPrefix(StackPtr RevInfixStack) {
                 StackPush(prefixStack, tokenTmp);
                 tokenTmp = StackPop(stackTmp);
             }
+            if (tokenTmp) {
+                free(tokenTmp->name);
+                free(tokenTmp);
+            }
+            free(token->name);
+            free(token);
         } else if (ParserExpressionIsOperator(token)) {
             TokenPtr tokenTmp = StackPop(stackTmp);
             while (tokenTmp) {
@@ -643,6 +649,8 @@ static StackPtr ParserExpressionRevInfixToPrefix(StackPtr RevInfixStack) {
 
     while ((token = StackPop(stackTmp)) != NULL)
         StackPush(prefixStack, token);
+
+    StackDestroy(stackTmp);
 
     return prefixStack;
 }
@@ -688,11 +696,14 @@ static bool ParserExpression() {
             printf("SEMCALL: Expression token:");
             AuxPrintToken(tokenToPrint);
             printf("\n");
+            free(tokenToPrint->name);
+            free(tokenToPrint);
         }
 
+        StackDestroy(infixStack);
     }
 
-    free(stack);
+    StackDestroy(stack);
 
     switch (token->lexem) {
         case EOL:
