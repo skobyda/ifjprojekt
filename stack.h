@@ -31,6 +31,7 @@ struct Stack{
 /* Runs Syntax analysis over code.
  */
 StackPtr StackCreate();
+void StackDestroy(StackPtr stack);
 bool StackPush(StackPtr stack, TokenPtr token);
 TokenPtr StackPop(StackPtr stack);
 
