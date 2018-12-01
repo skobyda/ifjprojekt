@@ -93,7 +93,7 @@ int ConvertHextoDec(char c){
 }
 
 char *ScannerStradd( char *s, char* c ){
-<<<<<<< HEAD
+
     //char *s2=NULL;
     // printf("tramtadaa\n" );
     // if(s==NULL)
@@ -111,12 +111,12 @@ char *ScannerStradd( char *s, char* c ){
         length++;
 
 
-=======
-    char *s2;
-int length;
+
+//    char *s2;
+
     if(s!=NULL)
         length= strlen(s);
->>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
+
     if(length==0)
         {
             s[length]=*c;
@@ -132,7 +132,7 @@ int length;
                 str[0]=c;
                 str[1]='\0';
                 strcat(s,*str);
-                printf("Moje nove S=%s,moje pismeno by malo byt :%s\n",s,*str);
+                //printf("Moje nove S=%s,moje pismeno by malo byt :%s\n",s,*str);
                 return s;
                 // //TO
         // if(!s2)
@@ -310,11 +310,11 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
-<<<<<<< HEAD
+
                     //printf("weird, %s\n",token->name );
-=======
-                        printf("okay0\n");
->>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
+
+                        //printf("okay0\n");
+
                     state=NUMBER;
                     continue;
                 }
@@ -499,7 +499,7 @@ TokenPtr ScannerGetToken(){
                 return NULL;
             }
             case NEWLINE:{
-                printf("here %c\n",c );
+                //printf("here %c\n",c );
                 if(one==1)
                     one=0;
                 if(c=='\n'){
@@ -526,13 +526,13 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c=='='){
                     if(ScannerTestWord("begin ")==1){
-<<<<<<< HEAD
+
                         //printf("here we are\n" );
-=======
+
                         while(c!='\n')
                             c=(char)fgetc(sourceCode);
                             token->line++;
->>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
+
                         state=LCOMMENT;
                         continue;
                     }
@@ -593,7 +593,7 @@ TokenPtr ScannerGetToken(){
                     if(ScannerSaveNew(token,n_lines,&c)==0)
                         return token;
                     c=(char)fgetc(sourceCode);
-                    printf("now %c\n",c );
+                    //printf("now %c\n",c );
                     if(c==EOF){
                         token->lexem=EOFILE;
                         token->line=n_lines;
@@ -803,7 +803,7 @@ TokenPtr ScannerGetToken(){
                 state=START;
                 return token;
             }
-            case NUMBER:{    printf("okay1\n");
+            case NUMBER:{    //printf("okay1\n");
                 if(c=='.'){
                     state=DOUBLECOM;
                     if(ScannerSaveNew(token,n_lines,&c)==0)
@@ -843,11 +843,11 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-<<<<<<< HEAD
+
                 else if((c=='#')||(c==' ')||(c=='\n')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
-=======
-                else if((c=='#')||(c==' ')||(c=='\n')||(c=='(')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
->>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
+
+
+
                     (token)->lexem=INT;
                     (token)->line=n_lines;
                     if(c=='\n')
@@ -926,11 +926,9 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-<<<<<<< HEAD
+
                 else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
-=======
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c=='(')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
->>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
+
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
@@ -959,7 +957,7 @@ TokenPtr ScannerGetToken(){
                     state=DEXPD;//WARNING NOT DCOMD BECAUSE IT CAN BE 1e+5e2
                     continue;
                 }
-<<<<<<< HEAD
+
                 // else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                 //     (token)->lexem=FLOAT;
                 //     (token)->line=n_lines;
@@ -970,8 +968,7 @@ TokenPtr ScannerGetToken(){
                 //         state=START;
                 //     return token;
                 // }
-=======
->>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
+
                 else{
                     state=PROBLEM;
                     continue;
@@ -1002,11 +999,9 @@ TokenPtr ScannerGetToken(){
                     }
                 continue;
                 }
-<<<<<<< HEAD
+
                 else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
-=======
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c=='(')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
->>>>>>> db4a1add4ca7e4094cf14f9efb64fc206d759ac6
+
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
