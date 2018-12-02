@@ -54,6 +54,7 @@ void SymTableDestroy(SymTablePtr table) {
             free(tmp);
         }
     }
+    free(table);
 }
 
 void SymTableAdd(SymTablePtr table, SymbolPtr symbol) {
