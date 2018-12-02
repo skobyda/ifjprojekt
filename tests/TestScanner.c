@@ -122,19 +122,26 @@ int main(int argc, char *argv[])
 if(argc==1)return 1;
     FILE *ptr=NULL;
     ptr=fopen(argv[1],"r");
+
     if(ptr==NULL)
      return 0;
+
     sourceCode=ptr;
     TokenPtr token;
     int i=0;
     while((i<100) ){
+
         token=(ScannerGetToken(ptr));
+        //printf("here\n" );
         printf("Line: %d --Token: ",(token)->line);
+        // printf("here\n" );
         PrintToken(token->lexem);//CHYBA
+        // printf("here\n" );
         if(token->lexem>-1){
             if(token->name!=NULL){
                 int len;
                 len=strlen(token->name);
+
                 while(token->name[len]!='\0')
                     len++;
                 if(len==0){
@@ -149,6 +156,10 @@ if(argc==1)return 1;
                     //printf("\n");
                     free(token->name);
                     free(token);
+                    //printf("\n");
+                    //free(token->name);
+                    //free(token);
+
                     continue;
                 }
                 printf("\t->%s<-\n",(token)->name);
@@ -156,7 +167,11 @@ if(argc==1)return 1;
         }
          else
              printf("\n");
+
         free(token->name);
+
+        //free(token->name);
+
         if(token->lexem==EOFILE){
             free(token);
             fclose(ptr);
@@ -172,3 +187,4 @@ if(argc==1)return 1;
     (void)sourceCode;
     return 1;
 }
+
