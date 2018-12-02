@@ -486,9 +486,10 @@ TokenPtr ScannerGetToken(){
 
                         //printf("here we are\n" );
 
-                        while(c!='\n')
+                        while(c!='\n'){
                             c=(char)fgetc(sourceCode);
-                            token->line++;
+                        }
+                        token->line++;
 
                         state=LCOMMENT;
                         continue;
