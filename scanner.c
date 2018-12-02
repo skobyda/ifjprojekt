@@ -667,12 +667,14 @@ TokenPtr ScannerGetToken(){
                         int a=ConvertHextoDec(code[0]);
                         //char b=a;
                         char b=c;
-                        c=a+'0';
-                        //printf("TUNA %c\n",c );
+                        c=a;
+                        printf("TUNA -%c-\n",c );
                         SAVENEWCHAR;
                         c=b;
+                        printf("TUNA2 -%c-\n",c );
                         //printf("TUNA2 %c\n",c );
                         SAVENEWCHAR;
+                        c=(char)fgetc(sourceCode);
                         state=STRING;
                         continue;
                     }
