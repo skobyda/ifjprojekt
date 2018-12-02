@@ -314,7 +314,22 @@ bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token) {
     return true;
 }
                   
+bool SemanticFunNameDefControl(TokenPtr token) {
 
+    SymbolPtr symbol = NULL;
+    symbol = SymTableFind(globalTable, identName);
+
+    if (symbol != NULL && symbol->iType == VARIABLE) {
+        printf("ERROR: On the line: %u. Cannot define function with name '%s', already defined as variable.\n",token->line, identName);
+        return false;
+    }
+    else if (symbol != NULL && symbol->iType == FUNCTION) {
+        printf("ERROR: On the line: %u. Function with name '%s' already exists.\n",token->line, identName);
+        return false;
+    }
+    else 
+        return true;
+}
 
 void SemanticTreeInit (ATreeNodePtr *RootPtr) {
     *RootPtr = NULL;

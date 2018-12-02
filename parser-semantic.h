@@ -100,6 +100,7 @@ void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token);
 void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token);
 void SemanticNameSet (TokenPtr token);
 bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token);
+bool SemanticFunNameDefControl(TokenPtr token);
 
 // Initializes abstract tree before first usage
 void SemanticTreeInit (ATreeNodePtr *RootPtr);
