@@ -668,10 +668,10 @@ TokenPtr ScannerGetToken(){
                         //char b=a;
                         char b=c;
                         c=a;
-                        printf("TUNA -%c-\n",c );
+                        //printf("TUNA -%c-\n",c );
                         SAVENEWCHAR;
                         c=b;
-                        printf("TUNA2 -%c-\n",c );
+                        //printf("TUNA2 -%c-\n",c );
                         //printf("TUNA2 %c\n",c );
                         SAVENEWCHAR;
                         c=(char)fgetc(sourceCode);
