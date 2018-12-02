@@ -158,6 +158,8 @@ int ScannerTestW(char*str){
         return 26;
     if(strcmp(str,"while")==0)
         return 27;
+    if(strcmp(str,"nil")==0)
+        return 6;
     return 0;
 }
 
