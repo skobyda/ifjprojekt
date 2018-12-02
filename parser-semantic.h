@@ -24,6 +24,8 @@
 
 #define ARRAYSIZE 5
 
+extern char* varAssignName;
+
 typedef enum {
     WHILEST, //left node -> condition, right node -> block of statements
     IFST, // left node -> condition, right node -> block of statements
@@ -96,7 +98,8 @@ void freeArray (CArray *a);
 bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun);
 void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token);
 void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token);
-bool SemanticVarNameAssignSet (SymTablePtr currTable, TokenPtr token);
+void SemanticVarNameAssignSet (TokenPtr token);
+bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token);
 
 // Initializes abstract tree before first usage
 void SemanticTreeInit (ATreeNodePtr *RootPtr);

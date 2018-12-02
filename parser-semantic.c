@@ -292,25 +292,33 @@ void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
     }
 }
 
-bool SemanticVarNameAssignSet (SymTablePtr currTable, TokenPtr token) {
+void SemanticVarNameAssignSet (TokenPtr token) {
 
     if (token->lexem == IDENT) {
-        SymbolPtr symbol = NULL;
-        symbol = SymTableFind(globalTable, token->name);
+        varAssignName = malloc(sizeof(char) * (strlen(token->name) + 1));
+        strcpy(varAssignName, token->name);
+    }
+}
 
-        if (symbol != NULL) {
-            printf("ERROR: On the line: %u. Cannot define variable with name '%s', already defined as function.\n",token->line, token->name);
-            return false;
-        }
-        else {
-            symbol = SymTableFind(currTable, token->name);
-            symbol->dType = typeUnknown;
-            varAssignName = token->name;
-        }
+//TODO might have changed to fit parser
+//mozno budem musiet si zapamat meno a kontrolu zavolat az potom
+bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token) {
+
+    SymbolPtr symbol = NULL;
+    symbol = SymTableFind(globalTable, varAssignName);
+
+    if (symbol != NULL) {
+        printf("ERROR: On the line: %u. Cannot define variable with name '%s', already defined as function.\n",token->line, varAssignName);
+        return false;
+    }
+    else {
+        symbol = SymTableFind(currTable, varAssignName);
+        symbol->dType = typeUnknown;
     }
     return true;
 }
                   
+
 
 void SemanticTreeInit (ATreeNodePtr *RootPtr) {
     *RootPtr = NULL;
