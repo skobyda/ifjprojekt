@@ -24,7 +24,7 @@
 
 #define ARRAYSIZE 5
 
-extern char* varAssignName;
+extern int exprAssignCompType;
 
 typedef enum {
     WHILEST, //left node -> condition, right node -> block of statements
