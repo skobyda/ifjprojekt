@@ -23,10 +23,14 @@
 #include "stack.h"
 #include "symtable.h"
 
+typedef struct {
+    int expressionType; // 0 - NOTHING, 1 - statement, 2 - condition
+    int blockOfCodeType; // 0 - global, 1 - if/else/while
+} ParserInfo;
+
+ParserInfo pinfo;
 /* Always point to current token */
 TokenPtr token = NULL;
-/* Level of depth of code */
-int codeDepth = 0;
 SymTablePtr currentTable;
 
 //static bool ParserStatList();
@@ -331,7 +335,6 @@ static bool ParserFunctionDeclaration() {
         printf("ERROR\n");
         return NULL;
     }
-    codeDepth++;
 
     /* Reads parameters of function until it sees right bracket */
     NEXTTOKEN;
@@ -387,7 +390,6 @@ static bool ParserFunctionDeclaration() {
 
     SymTableDestroy(currentTable);
     currentTable = globalTable;
-    codeDepth--;
 
     /* Body of function should end with 'END' */
     if (token->lexem != END)
@@ -418,7 +420,9 @@ static bool ParserIfStatement() {
     /* Semantic Action */
     printf("SEMCALL: IF\n");
     /* Function's condition can be parsed as expression */
+    pinfo.expressionType = 2;
     FUNCTIONCALL(ParserExpression);
+    pinfo.expressionType = 0;
 
     /* Expects 'end' after function's condition */
     if (token->lexem != THEN)
@@ -433,7 +437,9 @@ static bool ParserIfStatement() {
     }
 
     /* Function's block of code */
+    pinfo.blockOfCodeType = 1;
     FUNCTIONCALL(ParserStatement);
+    pinfo.blockOfCodeType = 0;
 
     /* ELSE (optional) */
     if (token->lexem == ELSE) {
@@ -449,7 +455,9 @@ static bool ParserIfStatement() {
         printf("SEMCALL: ELSE\n");
 
         /* Else's block of code */
+        pinfo.blockOfCodeType = 1;
         FUNCTIONCALL(ParserStatement);
+        pinfo.blockOfCodeType = 0;
     }
 
     /* Expects 'end' at the end of if/else statement  */
@@ -481,7 +489,9 @@ static bool ParserWhile() {
     /* Semantic Action */
     printf("SEMCALL: WHILE\n");
     /* While's condition, can be parsed as Expression */
+    pinfo.expressionType = 2;
     FUNCTIONCALL(ParserExpression);
+    pinfo.expressionType = 0;
 
     /* Expects 'do' after while's condition */
     if (token->lexem != DO)
@@ -496,7 +506,9 @@ static bool ParserWhile() {
     }
 
     /* While's block of code */
+    pinfo.blockOfCodeType = 1;
     FUNCTIONCALL(ParserStatement);
+    pinfo.blockOfCodeType = 0;
 
     /* Expects 'end' at the end of while statement */
     if (token->lexem != END)
@@ -547,7 +559,9 @@ static bool ParserDeclaration() {
             } else {
                 free(name);
             }
+            pinfo.expressionType = 1;
             FUNCTIONCALL(ParserExpression);
+            pinfo.expressionType = 0;
             break;
         case LEFT_B: // It's function call
             /* Semantic Action */
@@ -750,6 +764,9 @@ static bool ParserExpression() {
  */
 ParTreePtr
 Parser() {
+    pinfo.expressionType = 0;
+    pinfo.blockOfCodeType = 0;
+
     currentTable = SymTableInit(NULL);
     if (!currentTable) {
         printf("ERROR\n");
