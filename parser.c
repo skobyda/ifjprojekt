@@ -125,6 +125,23 @@ static TokenPtr DummyGetToken() {
     return true;
 }*/
 
+static TokenPtr CopyToken(TokenPtr token) {
+    TokenPtr newtoken = malloc(sizeof(Token));
+    if (!newtoken)
+        return NULL;
+
+    newtoken->lexem = token->lexem;
+    newtoken->line = token->line;
+    if (token->name) {
+        newtoken->name = malloc(sizeof(char) * (strlen(token->name) + 1));
+        strcpy(newtoken->name, token->name);
+    } else {
+        token->name = NULL;
+    }
+
+    return newtoken;
+}
+
 static void AuxPrintToken(TokenPtr token) {
     char *lexem;
     char *name;
@@ -290,6 +307,7 @@ static bool ParserFunctionDeclaration() {
             return false;
         }
         symbol->name = name;
+        symbol->nextSymbol = NULL;
         symbol->iType = FUNCTION;
         SymTableAdd(currentTable, symbol);
     } else {
@@ -337,6 +355,7 @@ static bool ParserFunctionDeclaration() {
             if (!symbol)
                 printf("ERROR: malloc of symbol\n");
             symbol->name = name;
+            symbol->nextSymbol = NULL;
             symbol->iType = VARIABLE;
             SymTableAdd(currentTable, symbol);
         } else {
@@ -522,6 +541,7 @@ static bool ParserDeclaration() {
                     return false;
                 }
                 symbol->name = name;
+                symbol->nextSymbol = NULL;
                 symbol->iType = VARIABLE;
                 SymTableAdd(currentTable, symbol);
             } else {
@@ -674,8 +694,10 @@ static bool ParserExpression() {
         if (!ParserExpressionCheckError(flag))
             return false;
 
+        TokenPtr newToken = CopyToken(token);
+
         // push it to stack, so we get reversed expression
-        if(!StackPush(stack, token))
+        if(!StackPush(stack, newToken))
            printf("ERROR: StackPush() Failed\n");
 
         // to secure switching of operator and operand

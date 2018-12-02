@@ -34,7 +34,6 @@ void StackDestroy(StackPtr stack) {
     if (!stack)
         return;
 
-    //printf("STACK TOP JE %d\n", stack->top);
     for (int i = 0; i < stack->top; i++) {
         free(stack->arr[i]->name);
         free(stack->arr[i]);
@@ -44,19 +43,7 @@ void StackDestroy(StackPtr stack) {
 }
 
 bool StackPush(StackPtr stack, TokenPtr token) {
-    TokenPtr newtoken = malloc(sizeof(Token));
-    if (!newtoken)
-        return false;
-    newtoken->lexem = token->lexem;
-    newtoken->line = token->line;
-    if (token->name) {
-        newtoken->name = malloc(sizeof(char) * (strlen(token->name) + 1));
-        strcpy(newtoken->name, token->name);
-    } else {
-        token->name = NULL;
-    }
-
-    stack->arr[stack->top++] = newtoken;
+    stack->arr[stack->top++] = token;
 
     return true;
 }

@@ -47,6 +47,8 @@ int main(int argc, char **argv) {
 
     printf("INTERMEDIATE CODE IS:\n %s", intermediateCode);
 
+    fclose(inputCode);
+
  error:
     //TODO
     fprintf(stderr, "THIS COMPILER DOESN'T WORK YET :)\n");
