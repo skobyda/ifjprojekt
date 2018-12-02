@@ -43,6 +43,8 @@ int exprOperator = 2;
 /*0 stands for strings, 1 for int or float, 2 for unkown, 3 reset(outside from parser)*/
 int exprAssignCompType = 3;
 
+char* varAssignName;
+
 void SemanticInitArray (CArray *a, size_t initSize) {
     
     a->arrayI = (FunIdent *)malloc (initSize * sizeof(FunIdent));
@@ -151,10 +153,7 @@ void SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
                 case typeUnknown:
                     *exprComp = 2;
                     break;
-                case typeInt:
-                    *exprComp = 1;
-                    break;
-                case typeFloat:
+                case typeNumeric:
                     *exprComp = 1;
                     break;
                 case typeString:
@@ -252,10 +251,7 @@ void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprA
                 case typeUnknown:
                     *exprAssignType = 2;
                     break;
-                case typeInt:
-                    *exprAssignType = 1;
-                    break;
-                case typeFloat:
+                case typeNumeric:
                     *exprAssignType = 1;
                     break;
                 case typeString:
@@ -295,7 +291,26 @@ void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
             printf("ERROR: Invalid operator in expression with string on the line: %u\n", token->line);
     }
 }
-                
+
+bool SemanticVarNameAssignSet (SymTablePtr currTable, TokenPtr token) {
+
+    if (token->lexem == IDENT) {
+        SymbolPtr symbol = NULL;
+        symbol = SymTableFind(globalTable, token->name);
+
+        if (symbol != NULL) {
+            printf("ERROR: On the line: %u. Cannot define variable with name '%s', already defined as function.\n",token->line, token->name);
+            return false;
+        }
+        else {
+            symbol = SymTableFind(currTable, token->name);
+            symbol->dType = typeUnknown;
+            varAssignName = token->name;
+        }
+    }
+    return true;
+}
+                  
 
 void SemanticTreeInit (ATreeNodePtr *RootPtr) {
     *RootPtr = NULL;
