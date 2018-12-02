@@ -316,6 +316,7 @@ bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token) {
                   
 bool SemanticFunNameDefControl(TokenPtr token) {
 
+    SemanticNameSet (token);
     SymbolPtr symbol = NULL;
     symbol = SymTableFind(globalTable, identName);
 
