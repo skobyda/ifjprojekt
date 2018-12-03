@@ -83,12 +83,12 @@ void freeArray (CArray *a) {
  *varOrFun -> 0 = variable, 1 = function
  */
 //TODO dokoncit pre vstavane funkcie, mozno aj na to upravit symtab
-bool SemanticDefinedControl(SymTablePtr currTable, TokenPtr token, int varOrFun){
+bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun){
     
     bool defined = false;
     
     SymbolPtr symbol = NULL;
-    symbol = SymTableFind(currTable, token->name);
+    symbol = SymTableFind(currTable, name);
 
 	//if identifier is variable name
     if (symbol != NULL && symbol->iType == VARIABLE && varOrFun == 0) 
@@ -103,7 +103,7 @@ bool SemanticDefinedControl(SymTablePtr currTable, TokenPtr token, int varOrFun)
             SemanticInitArray (&controlA, ARRAYSIZE);
             ArrayInit = true;
         } 
-        SemanticInsertArray (&controlA, token->line, token->name);
+        SemanticInsertArray (&controlA, line, name);
     }
     
     return defined;
@@ -152,7 +152,7 @@ void SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
         *exprComp = 0;
 
     else if (token->lexem == IDENT) {
-        bool defined = SemanticDefinedControl(currTable, token, 0);
+        bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
       
         if (defined) {
             SymbolPtr symbol = SymTableFind(currTable, token->name);
@@ -251,7 +251,7 @@ void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprA
         *exprAssignType = 0;
 
     else if (token->lexem == IDENT) {
-        bool defined = SemanticDefinedControl(currTable, token, 0);
+        bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
         if (defined) {
             SymbolPtr symbol = SymTableFind(currTable, token->name);
             switch (symbol->dType) {
@@ -349,12 +349,11 @@ bool SemanticFunNameDefControl(TokenPtr token, char *name) {
 }
 
 void SemanticFunNameCallControl(TokenPtr token, char *name){
-//TODO upravit array kde pridam pocet parametrov
-//ak nebola definovana nejako si pamatat kolko prislo argumentov a to tam potom dat
+//TODO simon este musi davat to tabulky pocet parametrov definovanych fcii
     SemanticNameSet (name, 1);
-    bool defined = SemanticDefinedControl(globalTable,token, 1);
+    bool defined = SemanticDefinedControl(globalTable,token->line, name, 1);
     if (defined) {
-		SymbolPtr symbol = SymTableFind(globalTable, token->name);
+		SymbolPtr symbol = SymTableFind(globalTable, name);
     	numOfParam = symbol->numOfParameters;
         paramCount = 0;
 	}
