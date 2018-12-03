@@ -31,17 +31,19 @@
 CArray controlA;
 static bool ArrayInit = false;
 /*0 comparator, 1 left expression, 2 right expression, 3 full control, 4 reset*/
-static int condState = 0;
+static int condState = 4;
 /*0 stands for != and == , 1 stands for others*/
 int condComp; 
 /*0 stands for strings, 1 for int or float, 2 for unknown, 3 reset*/
 static int leftExprComp = 2; 
-static int rightExprComp = 3;
+static int rightExprComp = 2;
 
 /*0 stands for plus(+), 1 for others(*,/,-), 2 for none */
 int exprOperator = 2;
 /*0 stands for strings, 1 for int or float, 2 for unkown, 3 reset(outside from parser)*/
 int exprAssignCompType = 3;
+
+char* identName;
 
 void SemanticInitArray (CArray *a, size_t initSize) {
     
@@ -75,7 +77,6 @@ void freeArray (CArray *a) {
  *varOrFun -> 0 = variable, 1 = function
  */
 //TODO dokoncit pre vstavane funkcie, mozno aj na to upravit symtab
-//TODO nevie najst symbol z tabulky pri volani
 bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun){
     
     bool defined = false;
@@ -141,20 +142,14 @@ void SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
 
     else if (token->lexem == IDENT) {
         bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
-        /*SymbolPtr symbol = NULL;
-        symbol = SymTableFind(currTable, token->name);
-        if (symbol != NULL) //for debbuging
-            printf("je v tabulke symbolov\n");*/
+      
         if (defined) {
             SymbolPtr symbol = SymTableFind(currTable, token->name);
             switch (symbol->dType) {
                 case typeUnknown:
                     *exprComp = 2;
                     break;
-                case typeInt:
-                    *exprComp = 1;
-                    break;
-                case typeFloat:
+                case typeNumeric:
                     *exprComp = 1;
                     break;
                 case typeString:
@@ -252,10 +247,7 @@ void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprA
                 case typeUnknown:
                     *exprAssignType = 2;
                     break;
-                case typeInt:
-                    *exprAssignType = 1;
-                    break;
-                case typeFloat:
+                case typeNumeric:
                     *exprAssignType = 1;
                     break;
                 case typeString:
@@ -295,7 +287,50 @@ void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
             printf("ERROR: Invalid operator in expression with string on the line: %u\n", token->line);
     }
 }
-                
+
+void SemanticNameSet (TokenPtr token) {
+
+    if (token->lexem == IDENT) {
+        identName = malloc(sizeof(char) * (strlen(token->name) + 1));
+        strcpy(identName, token->name);
+    }
+}
+
+//TODO might have changed to fit parser
+//mozno budem musiet si zapamat meno a kontrolu zavolat az potom
+bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token) {
+
+    SymbolPtr symbol = NULL;
+    symbol = SymTableFind(globalTable, identName);
+
+    if (symbol != NULL && symbol->iType == FUNCTION) {
+        printf("ERROR: On the line: %u. Cannot define variable with name '%s', already defined as function.\n",token->line, identName);
+        return false;
+    }
+    else {
+        symbol = SymTableFind(currTable, identName);
+        symbol->dType = typeUnknown;
+    }
+    return true;
+}
+                  
+bool SemanticFunNameDefControl(TokenPtr token) {
+
+    SemanticNameSet (token);
+    SymbolPtr symbol = NULL;
+    symbol = SymTableFind(globalTable, identName);
+
+    if (symbol != NULL && symbol->iType == VARIABLE) {
+        printf("ERROR: On the line: %u. Cannot define function with name '%s', already defined as variable.\n",token->line, identName);
+        return false;
+    }
+    else if (symbol != NULL && symbol->iType == FUNCTION) {
+        printf("ERROR: On the line: %u. Function with name '%s' already exists.\n",token->line, identName);
+        return false;
+    }
+    else 
+        return true;
+}
 
 void SemanticTreeInit (ATreeNodePtr *RootPtr) {
     *RootPtr = NULL;

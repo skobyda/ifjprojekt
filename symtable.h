@@ -31,11 +31,9 @@ typedef enum {
 
 
 typedef enum {
-    //typeNone,
-    //typeBool,
+    typeNil,
     typeUnknown,
-    typeInt,
-    typeFloat,
+    typeNumeric,
     typeString,
 } dataType;
 /*TODO REMOVE LATER
@@ -50,6 +48,7 @@ struct Symbol{
     char* name;
     identifType iType;
     dataType dType;//contains last assigned data type, only for variables
+    int numOfParameters;
     // bool defined; // TODO REMOVE LATER
     SymbolPtr nextSymbol;
 };
