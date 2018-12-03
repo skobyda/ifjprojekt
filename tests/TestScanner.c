@@ -118,7 +118,24 @@ case -3:
 FILE* sourceCode;
 int main(int argc, char *argv[])
 {
+//e+a
+char a[]="1e1";
+char b[]="1e-0";
+char c[]="0e-0";
+char d[]="0.1e0";
+char e[]="9.5e55";
 
+char g[]="9.5e+55";
+char h[]="9.5e55";
+printf("%a\n",atof(a) );
+printf("%a\n",atof(b) );
+printf("%a\n",atof(c) );
+printf("%a\n",atof(d) );
+printf("%a\n",atof(e) );
+
+printf("%a\n",atof(g) );
+printf("%a\n",atof(h) );
+printf("RES=%a\n",atof(a)+atof(b) );
 
 if(argc==1)return 1;
     FILE *ptr=NULL;
@@ -130,7 +147,7 @@ if(argc==1)return 1;
     sourceCode=ptr;
     TokenPtr token;
     int i=0;
-    while((i<100) ){
+    while((i<300) ){
 
         token=(ScannerGetToken(ptr));
         //printf("here\n" );

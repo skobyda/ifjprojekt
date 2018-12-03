@@ -18,15 +18,17 @@
 /***LOCAL FILES***/
 #include "scanner.h"
 
+//THIS macro will check if we have enough space for saving next character, if not it will make it :)
 #define SAVENEW do { \
     strlenght=strlenght+1; \
     if((strlenght%50)==0){ \
         token->name= realloc(token->name,(strlenght+50)*sizeof(char)); \
-    }\
+    } \
     if(ScannerSaveNew(token,n_lines,&c)==0) \
         return token; \
 } while(0)
 
+//this macro will convert ascii values 0-32, 35,95 because of generating code into \number number and save it into our token string
 #define SAVENEWCHAR do { \
     if((c<=32)|| (c==92)||(c==35)) \
         {char var=c; \
@@ -62,10 +64,12 @@ Scanner(FILE *file) {
     return true;
 }
 
+//THIS will skip the rest of the line
 int ScannerSkipLineE(){
     char c=0;
     while(c!='\n')
      c=(char)fgetc(sourceCode);
+
     if(c==EOF){
         return 1;
     }
@@ -73,15 +77,17 @@ int ScannerSkipLineE(){
     return 0;
 }
 
+//this will check if here are some white spaces and if they are it will throw them away
 void ScannerWhite(){
     char c=0;
     do
         c=(char)fgetc(sourceCode);
-    while(c==' ');
+    while(c==' '|| c==9);
     ungetc( c,  sourceCode);
     return;
 }
 
+//this function converts hex value into decimal
 int ConvertHextoDec(char c){
     switch(c){
         case '0':
@@ -121,6 +127,7 @@ int ConvertHextoDec(char c){
     }
 }
 
+//this function save only one char into string
 char *ScannerStradd( char *s, char* c ){
     int length=0;
     if(s==NULL|| c==NULL)
@@ -139,6 +146,7 @@ char *ScannerStradd( char *s, char* c ){
     return s;
 }
 
+//this function will check if the ident token if the keyword
 int ScannerTestW(char*str){
     if(str==NULL)
         return 0;
@@ -158,9 +166,12 @@ int ScannerTestW(char*str){
         return 26;
     if(strcmp(str,"while")==0)
         return 27;
+    if(strcmp(str,"nil")==0)
+        return 6;
     return 0;
 }
 
+//check if the function ScannerStradd is okay with no error
 int ScannerSaveNew(TokenPtr token,int lines,char* c){
     if(ScannerStradd((token)->name,c)==0){
         (token)->lexem=PROBLEMC;
@@ -170,14 +181,14 @@ int ScannerSaveNew(TokenPtr token,int lines,char* c){
 
     return 1;
 }
-
+//this check the word, char by char
 int ScannerTestWord(char *str){
     char c;
      c=fgetc(sourceCode);
      ungetc(c,sourceCode);
     if(str==NULL)
         return 0;
-    if(c==' ')
+    if((c==' ')||(c==9))
         return 0;
     if(str==NULL)
         return -1;
@@ -192,7 +203,7 @@ int ScannerTestWord(char *str){
         if(cmp[step]==EOF){
             return 0;
         }
-        while(step==0 && cmp[step]==' ')
+        while(step==0 && ((cmp[step]==' ')||(cmp[step]==9)))
             cmp[step]=fgetc(sourceCode);
         if(cmp[step]==EOF){
             return 0;
@@ -201,7 +212,7 @@ int ScannerTestWord(char *str){
             return 0;
         if(cmp[step]==str[step])
             step++;
-        else if((cmp[step]=='\n' || cmp[step]=='#' || cmp[step]==' ')&& (step==lenght1-1)){
+        else if((cmp[step]=='\n' || cmp[step]=='#' || cmp[step]==' ' || cmp[step]==9)&& (step==lenght1-1)){
             if(cmp[step]=='\n'){
                 ungetc(cmp[step],sourceCode);
             }
@@ -217,41 +228,38 @@ int ScannerTestWord(char *str){
     return 1;
 }
 
+//function which call parser, if he wants new token, most of the code is here
 TokenPtr ScannerGetToken(){
-    static int strlenght=0;
-    strlenght=0;
-    static int n_lines=1;
-    static int one=0;
-    static states state=NEWLINE;
-    static  char c;
-    TokenPtr token=NULL;
-    token=malloc(sizeof(Token));
-    if(token==NULL){//
+    static int strlenght=0; //lenght of the string
+    strlenght=0;    //initialization of the lenght
+    static int n_lines=1; //number of the line where we are
+    static states state=NEWLINE;    //state of the our FSM
+    static  char c; //char that we actualy have
+    TokenPtr token=NULL;    //token that we will sent
+    token=malloc(sizeof(Token));    //allocation of the token
+    if(token==NULL){
         (token)->lexem=PROBLEMM;
         (token)->line=n_lines;
         return token;
     }
-    (token)->name=malloc((sizeof(char))*50);
+    (token)->name=malloc((sizeof(char))*50);    //here we save our chars
     if(token->name==NULL){//
         (token)->lexem=PROBLEMM;
         (token)->line=n_lines;
         return token;
     }
-    token->name[0]='\0';
-    //printf("here\n" );
-    ScannerWhite();
-    if(one==0)
-        c =(char)fgetc(sourceCode);
+    token->name[0]='\0';    //first char is this, initialization
+    ScannerWhite(); //check for white spaces
+    c =(char)fgetc(sourceCode);
     if(c==EOF){
         token->lexem=EOFILE;
         state=ENDFILE;
         token->line=n_lines;
         return token;
     }
-    while(1){
+    while(1){   //FSM will run while it will find token, correct or bad
         switch(state){
             case START:{
-                //printf("weird,%c\n",c );
                 if(c=='#'){
                     state=BCOMMENT;
                     continue;
@@ -269,7 +277,17 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c>='0' && c<='9'){
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    if(c=='0'){
+                        c=(char)fgetc(sourceCode);
+                        if(c=='0'){
+                            state=PROBLEM;
+                            continue;
+                        }
+                    }
+                    else{
+                        c=(char)fgetc(sourceCode);
+                    }
+
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -294,7 +312,7 @@ TokenPtr ScannerGetToken(){
                     (token)->line=n_lines;
                     return token;
                 }
-                else if(c==' '){
+                else if((c==' ') || (c==9)){ // 9 is TAB
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
@@ -393,12 +411,12 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case IDKEY:{
-                if(c==' ' || c=='!' || c=='?'||c==','){
+                if((c==' ') || (c==9) || c=='!' || c=='?'||c==','){//check for end of the string
                     (token)->lexem=IDENT;
                     (token)->line=n_lines;
-                    if(c!=' ')
+                    if((c!=' ') && (c!=9))
                         SAVENEW;
-                    if(c==' '||c==',')
+                    if(c==' '||c==','|| c==9)
                         ungetc(c,sourceCode);
                     state=START;
                     return token;
@@ -423,10 +441,10 @@ TokenPtr ScannerGetToken(){
             case ID:{
                 (token)->lexem=IDENT;
                 (token)->line=n_lines;
-                if(c==' '||c=='?'|| c=='!'){
-                    if((c=='?'|| c=='!' )&&( c!=' '))
+                if(c==' '||c=='?'|| c=='!' || (c==9)){
+                    if((c=='?'|| c=='!' )&&( (c!=' ') && (c!=9)))
                         SAVENEW;
-                    if(c==' ')
+                    if(c==' ' || c==9)
                         ungetc(c,sourceCode);
                     int smth=ScannerTestW(token->name);
                     if(smth!=0)
@@ -434,12 +452,12 @@ TokenPtr ScannerGetToken(){
                     state=START;
                     return token;
                 }
-                else if(((c>='a') && (c<='z'))||((c>='A') && (c<='Z'))||((c>='0') && (c<='9'))){
+                else if(((c>='a') && (c<='z'))||((c>='A') && (c<='Z'))||((c>='0') && (c<='9'))||(c=='_')){
                     SAVENEW;
                     c=(char)fgetc(sourceCode);
                     continue;
                 }
-                else if((c==',')||(c==' ')||(c=='\n')||(c=='#')||(c=='(')||(c=='=')||(c=='!')||(c=='>')||(c=='<')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                else if((c==',')||(c==' ')||(c==9)||(c=='\n')||(c=='#')||(c=='(')||(c=='=')||(c=='!')||(c=='>')||(c=='<')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     ungetc(c,sourceCode);
                     int smth=ScannerTestW(token->name);
                     if(smth!=0)
@@ -456,9 +474,6 @@ TokenPtr ScannerGetToken(){
                 return NULL;
             }
             case NEWLINE:{
-                //printf("here %c\n",c );
-                if(one==1)
-                    one=0;
                 if(c=='\n'){
                     state=NEWLINE;
                     n_lines++;
@@ -468,6 +483,28 @@ TokenPtr ScannerGetToken(){
                 }
                 else if((c>='a' &&c<='z')|| c=='_'){
                     state=IDKEY;
+                    continue;
+                }
+                else if(c>='0' && c<='9'){
+                    SAVENEW;
+                    if(c=='0'){
+                        c=(char)fgetc(sourceCode);
+                        if(c=='0'){
+                            state=PROBLEM;
+                            continue;
+                        }
+                    }
+                    else{
+                        c=(char)fgetc(sourceCode);
+                    }
+
+                    if(c==EOF){
+                        token->lexem=EOFILE;
+                        state=ENDFILE;
+                        token->line=n_lines;
+                        return token;
+                    }
+                    state=NUMBER;
                     continue;
                 }
                 else if(c=='#'){
@@ -483,9 +520,6 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c=='='){
                     if(ScannerTestWord("begin ")==1){
-
-                        //printf("here we are\n" );
-
                         while(c!='\n'){
                             c=(char)fgetc(sourceCode);
                         }
@@ -522,10 +556,8 @@ TokenPtr ScannerGetToken(){
                 ScannerWhite();
                 if(c=='='){
                     if(ScannerTestWord("end ")==1){
-                        //printf("%c\n",c );
                         while(c!='\n'){
                             c=(char)fgetc(sourceCode);
-                            //printf("v cycle %c\n",c );
                         }
                         n_lines--;
                         ungetc(c,sourceCode);
@@ -540,7 +572,6 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case STRING:{
-
                 if(c!='\"' && c!='\\'){
                     SAVENEWCHAR;
                     c=(char)fgetc(sourceCode);
@@ -623,7 +654,7 @@ TokenPtr ScannerGetToken(){
                     state=STRING;
                     continue;
                 }
-                if(c=='x'){
+                if(c=='x'){ //if there is \x
 
                     c=(char)fgetc(sourceCode);
 
@@ -633,8 +664,11 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
-                    if((c>='0' && c<='9')||(c>='A'&&c<='F'))
+                    if((c>='0' && c<='9')||(c>='A'&&c<='F')||((c>='a')&&(c<='f'))){
+                        if(((c>='a')&&(c<='f')))
+                            c=c-32;
                         code[0]=c;
+                    }
                     else{
                         state=PROBLEM;
                         continue;
@@ -647,7 +681,9 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
-                    if(((c>='0') && (c<='9'))||((c>='A')&&(c<='F'))){
+                    if(((c>='0') && (c<='9'))||((c>='A')&&(c<='F'))||((c>='a')&&(c<='f'))){
+                        if(((c>='a')&&(c<='f')))
+                            c=c-32;
                         code[1]=c;
                         int a=ConvertHextoDec(code[0])*16+ConvertHextoDec(code[1]);
                         c=a;
@@ -669,11 +705,8 @@ TokenPtr ScannerGetToken(){
                         //char b=a;
                         char b=c;
                         c=a;
-                        //printf("TUNA -%c-\n",c );
                         SAVENEWCHAR;
                         c=b;
-                        //printf("TUNA2 -%c-\n",c );
-                        //printf("TUNA2 %c\n",c );
                         SAVENEWCHAR;
                         c=(char)fgetc(sourceCode);
                         state=STRING;
@@ -746,7 +779,7 @@ TokenPtr ScannerGetToken(){
                 state=START;
                 return token;
             }
-            case NUMBER:{    //printf("okay1\n");
+            case NUMBER:{
                 if(c=='.'){
                     state=DOUBLECOM;
                     SAVENEW;
@@ -784,7 +817,7 @@ TokenPtr ScannerGetToken(){
                     continue;
                 }
 
-                else if((c=='#')||(c==' ')||(c=='\n')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                else if((c=='#')||(c==' ')||(c==9)||(c=='\n')||(c==')')||(c==',')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=INT;
                     (token)->line=n_lines;
                     if(c=='\n')
@@ -859,7 +892,7 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==9)||(c==',')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
 
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
@@ -885,7 +918,7 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
-                    state=DEXPD;//WARNING NOT DCOMD BECAUSE IT CAN BE 1e+5e2
+                    state=DEXPD;
                     continue;
                 }
 
@@ -904,6 +937,7 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
+                    state=DEXP;
                 continue;
                 }
                 if(c<='9'&&c>='0'){
@@ -917,12 +951,13 @@ TokenPtr ScannerGetToken(){
                     }
                 continue;
                 }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==',')||(c==9)||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
                     if(c=='\n')
-                        state=NEWLINE;
+                        {
+                            state=NEWLINE;}
                     else
                         state=START;
                     return token;
@@ -933,8 +968,11 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case PROBLEM:{
+                if(c=='\n')
+                    n_lines++;
                 if(ScannerSkipLineE()==1){
-                    state=END;
+                    state=ENDFILE;
+
                     continue;
                 }
                 token->lexem=PROBLEML;
