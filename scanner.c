@@ -179,7 +179,7 @@ int ScannerTestWord(char *str){
      ungetc(c,sourceCode);
     if(str==NULL)
         return 0;
-    if(c==' ')
+    if((c==' ')||(c==9))
         return 0;
     if(str==NULL)
         return -1;
@@ -194,7 +194,7 @@ int ScannerTestWord(char *str){
         if(cmp[step]==EOF){
             return 0;
         }
-        while(step==0 && cmp[step]==' ')
+        while(step==0 && ((cmp[step]==' ')||(cmp[step]==9)))
             cmp[step]=fgetc(sourceCode);
         if(cmp[step]==EOF){
             return 0;
@@ -203,7 +203,7 @@ int ScannerTestWord(char *str){
             return 0;
         if(cmp[step]==str[step])
             step++;
-        else if((cmp[step]=='\n' || cmp[step]=='#' || cmp[step]==' ')&& (step==lenght1-1)){
+        else if((cmp[step]=='\n' || cmp[step]=='#' || cmp[step]==' ' || cmp[step]==9)&& (step==lenght1-1)){
             if(cmp[step]=='\n'){
                 ungetc(cmp[step],sourceCode);
             }
@@ -296,7 +296,7 @@ TokenPtr ScannerGetToken(){
                     (token)->line=n_lines;
                     return token;
                 }
-                else if(c==' '){
+                else if((c==' ') || (c==9)){
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
@@ -395,17 +395,19 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case IDKEY:{
-                if(c==' ' || c=='!' || c=='?'||c==','){
+                //printf("%c\n",c );
+                if((c==' ') || (c==9) || c=='!' || c=='?'||c==','){
                     (token)->lexem=IDENT;
                     (token)->line=n_lines;
-                    if(c!=' ')
+                    if((c!=' ') && (c!=9))
                         SAVENEW;
-                    if(c==' '||c==',')
+                    if(c==' '||c==','|| c==9)
                         ungetc(c,sourceCode);
                     state=START;
                     return token;
                 }
                 if((c>='A'&& c<='Z')||((c>='a')&& (c<='z'))||(c>='0'&& c<='9')||c=='_'){
+                    printf("%c\n",c );
                     state=ID;
                     SAVENEW;
                     c=(char)fgetc(sourceCode);
@@ -425,10 +427,10 @@ TokenPtr ScannerGetToken(){
             case ID:{
                 (token)->lexem=IDENT;
                 (token)->line=n_lines;
-                if(c==' '||c=='?'|| c=='!'){
-                    if((c=='?'|| c=='!' )&&( c!=' '))
+                if(c==' '||c=='?'|| c=='!' || (c==9)){
+                    if((c=='?'|| c=='!' )&&( (c!=' ') && (c!=9)))
                         SAVENEW;
-                    if(c==' ')
+                    if(c==' ' || c==9)
                         ungetc(c,sourceCode);
                     int smth=ScannerTestW(token->name);
                     if(smth!=0)
@@ -436,12 +438,12 @@ TokenPtr ScannerGetToken(){
                     state=START;
                     return token;
                 }
-                else if(((c>='a') && (c<='z'))||((c>='A') && (c<='Z'))||((c>='0') && (c<='9'))){
+                else if(((c>='a') && (c<='z'))||((c>='A') && (c<='Z'))||((c>='0') && (c<='9'))||(c=='_')){
                     SAVENEW;
                     c=(char)fgetc(sourceCode);
                     continue;
                 }
-                else if((c==',')||(c==' ')||(c=='\n')||(c=='#')||(c=='(')||(c=='=')||(c=='!')||(c=='>')||(c=='<')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                else if((c==',')||(c==' ')||(c==9)||(c=='\n')||(c=='#')||(c=='(')||(c=='=')||(c=='!')||(c=='>')||(c=='<')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     ungetc(c,sourceCode);
                     int smth=ScannerTestW(token->name);
                     if(smth!=0)
@@ -786,7 +788,7 @@ TokenPtr ScannerGetToken(){
                     continue;
                 }
 
-                else if((c=='#')||(c==' ')||(c=='\n')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                else if((c=='#')||(c==' ')||(c==9)||(c=='\n')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=INT;
                     (token)->line=n_lines;
                     if(c=='\n')
@@ -861,7 +863,7 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==9)||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
 
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
@@ -919,7 +921,7 @@ TokenPtr ScannerGetToken(){
                     }
                 continue;
                 }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==9)||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
