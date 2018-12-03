@@ -299,24 +299,23 @@ void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
     }
 }
 
-void SemanticNameSet (TokenPtr token, int varOrFun) {
+void SemanticNameSet (char *name, int varOrFun) {
 
-    if (token->lexem == IDENT) {
 		if (varOrFun == 1) {//function name
-        	identFunName = malloc(sizeof(char) * (strlen(token->name) + 1));
-        	strcpy(identFunName, token->name);
+        	identFunName = malloc(sizeof(char) * (strlen(name) + 1));
+        	strcpy(identFunName, name);
 		}
 		else {
-			identVarName = malloc(sizeof(char) * (strlen(token->name) + 1));
-        	strcpy(identVarName, token->name);
+			identVarName = malloc(sizeof(char) * (strlen(name) + 1));
+        	strcpy(identVarName, name);
 		}
-    }
 }
 
 //TODO might have changed to fit parser
 //mozno budem musiet si zapamat meno a kontrolu zavolat az potom
-bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token) {
+bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token, char *name) {
 
+    SemanticNameSet (name, 0);
     SymbolPtr symbol = NULL;
     symbol = SymTableFind(globalTable, identVarName);
 
@@ -331,9 +330,9 @@ bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token) {
     return true;
 }
                   
-bool SemanticFunNameDefControl(TokenPtr token) {
+bool SemanticFunNameDefControl(TokenPtr token, char *name) {
 
-    SemanticNameSet (token, 1);
+    SemanticNameSet (name, 1);
     SymbolPtr symbol = NULL;
     symbol = SymTableFind(globalTable, identFunName);
 
@@ -349,17 +348,20 @@ bool SemanticFunNameDefControl(TokenPtr token) {
         return true;
 }
 
-void SemanticFunNameCallControl(TokenPtr token){
+void SemanticFunNameCallControl(TokenPtr token, char *name){
 //TODO upravit array kde pridam pocet parametrov
 //ak nebola definovana nejako si pamatat kolko prislo argumentov a to tam potom dat
-    SemanticNameSet (token, 1);
+    SemanticNameSet (name, 1);
     bool defined = SemanticDefinedControl(globalTable,token, 1);
     if (defined) {
 		SymbolPtr symbol = SymTableFind(globalTable, token->name);
     	numOfParam = symbol->numOfParameters;
+        paramCount = 0;
 	}
-	else 
+	else { 
 		numOfParam = -2; //unknown num of paramaters, not defined yet
+        paramCount = 0;
+    }
 }	
 
 
