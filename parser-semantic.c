@@ -256,7 +256,7 @@ void SemanticOperatorSet (TokenPtr token) {
 
 }
         
-/*Sets data type of expression in assignment*/
+/*Sets data type of expression in assignment*
 void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprAssignType) {
 
     if (token->lexem == INT || token->lexem == FLOAT)
@@ -264,6 +264,8 @@ void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprA
     
     else if (token->lexem == STR)
         *exprAssignType = 0;
+    
+    else if (token->lexem == NIL)
 
     else if (token->lexem == IDENT) {
         bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
@@ -287,8 +289,11 @@ void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprA
             printf("ERROR: Using undefined variable '%s' on the line: %u\n",token->name, token->line);
         }
     }
-}
-/*if OK is false, error in expression*/
+}*/
+/*Sets type of variable when variable assignment expression
+ *if OK is false, error in expression
+ *if OK is true, so far no errors in expression
+ */
 void SemanticVarAssignTypeSet(SymTablePtr currTable, bool ok) {
 
     SymbolPtr symbol = SymTableFind(currTable, identVarName);
@@ -320,7 +325,6 @@ void SemanticVarAssignTypeSet(SymTablePtr currTable, bool ok) {
 /*Makes control of assignment expression
  *now in parser called in parserExpression like SemanticExprAssignCotrol(currentTable, tokenToPrint);
  *calling could change a bit in parser
- *TODO parser has to "reset" exprAssignCompType with value 3 after full Control
  */
 bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
 
@@ -343,12 +347,12 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
         } 
         if ((token->lexem == NIL && exprAssignCompType == 4) ||
             (token->lexem != NIL && exprAssignCompType > 3)) {
-                SemanticExprAssignTypeSet (currTable, token, &exprAssignCompType);
+                SemanticExprCompSet (currTable, token, &exprAssignCompType);
                 SemanticVarAssignTypeSet(currTable, true);
         }
         else {
             int currentExprType;
-            SemanticExprAssignTypeSet (currTable, token, &currentExprType);
+            SemanticExprCompSet (currTable, token, &currentExprType);
             if (currentExprType == 2 || exprAssignCompType == 2) {
                 printf("ERROR: Invalid operation with nil variable in expression on the line: %u\n", token->line);
                 SemanticVarAssignTypeSet(currTable, false);
@@ -369,13 +373,14 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
     }
     return ok;
 }
-
+/*Called when expression in assignment is fully checked or when is semantic error in expression
+ */
 void SemanticExpAssignReset () {
 
     exprOperator = 2;
     exprAssignCompType = 4;
 }    
-
+/*Sets name of variable or functions and then used in other functions*/
 void SemanticNameSet (char *name, int varOrFun) {
 
 		if (varOrFun == 1) {//function name
@@ -387,9 +392,10 @@ void SemanticNameSet (char *name, int varOrFun) {
         	strcpy(identVarName, name);
 		}
 }
-
-//TODO might have changed to fit parser
-//mozno budem musiet si zapamat meno a kontrolu zavolat az potom
+/*Function controls name of variable in variable assignment
+ *returns true if it is able to use such name
+ *return false if it is not able to use such name
+ */
 bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token, char *name) {
 
     SemanticNameSet (name, 0);
@@ -406,7 +412,10 @@ bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token, char *
     }
     return true;
 }
-                  
+/*Function controls name of function in definition
+ *if it is able to use, returns true
+ *if name alredy used, returns false
+ */                  
 bool SemanticFunNameDefControl(TokenPtr token, char *name) {
 
     SemanticNameSet (name, 1);
@@ -425,17 +434,20 @@ bool SemanticFunNameDefControl(TokenPtr token, char *name) {
         return true;
 }
 
+/*Function controls if called function is already defined
+ *sets correct number of parameters for called function if its already defined
+ */
 void SemanticFunNameCallControl(TokenPtr token, char *name){
 //TODO simon este musi davat to tabulky pocet parametrov definovanych fcii
     SemanticNameSet (name, 1);
     bool defined = SemanticDefinedControl(globalTable,token->line, name, 1);
     if (defined) {
-		SymbolPtr symbol = SymTableFind(globalTable, name);
-    	numOfParam = symbol->numOfParameters;
+        SymbolPtr symbol = SymTableFind(globalTable, name);
+        numOfParam = symbol->numOfParameters;
         paramCount = 0;
-	}
-	else { 
-		numOfParam = -2; //unknown num of paramaters, not defined yet
+    }
+    else { 
+        numOfParam = -2; //unknown num of paramaters, not defined yet
         paramCount = 0;
     }
 }	
