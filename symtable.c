@@ -51,6 +51,28 @@ static bool SymTableInsertFunctions(SymTablePtr table) {
         symbol->name = functions[i];
         symbol->nextSymbol = NULL;
         symbol->iType = FUNCTION;
+        switch (i) {
+            case 0:  
+                symbol->numOfParameters = -1;
+                break;
+            case 1: case 2: case 3:
+                symbol->numOfParameters = 0;
+                break;
+            case 4:
+                symbol->numOfParameters = 3;
+                break;
+            case 5:
+                symbol->numOfParameters = 1;
+                break;
+            case 6:
+                symbol->numOfParameters = 2;
+                break;
+            case 7:
+                symbol->numOfParameters = 1;
+                break;
+            default:
+                break;
+        }
         SymTableAdd(table, symbol);
     }
 
