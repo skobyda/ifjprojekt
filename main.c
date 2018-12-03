@@ -25,16 +25,22 @@ int main(int argc, char **argv) {
     (void)(argc);
     (void)(argv);
     FILE *inputCode;
-    char* intermediateCode;
+    FILE *outputCode;
 
     inputCode = fopen("code.ifj18", "r");
-    if (!inputCode)
+    outputCode = fopen("outputcode.IFJcode18", "wr");
+
+    if (!inputCode || !outputCode)
         goto error;
 
     /* Pokes Scanner*/
     Scanner(inputCode);
 
+    /* Pokes generator */
+    Generator(outputCode);
+
     ParTreePtr tree = Parser();
+    (void)(tree);
 
     /* Runs semantic analysis over symbolic table */
     //if (!ParserSemantic(tree))
