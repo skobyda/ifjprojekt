@@ -79,6 +79,7 @@ DEXP,//ok
 DEXPD,//ok
 DEXPS,//ok
 DCOMD,
+ZERO,
 PROBLEM,
 ENDFILE,
 }states;
