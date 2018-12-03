@@ -233,7 +233,7 @@ static bool ParserArguments() {
             token->lexem == FLOAT ||
             token->lexem == INT ||
             token->lexem == IDENT){
-	    //GeneratorParameterOut(order, token->name, token->lexem);
+	    GeneratorParameterOut(order, token->name, token->lexem);
 	    order++;
         }
         // to secure switching of argument/comma
@@ -338,7 +338,7 @@ static bool ParserFunctionDeclaration() {
     printf("SEMCALL: Function definition, name: %s\n", token->name);
     
     /* Generator Function Definition */
-    //GeneratorFunctionDefinition(token->name);
+    GeneratorFunctionDefinition(token->name);
 
     /* Change Symbol Table for function's block of code and its parameters */
     currentTable = SymTableInit(globalTable);
@@ -401,7 +401,7 @@ static bool ParserFunctionDeclaration() {
         }
 
         /* Generator Parameter In Function */
-        //GeneratorParameterIn(order, token->name);
+        GeneratorParameterIn(order, token->name);
         order++;
 
         if(token->lexem == INT ||
@@ -409,7 +409,7 @@ static bool ParserFunctionDeclaration() {
            token->lexem == FLOAT ||
            token->lexem == NIL ||
            token->lexem == IDENT ){
-            //GeneratorParameterIn(order, token->name);
+            GeneratorParameterIn(order, token->name);
             order++;
         }
 
@@ -436,7 +436,7 @@ static bool ParserFunctionDeclaration() {
     printf("SEMCALL: End of Function\n");
     
     /* Generator Action Function End */
-    //GeneratorFunctionEnd();
+    GeneratorFunctionEnd();
 
     /* Expects end of line after 'END' */
     NEXTTOKEN;
@@ -461,7 +461,7 @@ static bool ParserIfStatement() {
     printf("SEMCALL: IF\n");
 
     /* Generator If Statement start */
-    //GeneratorIfStart();
+    GeneratorIfStart();
 
     /* Function's condition can be parsed as expression */
     pinfo.expressionType = 2;
@@ -505,7 +505,7 @@ static bool ParserIfStatement() {
         printf("SEMCALL: ELSE\n");
 
         /* Generator Else Statement */
-        //GeneratorAfterIf();        
+        GeneratorAfterIf();        
         LabelExist = true;        
 
         /* Else's block of code */
@@ -523,7 +523,7 @@ static bool ParserIfStatement() {
 
     /* Generator End If Label */
     if (!LabelExist)
-        //GeneratorAfterIf();
+        GeneratorAfterIf();
 
     /* Expects end of line after 'end' */
     NEXTTOKEN;
@@ -548,7 +548,7 @@ static bool ParserWhile() {
     printf("SEMCALL: WHILE\n");
 
     /* Generator While Start */
-    //GeneratorWhileStartLabel();
+    GeneratorWhileStartLabel();
 
      /* While's condition, can be parsed as Expression */
     pinfo.expressionType = 2;
@@ -556,7 +556,7 @@ static bool ParserWhile() {
     pinfo.expressionType = 0;
 
     /* Generator While Condition Evaluation */
-    //GeneratorWhileCondEvaluation();
+    GeneratorWhileCondEvaluation();
 
     /* Expects 'do' after while's condition */
     if (token->lexem != DO)
@@ -583,7 +583,7 @@ static bool ParserWhile() {
     printf("SEMCALL: End of WHILE block of code\n");
 
     /* Generator While End */
-    //GeneratorWhileEnd();
+    GeneratorWhileEnd();
 
     NEXTTOKEN;
     /* Expects end of line after 'end' */
@@ -634,7 +634,7 @@ static bool ParserDeclaration() {
             }
 
             /* Generator Assignment */
-            //GeneratorAssign(name, defined);
+            GeneratorAssign(name, defined);
 
             pinfo.expressionType = 1;
             FUNCTIONCALL(ParserExpression);
@@ -651,7 +651,7 @@ static bool ParserDeclaration() {
             /* Semantic Action */
             printf("SEMCALL: Function call, function name: %s\n", name);
             /* Generator Action Function Call */
-            //GeneratorFunctionCall(name);
+            GeneratorFunctionCall(name);
             free(name);
             FUNCTIONCALL(ParserArguments);
             break;
@@ -873,7 +873,7 @@ static bool ParserExpression() {
             free(tokenToPrint->name);
             free(tokenToPrint);
             /* Generator Action TODO */
-            // GeneratorAddExpression(Ex, tokenToPrint->name, tokenToPrint->lexem);        
+            GeneratorAddExpression(Ex, tokenToPrint->name, tokenToPrint->lexem);        
         }
         StackDestroy(infixStack);
 
@@ -882,6 +882,7 @@ static bool ParserExpression() {
         Expr tmp;
         if (Ex->First)
             tmp = Ex->First;
+        printf("TOTO NASTALO\n");
         while (Ex->First){
             if (tmp->lexem == INT ||
                 tmp->lexem == STR ||
@@ -913,8 +914,8 @@ static bool ParserExpression() {
                 char *symb1 = tmp->Before->code;
                 char *symb2 = tmp->code;       
                 printf("%s %s %s\n", sign, symb1, symb2);
-                //GeneratorDeleteExpression(Ex, tmp->Before->Before);         
-                //GeneratorDeleteExpression(Ex, tmp);          
+                GeneratorDeleteExpression(Ex, tmp->Before->Before);         
+                GeneratorDeleteExpression(Ex, tmp);          
                 operandCount = 0;
                 matcherCount = 0;
             }
@@ -924,14 +925,15 @@ static bool ParserExpression() {
                 char *symb1 = tmp->Before->code;
                 char *symb2 = tmp->code;       
                 printf("%s %s %s %s\n", sign, symb1, symb1, symb2);
-                //GeneratorDeleteExpression(Ex, tmp->Before->Before);         
-                //GeneratorDeleteExpression(Ex, tmp);
+                GeneratorDeleteExpression(Ex, tmp->Before->Before);         
+                GeneratorDeleteExpression(Ex, tmp);
                 operandCount = 0;
                 matcherCount = 0;         
             }
 
             if (!tmp->Next){
                 tmp = Ex->First;
+                break;
             }
             else
                 tmp = tmp->Next;
