@@ -240,7 +240,6 @@ TokenPtr ScannerGetToken(){
         return token;
     }
     token->name[0]='\0';
-    //printf("here\n" );
     ScannerWhite();
     if(one==0)
         c =(char)fgetc(sourceCode);
@@ -250,10 +249,9 @@ TokenPtr ScannerGetToken(){
         token->line=n_lines;
         return token;
     }
-    while(1){printf("state=%d\n",state );
+    while(1){
         switch(state){
             case START:{
-                //printf("weird,%c\n",c );
                 if(c=='#'){
                     state=BCOMMENT;
                     continue;
@@ -395,7 +393,6 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case IDKEY:{
-                //printf("%c\n",c );
                 if((c==' ') || (c==9) || c=='!' || c=='?'||c==','){
                     (token)->lexem=IDENT;
                     (token)->line=n_lines;
@@ -407,7 +404,6 @@ TokenPtr ScannerGetToken(){
                     return token;
                 }
                 if((c>='A'&& c<='Z')||((c>='a')&& (c<='z'))||(c>='0'&& c<='9')||c=='_'){
-                    //printf("%c\n",c );
                     state=ID;
                     SAVENEW;
                     c=(char)fgetc(sourceCode);
@@ -460,7 +456,6 @@ TokenPtr ScannerGetToken(){
                 return NULL;
             }
             case NEWLINE:{
-                //printf("here %c\n",c );
                 if(one==1)
                     one=0;
                 if(c=='\n'){
@@ -472,6 +467,18 @@ TokenPtr ScannerGetToken(){
                 }
                 else if((c>='a' &&c<='z')|| c=='_'){
                     state=IDKEY;
+                    continue;
+                }
+                else if(c>='0' && c<='9'){
+                    SAVENEW;
+                    c=(char)fgetc(sourceCode);
+                    if(c==EOF){
+                        token->lexem=EOFILE;
+                        state=ENDFILE;
+                        token->line=n_lines;
+                        return token;
+                    }
+                    state=NUMBER;
                     continue;
                 }
                 else if(c=='#'){
@@ -487,9 +494,6 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c=='='){
                     if(ScannerTestWord("begin ")==1){
-
-                        //printf("here we are\n" );
-
                         while(c!='\n'){
                             c=(char)fgetc(sourceCode);
                         }
@@ -526,10 +530,8 @@ TokenPtr ScannerGetToken(){
                 ScannerWhite();
                 if(c=='='){
                     if(ScannerTestWord("end ")==1){
-                        //printf("%c\n",c );
                         while(c!='\n'){
                             c=(char)fgetc(sourceCode);
-                            //printf("v cycle %c\n",c );
                         }
                         n_lines--;
                         ungetc(c,sourceCode);
@@ -677,11 +679,8 @@ TokenPtr ScannerGetToken(){
                         //char b=a;
                         char b=c;
                         c=a;
-                        //printf("TUNA -%c-\n",c );
                         SAVENEWCHAR;
                         c=b;
-                        //printf("TUNA2 -%c-\n",c );
-                        //printf("TUNA2 %c\n",c );
                         SAVENEWCHAR;
                         c=(char)fgetc(sourceCode);
                         state=STRING;
@@ -754,7 +753,7 @@ TokenPtr ScannerGetToken(){
                 state=START;
                 return token;
             }
-            case NUMBER:{    //printf("okay1\n");
+            case NUMBER:{
                 if(c=='.'){
                     state=DOUBLECOM;
                     SAVENEW;
@@ -903,7 +902,6 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case DCOMD:{
-                printf("%s\n",token->name );
                 if(c=='e'||c=='E'){
                     SAVENEW;
                     c=(char)fgetc(sourceCode);
