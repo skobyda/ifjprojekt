@@ -14,252 +14,330 @@
 /***SYSTEM FILES***/
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 /***LOCAL FILES***/
 #include "parser.h"
 #include "parser-semantic.h"
+#include "generator.h"
+#include "scanner.h"
 
 /* Generates code from derivation tree into intermediate code
  * @tree derivation tree
  * Returns: Intermediate code as a string
  */
 
-#define FUNCT_LENGHT 	\
-	"#Build-in function Lenght in IFJcode2018\n"	\
-	"LABEL $Lenght\n"	\
-	"PUSHFRAME\n"	\
-	"DEFVAR LF@%retval\n"	\
-	"STRLEN LF@%retval LF@$0\n"	\
-	"POPFRAME\n"	\
-	"RETURN\n"	
 
-#define FUNCT_SUBSTR	\
-	"#Build-in function SubStr in IFJcode2018\n"	\
-	"PUSHFRAME\n"	\
-	"DEFVAR LF@%retval\n"	\
-	"MOVE LF@%retval string@\n"	\
-	"DEFVAR LF@strLen\n"	\
-	"CREATEFRAME\n"	\
-	"DEFVAR TF@$0\n"	\
-	"MOVE TF@$0 LF@strLen\n"	\
-	"CALL $Lenght\n"	\
-	"MOVE LF@strLen LF@%retval\n"	\
-	"DEFVAR LF@lenght_cond\n"	\
-	"LT LF@lenght_cond LF@strLen int@0\n"	\
-	"JUMPIFEQ $substr_end LF@lenght_cond bool@true\n"	\
-	"EQ LF@lenght_cond LF@strLen int@0\n"	\
-	"JUMPIFEQ $substr_end LF@lenght_cond bool@true\n"	\
-	"LT LF@lenght_cond LF@$1 int@0\n"	\
-	"JUMPIFEQ $substr_end LF@lenght_cond bool@true\n"	\
-	"EQ LF@lenght_cond LF@$1 int@0\n"	\
-	"JUMPIFEQ $substr_end LF@lenght_cond bool@true\n"	\
-	"\n"	\
-	"\n"	\
-	"\n"	\
-	"\n"	\
-	"\n"	\
-	"\n"	\
-	"LABEL $substr_end\n"	\
-	"POPFRAME\n"	\
-	"RETURN\n"	\
 
-/* Generate program start */
-bool programGenerator(){
-	printf("#Start of the program.\n");
-	printf(".IFJcode2018\n");
+int ExpTmp = 0;
+int IfLabel, IfTopLabel = 0;
+int WhileLabel, WhileTopLabel = 0;
 
-	return true;
-}
+FILE *outputFile;
 
-/* Define variable in IFJcode2018 */
-bool varDef(char *nameVar){
-	printf("DEFVAR LF@_%s\n", nameVar);
 
-	return true;
-}
 
-/* Assign to variable */
-bool varAsign(char *nameVar){
-	printf("MOVE LF@_%s ", nameVar);
-
-	return true;
-}
-
-/* Prints only variable */
-bool var(char *nameVar){
-	printf("%s ", nameVar);
+bool GeneratorAddExpression(ExL Ex, char *name, lexems lexem){
+	Expr tmp;
+	tmp = malloc(sizeof(struct ExprS));// + (strlen(name) * sizeof(char) + 1));
 	
-	return true;
-}
+	if (!tmp)
+		return false;
 
-/* Decides about operator in IFJcode2018 */
-char *operation(ATreeNodePtr Tree){
-	char *type = NULL;
-	switch(Tree->oType){
-		case OMUL:
-			asprintf(type,"MUL ");	
-			break;
-		case OADD:
-			asprintf(type,"ADD ");	
-			break;
-		case OSUB:
-			asprintf(type,"SUB ");	
-			break;
-		case ODIV:
-			asprintf(type,"DIV ");	
-			break;
-	}
-	return type;
-}
+	tmp->name = malloc(strlen(name) * sizeof(char) + 1);	
+	tmp->name = name;
+	tmp->lexem = lexem;
 
-/*
-char *typeOfVar(ATreeNodePtr Tree){
-	char *type = NULL;
+	if (lexem == LESS ||
+	    lexem == MORE ||
+	    lexem == EQ ||
+	    lexem == LESSEQ ||
+            lexem == MOREEQ)
+		tmp->code = GeneratorMatcher(lexem);
 
-	switch (Tree->val) {
-		case iVal:
-			asprintf(type,"int@");	
-			break;
-		case fVal:
-			asprintf(type,"float@");	
-			break;
-		case sVal:
-			asprintf(type,"string@");	
-			break;
-		case bVal:
-			asprintf(type,"bool@");	
-			break;
-	}
-	return type;
-}
-*/
+        if (lexem == IDENT)
+        	tmp->code = GeneratorVariable(tmp->name); 
 
-/* Decides about type of matcher */
-char *typeOfMatcher(compType cmpType){
-	char *type;
-
-	switch (cmpType) {
-		case LT:
-			strcpy(type,"LT ");	
-			break;
-		case GT:
-			strcpy(type,"GT ");	
-			break;
-		case EQU:
-			strcpy(type,"EQ ");	
-			break;
-		case GOE:
-			//strcpy(type,"LT ");	
-			break;
-		case NEQE:
-			//strcpy(type,"LT ");	
-			break;
-		case LOE:
-			//strcpy(type,"LT ");	
-			break;
-	}
-
-	return type;
-}
-
-/* TODO waste of space */
-bool compare(ATreeNodePtr Tree){
-	char *matcherType = typeOfMatcher(Tree->cmpType);
-	printf("%s", matcherType);
+	if (lexem == INT ||
+	    lexem == STR ||
+	    lexem == FLOAT )
+		tmp->code = GeneratorConstantDefine(lexem, tmp->name);
 	
+	if (lexem == PLUS ||
+	    lexem == MINUS ||
+	    lexem == DIVISION ||
+	    lexem == MULTIPLY)
+		tmp->code = GeneratorMathOperation(lexem);
+	
+	if (!Ex->Last){
+		Ex->Last = tmp;
+		Ex->First = tmp;
+		tmp->Next = NULL;
+		tmp->Before = NULL;
+	} else {
+		Ex->Last->Next = tmp;
+		tmp->Before = Ex->Last;
+		Ex->Last = tmp;
+		tmp->Next = NULL;
+	}
 	return true;
 }
 
-/* Start of if statement only condition evaluation */
-bool ifStart(int ifNumb){
-	printf("#If statement start\n");
-	printf("JUMPIFEQ $ifLabel%d LF@cond bool@false\n", ifNumb);
+void GeneratorDeleteExpression(ExL ExpL, Expr Delete){
+	Expr tmp = ExpL->First;
+
+	/* Looking for Delete item in List */
+	while(tmp->Next != Delete){
+		tmp = tmp->Next;
+		if (!tmp->Next)
+			return;
+	}
+
+	if (Delete->Before && Delete->Next){
+		Delete->Before->Next = Delete->Next;
+		Delete->Next->Before = Delete->Before;
+
+	} else if (Delete->Before && !Delete->Next){
+		Delete->Before->Next = NULL;
+		ExpL->Last = Delete->Before;
+
+	} else if (!Delete->Before && Delete->Next){
+		Delete->Next->Before = NULL;
+		ExpL->First = Delete->Next;
+
+	} else {
+		ExpL->First = NULL;
+		ExpL->Last = NULL;
+
+	}
+	free(Delete);
+}
+
+StackGen CreateStack(){
+	StackGen StackS = malloc(sizeof(struct StackGen));
+	
+	if(!StackS)
+		return NULL;
+
+	StackS->top = 0;
+	return StackS;
+}
+
+bool PushStack(StackGen StackS, char *code){
+
+	int sizeString = strlen(code) + 1;
+	char *addcode = malloc(sizeof(char) * sizeString);
+
+	if(!addcode)
+		return false;
+
+	strcpy(addcode, code);
+
+	StackS->code[StackS->top++] = addcode;
 
 	return true;
 }
 
-/* End of if with only label declaration */
-bool ifEnd(int ifNumb){
-	printf("LABEL $ifLabel%d\n", ifNumb);
-	printf("#End of If statement\n");
-
-	return true;
+bool GenEmptyStack(StackGen StackS){
+	if(StackS->top)
+		return false;
+	else 
+		return true;
 }
 
+char *PopStack(StackGen StackS){
+	if(!StackS->top)
+		return NULL;	
 
-bool functionGenerator(){
+	return StackS->code[--StackS->top];
+}
+
+void GeneratorAssign(char *name, bool defined){
+	if (!defined){
+		printf("DEFVAR LF@$%s\n", name);			
+	} 
+	char *code = malloc(sizeof(char) * (strlen(name) + 1 + (strlen("MOVE "))));
+	strcpy(code, "MOVE LF@$");
+	strcat(code, name);
+
+	PushStack(StackAssign, code);	
+	
+}
+
+char *GeneratorMathOperation(lexems lexem){
+	char *code;
+	switch (lexem){
+		case PLUS:
+			code = GeneratorCharAppend("ADD");
+			break;
+		case MINUS:
+			code = GeneratorCharAppend("SUB");
+			break;
+		case MULTIPLY:
+			code = GeneratorCharAppend("MUL");
+			break;
+		case DIVISION:
+			code = GeneratorCharAppend("DIV");
+			break;
+		default:
+			break;
+	}
+	return code;
+}
+
+char *GeneratorCharAppend(char *name){
+	char *code = malloc(sizeof(char) * (strlen(name) + 1 ));
+	sprintf(code,"%s",name);
+	
+	if (!code)
+		return NULL;
+	else 
+		return code;
+}
+
+char *GeneratorMatcher(lexems lexem){
+	char *code;
+	switch (lexem){
+		case LESS:
+			code = GeneratorCharAppend("LT LF@$cond");
+			break;
+		case MORE:
+			code = GeneratorCharAppend("GT LF@$cond");
+			break;
+		case EQ:
+			code = GeneratorCharAppend("EQ LF@$cond");
+			break;
+		case LESSEQ:
+			code = GeneratorCharAppend("-- LF@$cond");
+			break;
+		case MOREEQ:
+			code = GeneratorCharAppend("-- LF@$cond");
+			break;
+		default:
+			break;
+	}
+
+	return code;
+}
+
+char *GeneratorVariable(char *name){
+	char *code = malloc(sizeof(char) * (strlen(name) + strlen("LF@$") + 1 ));
+	sprintf(code,"LF@$%s ",name);
+
+	return code;
+}
+
+char *GeneratorConstantDefine(lexems lexem, char *name){
+
+	switch (lexem){
+		case INT:
+			printf("DEFVAR LF@$const%d\n", ExpTmp);
+			printf("MOVE LF@$const%d int@%s\n", ExpTmp, name);
+			break;
+		case STR:
+			printf("DEFVAR LF@$const%d\n", ExpTmp);
+			printf("MOVE LF@$const%d string@%s\n", ExpTmp, name);
+			break;
+		case FLOAT:
+			printf("DEFVAR LF@$const%d\n", ExpTmp);
+			printf("MOVE LF@$const%d float@%s\n", ExpTmp, name);
+			break;
+		case NIL:
+			printf("DEFVAR LF@$const%d\n", ExpTmp);
+			printf("MOVE LF@$const%d nil@%s\n", ExpTmp, name);
+			break;
+		default:
+			break;
+	}
+
+	char *code = malloc(sizeof(char) * (strlen(name) + strlen("LF@const") + 1 + sizeof(int)));
+	sprintf(code,"LF@const%d",ExpTmp++);
+	
+	return code;
+}
+
+void GeneratorFunctionCall(char *name){
+	char *code = malloc(sizeof(char) * (strlen(name) + strlen("CALL $") + 1));
+	sprintf(code,"CALL $%s",name);
+	
+	PushStack(StackG, code);
+}
+
+void GeneratorParameterOut(int order, char *name, lexems lexem){
+	switch(lexem){
+		case STR:
+			printf("DEFVAR LF@$const%d\n", ExpTmp);
+			printf("MOVE LF@$const%d string@%s\n", ExpTmp, name);
+			printf("MOVE TF@%%%d LF$const%d\n", order, ExpTmp++);
+			break;
+		case FLOAT:
+			printf("DEFVAR LF@$const%d\n", ExpTmp);
+			printf("MOVE LF@$const%d float@%s\n", ExpTmp, name);
+			printf("MOVE TF@%%%d LF$const%d\n", order, ExpTmp++);
+			break;
+		case INT:
+			printf("DEFVAR LF@$const%d\n", ExpTmp);
+			printf("MOVE LF@$const%d int@%s\n", ExpTmp, name);
+			printf("MOVE TF@%%%d LF$const%d\n", order, ExpTmp++);
+			break;
+                case IDENT:
+			printf("MOVE TF@%%%d LF$%s\n", order, name);
+                        break;
+		default:
+			break;
+	}
+}
+
+void GeneratorFunctionDefinition(char *name){
+	printf("#Start of function called: %s.\n", name);
+	printf("LABEL $%s\n", name);
 	printf("PUSHFRAME\n");
-	printf("DEFVAR LF@_retval\n");
-	printf("MOVE LF@_retval nil@nil\n");
-
-	return true;
+	printf("DEFVAR LF@%%retval\n");
+	printf("MOVE LF@%%retval nil@nil\n");
+	printf("#Parameters: \n");
 }
 
-bool functionParam(int paramNumber){
-	printf("DEFVAR LF@param%d\n", paramNumber);
-	printf("MOVE LF@param%d LF@$%d\n", paramNumber, paramNumber);
-	paramNumber++;
-
-	return true;
+void GeneratorParameterIn(int order, char *name){
+	printf("DEFVAR LF@$%s\n", name);
+	printf("MOVE LF@$%s LF@%%%d\n", name, order);
 }
 
-bool functionEnd(int paramNumber){
+void GeneratorFunctionEnd(){
+	printf("POPFRAME\n");
 	printf("RETURN\n");
-	printf("#End of this function\n");
-	paramNumber = 1;
-
-	return true;
 }
 
-void treeTraversal(ATreeNodePtr Tree){
-    if(!Tree)
-        return;
+void GeneratorWhileStartLabel(){
+	printf("LABEL $whileLabel\n");
+}
 
-    ATreeNodePtr tmp = Tree;
+void GeneratorWhileCondEvaluation(){
+        printf("JUMPIFEQ $whileLabelEnd LF@$cond bool@false\n");
+}
 
-    if(tmp->left){
-        generate(tmp->left);
-        tmp = tmp->left;
-    }
-    if(tmp->right){
-        generate(tmp->right);
-        tmp = tmp->right;
-    }
+void GeneratorWhileEnd(){
+	printf("JUMP $whileLabel\n");
+        printf("LABEL $whileLabelEnd\n");
+}
+
+void GeneratorIfStart(){
+	char *code = malloc(sizeof(char) * strlen("JUMPIFEQ $ifLabelEnd LF@$cond bool@false") + 1);
+	sprintf(code,"JUMPIFEQ $ifLabelEnd LF@$cond bool@false");
 
 }
 
-
-void generate(ATreeNodePtr Tree){
-    
-    //start programu
-	
-        switch(Tree->nType) {
-            case WHILEST:
-      
-            case ENDWHILEST:
-
-            case IFST:
-
-            case ENDIFST:
-
-            case BLOCKIF:
-
-            case COMPARATOR:
-
-            case FUNCTIONDEF:
-
-            case FUNCTIONCALL:
-
-            case ARGUMENT:
-
-            case VARIABLEST:
-
-            case CONSTANT:
-
-            case OPER:
-
-            case STATEMENT:
-
-            case ASSIGNMENT:
-        }
+void GeneratorAfterIf(){
+	printf("LABEL $ifLabelEnd\n");
 }
+
+void Generator(FILE *file){
+    StackG = CreateStack();	
+    StackAssign = CreateStack();
+    outputFile = file;   
+    printf(".IFJcode2018\n");
+    printf("CREATEFRAME\n");
+    printf("PUSHFRAME\n");
+    printf("DEFVAR LF@cond\n");
+}
+
+
