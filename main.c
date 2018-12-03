@@ -46,13 +46,6 @@ int main(int argc, char **argv) {
     //if (!ParserSemantic(tree))
         //TODO
 
-    /* Converts symbol table to intermediate code */
-    intermediateCode = Generator(tree);
-    //if (!intermediateCode)
-        //TODO
-
-    printf("INTERMEDIATE CODE IS:\n %s", intermediateCode);
-
     fclose(inputCode);
 
  error:
