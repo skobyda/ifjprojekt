@@ -404,8 +404,14 @@ static bool ParserFunctionDeclaration() {
         GeneratorParameterIn(order, token->name);
         order++;
 
-        // to secure switching of argument/comma
-        flag = !flag;
+        if(token->lexem == INT ||
+           token->lexem == STR ||
+           token->lexem == FLOAT ||
+           token->lexem == NIL ||
+           token->lexem == IDENT ){
+            GeneratorParameterIn(order, token->name);
+            order++;
+        }
 
         NEXTTOKEN;
         /* Expects end of line after right bracket */
