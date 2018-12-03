@@ -22,6 +22,41 @@
 
 SymTablePtr globalTable = NULL; //table contains all identifiers of functions
 
+static bool SymTableInsertFunctions(SymTablePtr table) {
+    char* functions[8];
+    functions[0] = malloc(sizeof(char) * 7);
+    functions[1] = malloc(sizeof(char) * 7);
+    functions[2] = malloc(sizeof(char) * 7);
+    functions[3] = malloc(sizeof(char) * 7);
+    functions[4] = malloc(sizeof(char) * 7);
+    functions[5] = malloc(sizeof(char) * 7);
+    functions[6] = malloc(sizeof(char) * 7);
+    functions[7] = malloc(sizeof(char) * 7);
+
+    strcpy (functions[0], "print");
+    strcpy (functions[1], "inputs");
+    strcpy (functions[2], "inputi");
+    strcpy (functions[3], "inputf");
+    strcpy (functions[4], "substr");
+    strcpy (functions[5], "length");
+    strcpy (functions[6], "ord");
+    strcpy (functions[7], "chr");
+
+    for (int i = 0; i < 8; i++) {
+        SymbolPtr symbol = malloc(sizeof(struct Symbol));
+        if (!symbol) {
+            printf("ERROR: malloc of symbol\n");
+            return false;
+        }
+        symbol->name = functions[i];
+        symbol->nextSymbol = NULL;
+        symbol->iType = FUNCTION;
+        SymTableAdd(table, symbol);
+    }
+
+    return true;
+}
+
 static unsigned int HashFunction(char* key) {
     int val = 0;
     for (unsigned int i = 0; i < strlen(key); i++)
@@ -41,7 +76,10 @@ SymTablePtr SymTableInit(SymTablePtr ParentTable) {
     for (int i = 0; i < TABLESIZE; i++)
         table->arr[i] = NULL;
 
-    return table;
+    if(SymTableInsertFunctions(table))
+        return table;
+    else
+        return NULL;
 }
 
 void SymTableDestroy(SymTablePtr table) {

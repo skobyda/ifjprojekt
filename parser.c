@@ -97,7 +97,7 @@ static TokenPtr DummyGetToken() {
 
 #define FUNCTIONCALL(function) do { \
     if (!function()) { \
-        printf("ERROR\n"); \
+        printf("ERRORc\n"); \
     } \
 } while(0)
 
@@ -182,7 +182,7 @@ static void AuxPrintToken(TokenPtr token) {
         case COMA: lexem = "COMA"; break;
         case NEXT: lexem = "NEXT"; break;
         default: lexem = malloc(sizeof(char) * 3);
-                 sprintf(lexem, "%d", token->lexem); 
+                 sprintf(lexem, "%d", token->lexem);
                  break;
 
     }
@@ -202,8 +202,7 @@ static bool ParserArguments() {
     bool flag = true; // set to true if expects Identificator, false if expects comma
 
     /* Asks for tokens (arguments), until it sees right bracket */
-    NEXTTOKEN;
-    while (token->lexem != RIGHT_B) {
+    while (token->lexem != RIGHT_B && token->lexem != EOL) {
         if (flag && ( // argument
             token->lexem != IDENT &&
             token->lexem != STR &&
@@ -214,7 +213,7 @@ static bool ParserArguments() {
             printf("ERROR\n");
             goto end;
         } else if (!flag && token->lexem != COMA) { // comma
-            printf("ERROR\n");
+            printf("ERRORa\n");
             goto end;
         }
 
@@ -231,11 +230,13 @@ static bool ParserArguments() {
         NEXTTOKEN;
     }
 
-    /* Expects end of line after right comma */
-    NEXTTOKEN;
-    if (token->lexem != EOL) {
-        printf("ERROR\n");
-        goto end;
+    if (token->lexem == RIGHT_B) {
+        /* If arguments of function call are inside brackets, expects end of line after right bracket */
+        NEXTTOKEN;
+        if (token->lexem != EOL) {
+            printf("ERROR\n");
+            goto end;
+        }
     }
 
  end:
@@ -280,6 +281,7 @@ static bool ParserStatement() {
             //printf("End\n");
             break;
         default:
+            //TODO END OF LINE
             return false;
     }
 
@@ -320,15 +322,6 @@ static bool ParserFunctionDeclaration() {
 
     printf("SEMCALL: Function definition, name: %s\n", token->name);
 
-    /* Expects left bracked after function name */
-    NEXTTOKEN;
-    if (token->lexem != LEFT_B) {
-        printf("ERROR\n");
-        while (token->lexem != EOL)
-            NEXTTOKEN;
-    }
-
-
     /* Change Symbol Table for function's block of code and its parameters */
     currentTable = SymTableInit(globalTable);
     if (!currentTable) {
@@ -336,53 +329,63 @@ static bool ParserFunctionDeclaration() {
         return NULL;
     }
 
-    /* Reads parameters of function until it sees right bracket */
+    //TODO FUNCTIONS DOESNT NEED TO HAVE ANY ARGUMENTS
+    /* Expects left bracked after function name */
     NEXTTOKEN;
-    while (token->lexem != RIGHT_B) {
-        if (flag && token->lexem != IDENT) {
-            printf("ERROR\n");
-            while (token->lexem != EOL)
-                NEXTTOKEN;
-        } else if (!flag && token->lexem != COMA) {
-            printf("ERROR\n");
-            while (token->lexem != EOL)
-                NEXTTOKEN;
-        }
-
-        char *name = malloc(sizeof(char) * (strlen(token->name) + 1));
-        strcpy(name, token->name);
-
-        // Add declaration to symtable
-        if (!SymTableFind(currentTable, name)) {
-            SymbolPtr symbol = malloc(sizeof(struct Symbol));
-            if (!symbol)
-                printf("ERROR: malloc of symbol\n");
-            symbol->name = name;
-            symbol->nextSymbol = NULL;
-            symbol->iType = VARIABLE;
-            SymTableAdd(currentTable, symbol);
-        } else {
-            free(name);
-        }
-
-        /* Semantic Action */
-        if (flag) {
-            printf("SEMCALL: Function definition parameter:");
-            AuxPrintToken(token);
-            printf("\n");
-        }
-
-        // to secure switching of argument/comma
-        flag = !flag;
-        NEXTTOKEN;
-    }
-
-    /* Expects end of line after right bracket */
-    NEXTTOKEN;
-    if (token->lexem != EOL) {
+    if (token->lexem != LEFT_B) {
         printf("ERROR\n");
         while (token->lexem != EOL)
             NEXTTOKEN;
+    } else {
+
+        /* Reads parameters of function until it sees right bracket */
+        NEXTTOKEN;
+        while (token->lexem != RIGHT_B) {
+            if (flag && token->lexem != IDENT) {
+                printf("ERROR\n");
+                while (token->lexem != EOL)
+                    NEXTTOKEN;
+            } else if (!flag && token->lexem != COMA) {
+                printf("ERROR\n");
+                while (token->lexem != EOL)
+                    NEXTTOKEN;
+            }
+
+            char *name = malloc(sizeof(char) * (strlen(token->name) + 1));
+            strcpy(name, token->name);
+
+            // Add declaration to symtable
+            if (!SymTableFind(currentTable, name)) {
+                SymbolPtr symbol = malloc(sizeof(struct Symbol));
+                if (!symbol)
+                    printf("ERROR: malloc of symbol\n");
+                symbol->name = name;
+                symbol->nextSymbol = NULL;
+                symbol->iType = VARIABLE;
+                SymTableAdd(currentTable, symbol);
+            } else {
+                free(name);
+            }
+
+            /* Semantic Action */
+            if (flag) {
+                printf("SEMCALL: Function definition parameter:");
+                AuxPrintToken(token);
+                printf("\n");
+            }
+
+            // to secure switching of argument/comma
+            flag = !flag;
+            NEXTTOKEN;
+        }
+
+        /* Expects end of line after right bracket */
+        NEXTTOKEN;
+        if (token->lexem != EOL) {
+            printf("ERROR\n");
+            while (token->lexem != EOL)
+                NEXTTOKEN;
+        }
     }
 
     /* Statement(s) inside a function (aka body of function) */
@@ -532,10 +535,11 @@ static bool ParserWhile() {
 }
 
 /* Rule of LL gramar for declaration and definiton of
- * variables or functions
+ * variables or function call
  */
 static bool ParserDeclaration() {
     //printf("Declaration\n");
+    SymbolPtr symbol;
 
     char *name = malloc(sizeof(char) * (strlen(token->name) + 1));
     strcpy(name, token->name);
@@ -564,13 +568,40 @@ static bool ParserDeclaration() {
             pinfo.expressionType = 0;
             break;
         case LEFT_B: // It's function call
+        case IDENT:
+        case STR:
+        case INT:
+        case FLOAT:
+        case NIL:
+            if (token->lexem == LEFT_B)
+                NEXTTOKEN;
             /* Semantic Action */
             printf("SEMCALL: Function call, function name: %s\n", name);
             free(name);
             FUNCTIONCALL(ParserArguments);
             break;
+        case EOL:
+            symbol = SymTableFind(currentTable, name);
+            if (!symbol) {
+                printf("ERROR, usage of undefined variable/function\n");
+            } else {
+                if (symbol->iType == FUNCTION) { //fuction call with no parameters
+                    printf("SEMCALL: Function call, function name: %s\n", name);
+                }
+                //could also be variable assigned nowhere. In that case, does nothing
+            }
+            FUNCTIONCALL(ParserStatement);
+            free(name);
+            break;
         default:
-            return false;
+            printf("ERRORA\n");
+            while (token->lexem != EOL)
+                NEXTTOKEN;
+            // AuxPrintToken(token);
+            // NEXTTOKEN;
+            // AuxPrintToken(token);
+            FUNCTIONCALL(ParserStatement);
+            free(name);
     }
 
     return true;
@@ -606,7 +637,7 @@ static bool ParserExpressionCheckError(bool flag) {
                     token->lexem != EQ &&
                     token->lexem != NOTEQ) {
 
-            printf("ERROR\n");
+            printf("ERRORk\n");
             while (token->lexem != EOL &&
                    token->lexem != DO &&
                    token->lexem != THEN &&
@@ -697,16 +728,44 @@ static bool ParserExpression() {
 
     bool flag = true;
 
-    StackPtr stack = StackCreate();
-
     /* Reads operators and operadns of expression */
     NEXTTOKEN;
+
+    SymbolPtr symbol = SymTableFind(currentTable, token->name);
+    if (symbol && symbol->iType == FUNCTION) {
+            printf("SEMCALL: Function call, function name: %s\n", token->name);
+
+            NEXTTOKEN;
+            switch (token->lexem) {
+                case LEFT_B: // It's function call
+                case IDENT:
+                case STR:
+                case INT:
+                case FLOAT:
+                case NIL:
+                    if (token->lexem == LEFT_B)
+                        NEXTTOKEN;
+                    FUNCTIONCALL(ParserArguments);
+                    break;
+                case EOL:
+                    printf("SEMCALL: Function call has no arguments\n");
+                    //could also be variable assigned nowhere. In that case, does nothing
+                    break;
+                default:
+                    break; //TODO ERROR
+            }
+
+            goto next;
+    }
+
+    StackPtr stack = StackCreate();
     while (token->lexem != EOL &&
            token->lexem != DO &&
            token->lexem != THEN &&
            token->lexem != EOFILE) {
-        if (!ParserExpressionCheckError(flag))
+        if (!ParserExpressionCheckError(flag)) {
             return false;
+        }
 
         TokenPtr newToken = CopyToken(token);
 
@@ -741,6 +800,7 @@ static bool ParserExpression() {
 
     StackDestroy(stack);
 
+ next:
     switch (token->lexem) {
         case EOL:
             FUNCTIONCALL(ParserStatement);
