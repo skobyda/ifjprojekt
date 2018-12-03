@@ -342,7 +342,7 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
             return false; 
         }
     }
-    else if (token->lexem >= 2 && token->lexem <= 6)
+    else if (token->lexem >= 2 && token->lexem <= 6) {
         if (token->lexem == NIL && exprAssignCompType != 4) {
             printf("ERROR: Invalid operation with nil in expression on the line: %u\n", token->line);
             SemanticVarAssignTypeSet(currTable, false);
@@ -373,6 +373,7 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
                 printf("ERROR: Invalid operator in expression with string on the line: %u\n", token->line);
                 return false;
             }
+        }
     }
     return ok;
 }
