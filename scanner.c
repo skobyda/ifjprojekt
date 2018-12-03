@@ -250,7 +250,7 @@ TokenPtr ScannerGetToken(){
         token->line=n_lines;
         return token;
     }
-    while(1){
+    while(1){printf("state=%d\n",state );
         switch(state){
             case START:{
                 //printf("weird,%c\n",c );
@@ -407,7 +407,7 @@ TokenPtr ScannerGetToken(){
                     return token;
                 }
                 if((c>='A'&& c<='Z')||((c>='a')&& (c<='z'))||(c>='0'&& c<='9')||c=='_'){
-                    printf("%c\n",c );
+                    //printf("%c\n",c );
                     state=ID;
                     SAVENEW;
                     c=(char)fgetc(sourceCode);
@@ -544,7 +544,6 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case STRING:{
-
                 if(c!='\"' && c!='\\'){
                     SAVENEWCHAR;
                     c=(char)fgetc(sourceCode);
@@ -637,8 +636,11 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
-                    if((c>='0' && c<='9')||(c>='A'&&c<='F'))
+                    if((c>='0' && c<='9')||(c>='A'&&c<='F')||((c>='a')&&(c<='f'))){
+                        if(((c>='a')&&(c<='f')))
+                            c=c-32;
                         code[0]=c;
+                    }
                     else{
                         state=PROBLEM;
                         continue;
@@ -651,7 +653,9 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
-                    if(((c>='0') && (c<='9'))||((c>='A')&&(c<='F'))){
+                    if(((c>='0') && (c<='9'))||((c>='A')&&(c<='F'))||((c>='a')&&(c<='f'))){
+                        if(((c>='a')&&(c<='f')))
+                            c=c-32;
                         code[1]=c;
                         int a=ConvertHextoDec(code[0])*16+ConvertHextoDec(code[1]);
                         c=a;
@@ -899,6 +903,7 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case DCOMD:{
+                printf("%s\n",token->name );
                 if(c=='e'||c=='E'){
                     SAVENEW;
                     c=(char)fgetc(sourceCode);
@@ -908,6 +913,7 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
+                    state=DEXP;
                 continue;
                 }
                 if(c<='9'&&c>='0'){
@@ -921,7 +927,7 @@ TokenPtr ScannerGetToken(){
                     }
                 continue;
                 }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==9)||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==',')||(c==9)||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
