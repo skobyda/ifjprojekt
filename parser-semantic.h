@@ -97,10 +97,12 @@ void freeArray (CArray *a);
 
 bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun);
 void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token);
-void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token);
-void SemanticNameSet (TokenPtr token);
-bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token);
-bool SemanticFunNameDefControl(TokenPtr token);
+bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token);
+void SemanticExpAssignReset ();
+void SemanticNameSet (char *name, int varOrFun);
+bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token, char *name);
+bool SemanticFunNameDefControl(TokenPtr token, char *name);
+void SemanticFunNameCallControl(TokenPtr token, char *name);
 
 // Initializes abstract tree before first usage
 void SemanticTreeInit (ATreeNodePtr *RootPtr);
