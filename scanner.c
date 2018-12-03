@@ -18,15 +18,17 @@
 /***LOCAL FILES***/
 #include "scanner.h"
 
+//THIS macro will check if we have enough space for saving next character, if not it will make it :)
 #define SAVENEW do { \
     strlenght=strlenght+1; \
     if((strlenght%50)==0){ \
         token->name= realloc(token->name,(strlenght+50)*sizeof(char)); \
-    }\
+    } \
     if(ScannerSaveNew(token,n_lines,&c)==0) \
         return token; \
 } while(0)
 
+//this macro will convert ascii values 0-32, 35,95 because of generating code into \number number and save it into our token string
 #define SAVENEWCHAR do { \
     if((c<=32)|| (c==92)||(c==35)) \
         {char var=c; \
@@ -62,6 +64,7 @@ Scanner(FILE *file) {
     return true;
 }
 
+//THIS will skip the rest of the line
 int ScannerSkipLineE(){
     char c=0;
     while(c!='\n')
@@ -74,6 +77,7 @@ int ScannerSkipLineE(){
     return 0;
 }
 
+//this will check if here are some white spaces and if they are it will throw them away
 void ScannerWhite(){
     char c=0;
     do
@@ -83,6 +87,7 @@ void ScannerWhite(){
     return;
 }
 
+//this function converts hex value into decimal
 int ConvertHextoDec(char c){
     switch(c){
         case '0':
@@ -122,6 +127,7 @@ int ConvertHextoDec(char c){
     }
 }
 
+//this function save only one char into string
 char *ScannerStradd( char *s, char* c ){
     int length=0;
     if(s==NULL|| c==NULL)
@@ -140,6 +146,7 @@ char *ScannerStradd( char *s, char* c ){
     return s;
 }
 
+//this function will check if the ident token if the keyword
 int ScannerTestW(char*str){
     if(str==NULL)
         return 0;
@@ -164,6 +171,7 @@ int ScannerTestW(char*str){
     return 0;
 }
 
+//check if the function ScannerStradd is okay with no error
 int ScannerSaveNew(TokenPtr token,int lines,char* c){
     if(ScannerStradd((token)->name,c)==0){
         (token)->lexem=PROBLEMC;
@@ -173,7 +181,7 @@ int ScannerSaveNew(TokenPtr token,int lines,char* c){
 
     return 1;
 }
-
+//this check the word, char by char
 int ScannerTestWord(char *str){
     char c;
      c=fgetc(sourceCode);
@@ -220,38 +228,36 @@ int ScannerTestWord(char *str){
     return 1;
 }
 
+//function which call parser, if he wants new token, most of the code is here
 TokenPtr ScannerGetToken(){
-    //printf("prvy pokus-%a-\ndruhy pokus-%a-\n",00.3,0.3 );
-    static int strlenght=0;
-    strlenght=0;
-    static int n_lines=1;
-    static int one=0;
-    static states state=NEWLINE;
-    static  char c;
-    TokenPtr token=NULL;
-    token=malloc(sizeof(Token));
-    if(token==NULL){//
+    static int strlenght=0; //lenght of the string
+    strlenght=0;    //initialization of the lenght
+    static int n_lines=1; //number of the line where we are
+    static states state=NEWLINE;    //state of the our FSM
+    static  char c; //char that we actualy have
+    TokenPtr token=NULL;    //token that we will sent
+    token=malloc(sizeof(Token));    //allocation of the token
+    if(token==NULL){
         (token)->lexem=PROBLEMM;
         (token)->line=n_lines;
         return token;
     }
-    (token)->name=malloc((sizeof(char))*50);
+    (token)->name=malloc((sizeof(char))*50);    //here we save our chars
     if(token->name==NULL){//
         (token)->lexem=PROBLEMM;
         (token)->line=n_lines;
         return token;
     }
-    token->name[0]='\0';
-    ScannerWhite();
-    if(one==0)
-        c =(char)fgetc(sourceCode);
+    token->name[0]='\0';    //first char is this, initialization
+    ScannerWhite(); //check for white spaces
+    c =(char)fgetc(sourceCode);
     if(c==EOF){
         token->lexem=EOFILE;
         state=ENDFILE;
         token->line=n_lines;
         return token;
     }
-    while(1){
+    while(1){   //FSM will run while it will find token, correct or bad
         switch(state){
             case START:{
                 if(c=='#'){
@@ -306,7 +312,7 @@ TokenPtr ScannerGetToken(){
                     (token)->line=n_lines;
                     return token;
                 }
-                else if((c==' ') || (c==9)){
+                else if((c==' ') || (c==9)){ // 9 is TAB
                     c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
@@ -405,7 +411,7 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case IDKEY:{
-                if((c==' ') || (c==9) || c=='!' || c=='?'||c==','){
+                if((c==' ') || (c==9) || c=='!' || c=='?'||c==','){//check for end of the string
                     (token)->lexem=IDENT;
                     (token)->line=n_lines;
                     if((c!=' ') && (c!=9))
@@ -468,8 +474,6 @@ TokenPtr ScannerGetToken(){
                 return NULL;
             }
             case NEWLINE:{
-                if(one==1)
-                    one=0;
                 if(c=='\n'){
                     state=NEWLINE;
                     n_lines++;
@@ -650,7 +654,7 @@ TokenPtr ScannerGetToken(){
                     state=STRING;
                     continue;
                 }
-                if(c=='x'){
+                if(c=='x'){ //if there is \x
 
                     c=(char)fgetc(sourceCode);
 
@@ -914,7 +918,7 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
-                    state=DEXPD;//WARNING NOT DCOMD BECAUSE IT CAN BE 1e+5e2
+                    state=DEXPD;
                     continue;
                 }
 
@@ -966,9 +970,7 @@ TokenPtr ScannerGetToken(){
             case PROBLEM:{
                 if(c=='\n')
                     n_lines++;
-                //printf("riadok -%d-, c=%d\n",n_lines,c );
                 if(ScannerSkipLineE()==1){
-                    //n_lines++;
                     state=ENDFILE;
 
                     continue;
