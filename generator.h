@@ -58,6 +58,7 @@ void Generator(FILE *file);
 bool GeneratorAddExpression(ExL Ex, char *name, lexems lexem);
 void GeneratorDeleteExpression(ExL ExpL, Expr Delete);
 
+int ownStrLen(char *name);
 void GeneratorAssign(char *name, bool defined);
 char *GeneratorMathOperation(lexems lexem);
 char *GeneratorVariable(char *name);
