@@ -41,7 +41,7 @@ static int rightExprComp = 3;
 /*0 stands for plus(+), 1 for others(*,/,-), 2 for none */
 int exprOperator = 2;
 /*0 stands for strings, 1 for int or float,  2 nil, 3 for unkown, 4 reset*/
-int exprAssignCompType = 3;
+int exprAssignCompType = 4;
 
 char* identVarName;
 char* identFunName;
@@ -143,8 +143,9 @@ void SemanticCondCompSet(TokenPtr token) {
 }
 //TODO vsade pre expression este aj nil
 /*Sets data type of expression in codition*/
-void SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
-    
+bool SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
+   
+    bool ok = true; 
     switch (token->lexem) {
         case STR:
             *exprComp = 0;
@@ -163,32 +164,34 @@ void SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
         }
         
         if (token->lexem == IDENT) {
-        bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
-      
-        if (defined) {
-            SymbolPtr symbol = SymTableFind(currTable, token->name);
-            switch (symbol->dType) {
-                case typeString:
-                    *exprComp = 0;
-                    break;
-                case typeNumeric:
-                    *exprComp = 1;
-                    break;
-                case typeNil:
-                    *exprComp = 2;
-                    break;
-                case typeUnknown:
-                    *exprComp = 3;
-                    break;
-                default:
-                    *exprComp = 3;
-                    break;
+            bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
+          
+            if (defined) {
+                SymbolPtr symbol = SymTableFind(currTable, token->name);
+                switch (symbol->dType) {
+                    case typeString:
+                        *exprComp = 0;
+                        break;
+                    case typeNumeric:
+                        *exprComp = 1;
+                        break;
+                    case typeNil:
+                        *exprComp = 2;
+                        break;
+                    case typeUnknown:
+                        *exprComp = 3;
+                        break;
+                    default:
+                        *exprComp = 3;
+                        break;
+                }
             }
+            else {
+                printf("ERROR: Using undefined variable '%s' on the line: %u\n",token->name, token->line);
+            ok = false;
         }
-        else {
-            printf("ERROR: Using undefined variable '%s' on the line: %u\n",token->name, token->line);
-        }
-    } 
+    }
+    return ok; 
 }
 
 /*condComp 0 stands for != and == , 1 stands for others
@@ -339,14 +342,14 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
             return false; 
         }
     }
-    if (token->lexem >= 2 && token->lexem <= 6)
+    else if (token->lexem >= 2 && token->lexem <= 6)
         if (token->lexem == NIL && exprAssignCompType != 4) {
             printf("ERROR: Invalid operation with nil in expression on the line: %u\n", token->line);
             SemanticVarAssignTypeSet(currTable, false);
             return false;
         } 
         if ((token->lexem == NIL && exprAssignCompType == 4) ||
-            (token->lexem != NIL && exprAssignCompType > 3)) {
+            (token->lexem != NIL && exprAssignCompType >= 3)) {
                 SemanticExprCompSet (currTable, token, &exprAssignCompType);
                 SemanticVarAssignTypeSet(currTable, true);
         }
