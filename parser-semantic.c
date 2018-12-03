@@ -313,7 +313,7 @@ void SemanticVarAssignTypeSet(SymTablePtr currTable, bool ok) {
             }
     }
     else
-        symbol->dType = typeUnknown;
+        symbol->dType = typeNil;
     
 }
 
@@ -331,12 +331,14 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
             SemanticOperatorSet (token);
         else {
             printf("ERROR: Invalid operation with nil in expression on the line: %u\n", token->line); 
+            SemanticVarAssignTypeSet(currTable, false);
             return false; 
         }
     }
     if (token->lexem >= 2 && token->lexem <= 6)
         if (token->lexem == NIL && exprAssignCompType != 4) {
             printf("ERROR: Invalid operation with nil in expression on the line: %u\n", token->line);
+            SemanticVarAssignTypeSet(currTable, false);
             return false;
         } 
         if ((token->lexem == NIL && exprAssignCompType == 4) ||
@@ -347,8 +349,9 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
         else {
             int currentExprType;
             SemanticExprAssignTypeSet (currTable, token, &currentExprType);
-            if (currentExprType == 2) {
+            if (currentExprType == 2 || exprAssignCompType == 2) {
                 printf("ERROR: Invalid operation with nil variable in expression on the line: %u\n", token->line);
+                SemanticVarAssignTypeSet(currTable, false);
                 return false;
             }
             else if (currentExprType != exprAssignCompType &&
@@ -399,7 +402,7 @@ bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token, char *
     }
     else {
         symbol = SymTableFind(currTable, identVarName);
-        symbol->dType = typeUnknown;
+        symbol->dType = typeNil;
     }
     return true;
 }
