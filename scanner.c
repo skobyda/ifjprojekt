@@ -66,6 +66,7 @@ int ScannerSkipLineE(){
     char c=0;
     while(c!='\n')
      c=(char)fgetc(sourceCode);
+
     if(c==EOF){
         return 1;
     }
@@ -77,7 +78,7 @@ void ScannerWhite(){
     char c=0;
     do
         c=(char)fgetc(sourceCode);
-    while(c==' ');
+    while(c==' '|| c==9);
     ungetc( c,  sourceCode);
     return;
 }
@@ -220,6 +221,7 @@ int ScannerTestWord(char *str){
 }
 
 TokenPtr ScannerGetToken(){
+    //printf("prvy pokus-%a-\ndruhy pokus-%a-\n",00.3,0.3 );
     static int strlenght=0;
     strlenght=0;
     static int n_lines=1;
@@ -269,7 +271,17 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c>='0' && c<='9'){
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    if(c=='0'){
+                        c=(char)fgetc(sourceCode);
+                        if(c=='0'){
+                            state=PROBLEM;
+                            continue;
+                        }
+                    }
+                    else{
+                        c=(char)fgetc(sourceCode);
+                    }
+
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -471,7 +483,17 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c>='0' && c<='9'){
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    if(c=='0'){
+                        c=(char)fgetc(sourceCode);
+                        if(c=='0'){
+                            state=PROBLEM;
+                            continue;
+                        }
+                    }
+                    else{
+                        c=(char)fgetc(sourceCode);
+                    }
+
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -791,7 +813,7 @@ TokenPtr ScannerGetToken(){
                     continue;
                 }
 
-                else if((c=='#')||(c==' ')||(c==9)||(c=='\n')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                else if((c=='#')||(c==' ')||(c==9)||(c=='\n')||(c==')')||(c==',')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=INT;
                     (token)->line=n_lines;
                     if(c=='\n')
@@ -866,7 +888,7 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==9)||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==9)||(c==',')||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
 
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
@@ -930,7 +952,8 @@ TokenPtr ScannerGetToken(){
                     (token)->line=n_lines;
                     ungetc(c,sourceCode);
                     if(c=='\n')
-                        state=NEWLINE;
+                        {
+                            state=NEWLINE;}
                     else
                         state=START;
                     return token;
@@ -941,8 +964,13 @@ TokenPtr ScannerGetToken(){
                 }
             }
             case PROBLEM:{
+                if(c=='\n')
+                    n_lines++;
+                //printf("riadok -%d-, c=%d\n",n_lines,c );
                 if(ScannerSkipLineE()==1){
-                    state=END;
+                    //n_lines++;
+                    state=ENDFILE;
+
                     continue;
                 }
                 token->lexem=PROBLEML;
