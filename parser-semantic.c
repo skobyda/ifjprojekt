@@ -34,13 +34,13 @@ static bool ArrayInit = false;
 static int condState = 4;
 /*0 stands for != and == , 1 stands for others*/
 int condComp; 
-/*0 stands for strings, 1 for int or float, 2 for unknown, 3 reset*/
-static int leftExprComp = 2; 
-static int rightExprComp = 2;
+/*0 stands for strings, 1 for int or float, 2 nil, 3 for unknown, 4 reset*/
+static int leftExprComp = 3; 
+static int rightExprComp = 3;
 
 /*0 stands for plus(+), 1 for others(*,/,-), 2 for none */
 int exprOperator = 2;
-/*0 stands for strings, 1 for int or float, 2 for unkown, 3 reset(outside from parser)*/
+/*0 stands for strings, 1 for int or float,  2 nil, 3 for unkown, 4 reset*/
 int exprAssignCompType = 3;
 
 char* identVarName;
@@ -141,33 +141,48 @@ void SemanticCondCompSet(TokenPtr token) {
     else if (token->lexem == EQ || token->lexem == NOTEQ)
         condComp = 0;
 }
-//TODO vsade pre expression este aj null
+//TODO vsade pre expression este aj nil
 /*Sets data type of expression in codition*/
 void SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
-
-    if (token->lexem == INT || token->lexem == FLOAT)
-        *exprComp = 1;
     
-    else if (token->lexem == STR)
-        *exprComp = 0;
-
-    else if (token->lexem == IDENT) {
+    switch (token->lexem) {
+        case STR:
+            *exprComp = 0;
+            break;
+        case INT: case FLOAT:
+            *exprComp = 1;
+            break;
+        case NIL:
+            *exprComp = 2;
+            break;
+        case IDENT:
+            break;
+        default:
+            *exprComp = 3;
+            break;
+        }
+        
+        if (token->lexem == IDENT) {
         bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
       
         if (defined) {
             SymbolPtr symbol = SymTableFind(currTable, token->name);
             switch (symbol->dType) {
-                case typeUnknown:
-                    *exprComp = 2;
+                case typeString:
+                    *exprComp = 0;
                     break;
                 case typeNumeric:
                     *exprComp = 1;
                     break;
-                case typeString:
-                    *exprComp = 0;
+                case typeNil:
+                    *exprComp = 2;
+                    break;
+                case typeUnknown:
+                    *exprComp = 3;
                     break;
                 default:
-                    *exprComp = 2;
+                    *exprComp = 3;
+                    break;
             }
         }
         else {
@@ -273,31 +288,90 @@ void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprA
         }
     }
 }
+/*if OK is false, error in expression*/
+void SemanticVarAssignTypeSet(SymTablePtr currTable, bool ok) {
+
+    SymbolPtr symbol = SymTableFind(currTable, identVarName);
+
+    if (ok) {
+        switch (exprAssignCompType) {
+            case 0:
+                symbol->dType = typeString;
+                break;
+            case 1:
+                symbol->dType = typeNumeric;
+                break;
+            case 2:
+                symbol->dType = typeNil;
+                break;
+            case 3:
+                symbol->dType = typeUnknown;
+                break;
+            default:
+                break;
+
+            }
+    }
+    else
+        symbol->dType = typeUnknown;
+    
+}
 
 /*Makes control of assignment expression
  *now in parser called in parserExpression like SemanticExprAssignCotrol(currentTable, tokenToPrint);
  *calling could change a bit in parser
  *TODO parser has to "reset" exprAssignCompType with value 3 after full Control
  */
-void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
+bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
 
-    if (token->lexem >= 9 && token->lexem <= 12)
-        SemanticOperatorSet (token);
+    bool ok = true;
 
-    else if (token->lexem >= 2 && token->lexem <= 5 && exprAssignCompType >= 2)
-        SemanticExprAssignTypeSet (currTable, token, &exprAssignCompType);
-
-    else {
-        int currentExprType;
-        SemanticExprAssignTypeSet (currTable, token, &currentExprType);
-        if (currentExprType != exprAssignCompType &&
-            currentExprType != 2 &&
-            exprAssignCompType != 2)
-            printf("ERROR: Incompatible operands in expression on the line: %u\n", token->line);
-        else if (currentExprType == 0 && exprOperator == 1)
-            printf("ERROR: Invalid operator in expression with string on the line: %u\n", token->line);
+    if (token->lexem >= 9 && token->lexem <= 12) {
+        if (exprAssignCompType != 2) 
+            SemanticOperatorSet (token);
+        else {
+            printf("ERROR: Invalid operation with nil in expression on the line: %u\n", token->line); 
+            return false; 
+        }
     }
+    if (token->lexem >= 2 && token->lexem <= 6)
+        if (token->lexem == NIL && exprAssignCompType != 4) {
+            printf("ERROR: Invalid operation with nil in expression on the line: %u\n", token->line);
+            return false;
+        } 
+        if ((token->lexem == NIL && exprAssignCompType == 4) ||
+            (token->lexem != NIL && exprAssignCompType > 3)) {
+                SemanticExprAssignTypeSet (currTable, token, &exprAssignCompType);
+                SemanticVarAssignTypeSet(currTable, true);
+        }
+        else {
+            int currentExprType;
+            SemanticExprAssignTypeSet (currTable, token, &currentExprType);
+            if (currentExprType == 2) {
+                printf("ERROR: Invalid operation with nil variable in expression on the line: %u\n", token->line);
+                return false;
+            }
+            else if (currentExprType != exprAssignCompType &&
+                currentExprType != 3 &&
+                exprAssignCompType != 3) {
+                SemanticVarAssignTypeSet(currTable, false);
+                printf("ERROR: Incompatible operands in expression on the line: %u\n", token->line);
+                return false;
+            }
+            else if (currentExprType == 0 && exprOperator == 1) {
+                SemanticVarAssignTypeSet(currTable, false);
+                printf("ERROR: Invalid operator in expression with string on the line: %u\n", token->line);
+                return false;
+            }
+    }
+    return ok;
 }
+
+void SemanticExpAssignReset () {
+
+    exprOperator = 2;
+    exprAssignCompType = 4;
+}    
 
 void SemanticNameSet (char *name, int varOrFun) {
 
