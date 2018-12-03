@@ -95,10 +95,10 @@ void SemanticInitArray (CArray *a, size_t initSize);
 void SemanticInsertArray (CArray *a, unsigned line, char *name);
 void freeArray (CArray *a);
 
-bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun);
+bool SemanticDefinedControl(SymTablePtr currTable, TokenPtr token, int varOrFun);
 void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token);
 void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token);
-void SemanticNameSet (TokenPtr token);
+void SemanticNameSet (TokenPtr token, int varOrFun);
 bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token);
 bool SemanticFunNameDefControl(TokenPtr token);
 

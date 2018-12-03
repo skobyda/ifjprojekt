@@ -43,7 +43,13 @@ int exprOperator = 2;
 /*0 stands for strings, 1 for int or float, 2 for unkown, 3 reset(outside from parser)*/
 int exprAssignCompType = 3;
 
-char* identName;
+char* identVarName;
+char* identFunName;
+/*-1 means 1 or more params are correct*/
+int numOfParam;
+/*-2 means unknown num of parameters, not defined yet*/
+int paramCount;
+
 
 void SemanticInitArray (CArray *a, size_t initSize) {
     
@@ -77,22 +83,27 @@ void freeArray (CArray *a) {
  *varOrFun -> 0 = variable, 1 = function
  */
 //TODO dokoncit pre vstavane funkcie, mozno aj na to upravit symtab
-bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun){
+bool SemanticDefinedControl(SymTablePtr currTable, TokenPtr token, int varOrFun){
     
     bool defined = false;
     
     SymbolPtr symbol = NULL;
-    symbol = SymTableFind(currTable, name);
+    symbol = SymTableFind(currTable, token->name);
 
-    if (symbol != NULL) 
+	//if identifier is variable name
+    if (symbol != NULL && symbol->iType == VARIABLE && varOrFun == 0) 
         defined = true;
-    
-    else if (varOrFun) { //if identifier is function name
+   
+	//if identifier is function name 
+	else if (symbol != NULL && symbol->iType == FUNCTION && varOrFun == 1)
+		defined = true;
+    else if ((symbol == NULL && varOrFun == 1) ||
+			 (symbol != NULL && symbol->iType == VARIABLE && varOrFun == 1)) { 
         if (!ArrayInit){
             SemanticInitArray (&controlA, ARRAYSIZE);
             ArrayInit = true;
         } 
-        SemanticInsertArray (&controlA, line, name);
+        SemanticInsertArray (&controlA, token->line, token->name);
     }
     
     return defined;
@@ -130,7 +141,7 @@ void SemanticCondCompSet(TokenPtr token) {
     else if (token->lexem == EQ || token->lexem == NOTEQ)
         condComp = 0;
 }
-
+//TODO vsade pre expression este aj null
 /*Sets data type of expression in codition*/
 void SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
 
@@ -141,7 +152,7 @@ void SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
         *exprComp = 0;
 
     else if (token->lexem == IDENT) {
-        bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
+        bool defined = SemanticDefinedControl(currTable, token, 0);
       
         if (defined) {
             SymbolPtr symbol = SymTableFind(currTable, token->name);
@@ -240,7 +251,7 @@ void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprA
         *exprAssignType = 0;
 
     else if (token->lexem == IDENT) {
-        bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
+        bool defined = SemanticDefinedControl(currTable, token, 0);
         if (defined) {
             SymbolPtr symbol = SymTableFind(currTable, token->name);
             switch (symbol->dType) {
@@ -288,11 +299,17 @@ void SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
     }
 }
 
-void SemanticNameSet (TokenPtr token) {
+void SemanticNameSet (TokenPtr token, int varOrFun) {
 
     if (token->lexem == IDENT) {
-        identName = malloc(sizeof(char) * (strlen(token->name) + 1));
-        strcpy(identName, token->name);
+		if (varOrFun == 1) {//function name
+        	identFunName = malloc(sizeof(char) * (strlen(token->name) + 1));
+        	strcpy(identFunName, token->name);
+		}
+		else {
+			identVarName = malloc(sizeof(char) * (strlen(token->name) + 1));
+        	strcpy(identVarName, token->name);
+		}
     }
 }
 
@@ -301,14 +318,14 @@ void SemanticNameSet (TokenPtr token) {
 bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token) {
 
     SymbolPtr symbol = NULL;
-    symbol = SymTableFind(globalTable, identName);
+    symbol = SymTableFind(globalTable, identVarName);
 
     if (symbol != NULL && symbol->iType == FUNCTION) {
-        printf("ERROR: On the line: %u. Cannot define variable with name '%s', already defined as function.\n",token->line, identName);
+        printf("ERROR: On the line: %u. Cannot define variable with name '%s', already defined as function.\n",token->line, identVarName);
         return false;
     }
     else {
-        symbol = SymTableFind(currTable, identName);
+        symbol = SymTableFind(currTable, identVarName);
         symbol->dType = typeUnknown;
     }
     return true;
@@ -316,21 +333,35 @@ bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token) {
                   
 bool SemanticFunNameDefControl(TokenPtr token) {
 
-    SemanticNameSet (token);
+    SemanticNameSet (token, 1);
     SymbolPtr symbol = NULL;
-    symbol = SymTableFind(globalTable, identName);
+    symbol = SymTableFind(globalTable, identFunName);
 
     if (symbol != NULL && symbol->iType == VARIABLE) {
-        printf("ERROR: On the line: %u. Cannot define function with name '%s', already defined as variable.\n",token->line, identName);
+        printf("ERROR: On the line: %u. Cannot define function with name '%s', already defined as variable.\n",token->line, identFunName);
         return false;
     }
     else if (symbol != NULL && symbol->iType == FUNCTION) {
-        printf("ERROR: On the line: %u. Function with name '%s' already exists.\n",token->line, identName);
+        printf("ERROR: On the line: %u. Function with name '%s' already exists.\n",token->line, identFunName);
         return false;
     }
     else 
         return true;
 }
+
+void SemanticFunNameCallControl(TokenPtr token){
+//TODO upravit array kde pridam pocet parametrov
+//ak nebola definovana nejako si pamatat kolko prislo argumentov a to tam potom dat
+    SemanticNameSet (token, 1);
+    bool defined = SemanticDefinedControl(globalTable,token, 1);
+    if (defined) {
+		SymbolPtr symbol = SymTableFind(globalTable, token->name);
+    	numOfParam = symbol->numOfParameters;
+	}
+	else 
+		numOfParam = -2; //unknown num of paramaters, not defined yet
+}	
+
 
 void SemanticTreeInit (ATreeNodePtr *RootPtr) {
     *RootPtr = NULL;
@@ -343,3 +374,4 @@ bool ParserSemantic(ParTreePtr tree) {
 
     return NULL;
 }
+
