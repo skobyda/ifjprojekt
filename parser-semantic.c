@@ -366,6 +366,7 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
 void SemanticExpAssignReset () {
 
     free(identFunName);
+    identFunName = NULL;
     exprOperator = 2;
     exprAssignCompType = 4;
 }    
@@ -395,7 +396,7 @@ bool SemanticVarNameAssignControl (TokenPtr token, char *name) {
         printf("ERROR: On the line: %u. Cannot define variable with name '%s', already defined as function.\n",token->line, identVarName);
         return false;
     }
-    //else {
+    //else { //TODO do it in parser
      //   symbol = SymTableFind(currTable, identVarName);
      //   symbol->dType = typeNil;
     //}
