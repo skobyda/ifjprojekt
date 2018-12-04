@@ -17,6 +17,6 @@
  * @line if 0, no line is given in print message
  * @message return value
  * */
-void PrintError(int val, unsigned int line, const char *message);
+void PrintError(int val, unsigned int line, const char *format, ...);
 
 #endif

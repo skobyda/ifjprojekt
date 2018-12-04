@@ -1,3 +1,3 @@
-print ("AHOJ AKO SA MAS")
+print (, "AHOJ AKO SA MAS")
 a = inputi
 print ahoj

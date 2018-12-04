@@ -14,6 +14,7 @@
 /***SYSTEM FILES***/
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 /***LOCAL FILES***/
 #include "parser.h"
@@ -23,17 +24,27 @@
 
 int retval = 0;
 
-void PrintError(int val, unsigned int line, const char *message) {
-    if (!message)
+void PrintError(int val, unsigned int line, const char *format, ...) {
+    if (!format)
         return;
 
     if (!retval)
         retval = val;
 
-    if (line)
-        fprintf(stderr, "ERROR: Line %u: %s\n", line, message);
-    else
-        fprintf(stderr, "ERROR: %s\n", message);
+    va_list args;
+    va_start(args, format);
+
+    if (line) {
+        fprintf(stderr, "ERROR: Line %u:", line);
+        vfprintf(stderr, format, args);
+        fprintf(stderr, "\n");
+    } else {
+        fprintf(stderr, "ERROR");
+        vfprintf(stderr, format, args);
+        fprintf(stderr, "\n");
+    }
+
+    va_end(args);
 }
 
 int main(int argc, char **argv) {
