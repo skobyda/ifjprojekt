@@ -39,16 +39,16 @@ static int leftExprComp = 3;
 static int rightExprComp = 3;
 
 /*0 stands for plus(+), 1 for others(*,/,-), 2 for none */
-int exprOperator = 2;
+static int exprOperator = 2;
 /*0 stands for strings, 1 for int or float,  2 nil, 3 for unkown, 4 reset*/
-int exprAssignCompType = 4;
+static int exprAssignCompType = 4;
 
-char* identVarName = NULL;
-char* identFunName = NULL;
+static char* identVarName = NULL;
+static char* identFunName = NULL;
 /*-1 means 1 or more params are correct*/
-int numOfParam;
+static int numOfParam;
 /*-2 means unknown num of parameters, not defined yet*/
-int paramCount;
+static int paramCount;
 
 
 void SemanticInitArray (CArray *a, size_t initSize) {
@@ -122,7 +122,7 @@ void Semantic2ndDefControl() {
         for (unsigned i = 0; i < controlA.used; i++) {
             symbol = SymTableFind(globalTable, controlA.arrayI[i].name);
             if (symbol == NULL) {
-                printf("ERROR: Called function '%s' on the line: %u\n is not defined", controlA.arrayI[i].name, controlA.arrayI[i].line);
+                printf("ERROR: Called function '%s' on the line: %u is not defined\n", controlA.arrayI[i].name, controlA.arrayI[i].line);
             }
         }
     }
@@ -371,7 +371,7 @@ void SemanticExpAssignReset () {
     exprAssignCompType = 4;
 }    
 /*Sets name of variable or functions and then used in other functions*/
-void SemanticNameSet (char *name, int varOrFun) {
+static void SemanticNameSet (char *name, int varOrFun) {
 
     if (varOrFun == 1) {//function name
         identFunName = malloc(sizeof(char) * (strlen(name) + 1));
@@ -396,10 +396,6 @@ bool SemanticVarNameAssignControl (TokenPtr token, char *name) {
         printf("ERROR: On the line: %u. Cannot define variable with name '%s', already defined as function.\n",token->line, identVarName);
         return false;
     }
-    //else { //TODO do it in parser
-     //   symbol = SymTableFind(currTable, identVarName);
-     //   symbol->dType = typeNil;
-    //}
     return true;
 }
 /*Function controls name of function in definition
@@ -480,9 +476,10 @@ void SemanticFunNameCallControl(SymTablePtr currTable, TokenPtr token, char *nam
         paramCount = 0;
     }
     else if (block == 0){
-        printf("ERROR: Called function '%s' on the line: %u\n is not defined", name, token->line);
+        printf("ERROR: Called function '%s' on the line: %u is not defined\n", name, token->line);
         identFunName = NULL;
     }
+    printf("pocet potrebnych argumentov je %d\n",numOfParam);
 }
 /*Function controls when called function has no arguments*/
 void SemanticNoParamControl(TokenPtr token) {
@@ -505,8 +502,8 @@ void SemanticNoMoreParam(TokenPtr token) {
     
         if (numOfParam > paramCount && numOfParam != -1 && numOfParam != -2) 
             printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
-        else if (numOfParam < paramCount && numOfParam != -1 && numOfParam != -2) 
-            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+        /*else if (numOfParam < paramCount && numOfParam != -1 && numOfParam != -2) 
+            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);*/
     }
     
 }
