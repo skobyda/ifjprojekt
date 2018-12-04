@@ -637,6 +637,7 @@ static bool ParserDeclaration() {
                 symbol->name = name;
                 symbol->nextSymbol = NULL;
                 symbol->iType = VARIABLE;
+                symbol->dType = typeNil;
                 SymTableAdd(currentTable, symbol);
             } else {
                 // defined GENERATOR
