@@ -1,0 +1,76 @@
+a = 0
+
+a = 3
+
+a = 3e0
+
+a = 0e0
+
+a = 3.33e0
+
+a = 3.33e-0
+
+a = 3.33
+
+=begin
+=end a = do
+
+
+a = nil
+
+a = 3
+a = nil
+a = 3.3
+
+a = 5 + 10
+b = 10.5e+10 * 0
+c = nil
+d = 5 / 10
+f = 0 - 0
+a =   (((5 + ((6 / 4) * 3)) / 1) / 10)
+a =   ((((5 + ((6 / 4) * 3)) / 1) / 10) * (8 + ((3 * 6) / 4))) * 2
+
+def moje_funkce(a)
+reeee=10
+abc(reeee)
+end
+
+def abc(x)
+if x  then
+5
+else
+6
+end
+end
+
+moje_funkce "5"
+
+5+5
+
+a = a
+
+ a = "Hello\xa'\s'\xAG"
+
+ def f?()
+ end
+
+ f?
+
+def f?(f)
+end
+
+chr(45.5)
+
+a = 65.9
+a = chr(a)
+
+a = 0.9
+a = ord("H", a)
+
+a = 0.888
+b = 2.999
+c = substr("Hello", a, b)
+
+a = substr("Hello", 1.113, 2e0)
+
+a = chr(2e-1)

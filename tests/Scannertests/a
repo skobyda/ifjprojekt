@@ -1,0 +1,145 @@
+a = 3.
+ 
+a = 3e
+
+a = 3e01
+
+a = 3.e1
+
+a = 3.3e--2
+
+a = 3.33.3
+
+a = 3,3
+
+a = 00.3
+
+a = nil + 2
+
+nil = 3
+
+a = "Hello" + "There" + 2
+
+chr "a"
+
+def a()
+end
+a=5
+
+
+def nil()
+end
+
+def a()
+
+a=
+
+a
+
+a=b
+
+def a()
+b=5
+end
+c=b
+
+a=5
+def b()
+c=a
+end
+
+a= b+(((c+d)
+
+a= b+(c+d))
+
+def a()
+end
+a 5
+
+def a(b,c)
+end
+a 5 5
+
+def a(b)
+end
+a
+
+=beg
+
+=beginn
+a
+=end
+
+chr
+
+def a(a)
+end
+
+def a(b,b)
+end
+
+def a()
+end print 4
+
+def a(,b)
+end
+
+def a(b c)
+end
+
+def a()
+b=fce()
+end
+
+a dp
+
+a if
+
+else
+
+?
+
+def ?(a)
+end
+
+do
+
+if 1 == 2 then do
+else
+end
+
+def g()
+end
+def f(a)
+end
+f(g)
+
+def f?!(a)
+end
+
+f? = 2
+
+chr(nil)
+
+ord("Hello", nil)
+
+nil = "nil"
+ord(nil, 0)
+
+substr(nil, 0, 1)
+
+nil = chr(42)
+
+length(nil)
+
+def ord()
+end
+
+def length(a)
+end
+
+chr("aaa")
+
+def f()
+end
+print f
