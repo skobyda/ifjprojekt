@@ -1,0 +1,27 @@
+.IFJcode18
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@$cond
+DEFVAR LF@$a
+DEFVAR LF@$const0
+MOVE LF@$const0 int@2
+MOVE LF@$a LF@$const0
+DEFVAR LF@$b
+DEFVAR LF@$const1
+MOVE LF@$const1 int@1
+MOVE LF@$b LF@$const1
+DEFVAR LF@$const2
+MOVE LF@$const2 int@3
+EQ LF@$cond LF@$a LF@$const2
+JUMPIFEQ $ifElseLabel0 LF@$cond bool@false
+DEFVAR LF@$const3
+MOVE LF@$const3 int@1
+ADD LF@$a LF@$a LF@$const3
+JUMP $ifLabelEnd0
+LABEL $ifElseLabel0
+DEFVAR LF@$const4
+MOVE LF@$const4 int@3
+ADD LF@$b LF@$b LF@$const4
+MOVE LF@$a LF@$b
+LABEL $ifLabelEnd0
+WRITE LF@$a

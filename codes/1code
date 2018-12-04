@@ -1,0 +1,16 @@
+.IFJcode18
+
+DEFVAR GF@counter
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@var
+MOVE LF@var int@0
+MOVE GF@counter int@0
+
+LABEL while
+JUMPIFEQ end LF@var int@15
+ADD LF@var LF@var int@1
+WRITE LF@var
+JUMP while
+
+LABEL end

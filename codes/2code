@@ -1,0 +1,45 @@
+.IFJcode18
+
+DEFVAR GF@counter
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@var1
+DEFVAR LF@var2
+MOVE LF@var1 int@2
+MOVE LF@var2 int@15
+
+ADD LF@var1 LF@var2 LF@var1
+WRITE LF@var1
+WRITE LF@var1
+SUB LF@var2 LF@var1 LF@var2
+WRITE LF@var2
+ADD LF@var1 LF@var2 int@1
+WRITE LF@var1
+SUB LF@var1 LF@var2 int@2
+WRITE LF@var1
+
+MOVE LF@var1 LF@var2
+WRITE LF@var1
+MOVE LF@var2 int@15
+WRITE LF@var2
+
+#a=5
+#b=(a+15)/(a/5)*2+2*a
+
+DEFVAR LF@var3
+MOVE LF@var3 int@5 #a=5
+DEFVAR LF@var4
+MOVE LF@var4 int@0
+DEFVAR LF@var5
+MOVE LF@var5 int@0
+DEFVAR LF@var6
+MOVE LF@var6 int@0
+ADD LF@var4 LF@var3 int@15 #a+15
+IDIV LF@var5 LF@var3 int@5 #a/5
+IDIV LF@var5 LF@var4 LF@var5 #(a+15)/(a/5)
+MUL LF@var5 LF@var5 int@2
+MUL LF@var4 LF@var3 int@2
+ADD LF@var5 LF@var5 LF@var4
+WRITE LF@var5 
+
+

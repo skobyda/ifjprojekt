@@ -1,0 +1,7 @@
+print "Zadejte cislo pro vypocet faktorialu: "
+a=0;
+while a <= 15 do
+	a = a+1
+end
+print a, "\n"
+end
