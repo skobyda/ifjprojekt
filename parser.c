@@ -473,7 +473,9 @@ static bool ParserIfStatement() {
         printf("ERROR\n");
 
     /* Generator Condition Evaluation */
-    printf("%s\n", PopStack(StackG));
+    char *code = PopStack(StackG);
+    //printf("%s\n", code);
+    free(code);
 
     /* Expects end of line after 'end' */
     NEXTTOKEN;
@@ -617,7 +619,11 @@ static bool ParserDeclaration() {
             // Add declaration to symtable
             if (!SymTableFind(currentTable, name)) {
                 // not yet defined GENERATOR
+                
+                /* Generator Assignment */
                 defined = false;
+                GeneratorAssign(name, defined);
+                
                 SymbolPtr symbol = malloc(sizeof(struct Symbol));
                 if (!symbol) {
                     printf("ERROR: malloc of symbol\n");
@@ -629,16 +635,31 @@ static bool ParserDeclaration() {
                 SymTableAdd(currentTable, symbol);
             } else {
                 // defined GENERATOR
+                
+                /* Generator Assignment */
                 defined = true;
+                GeneratorAssign(name, defined);
+                
                 free(name);
             }
 
-            /* Generator Assignment */
-            GeneratorAssign(name, defined);
 
             pinfo.expressionType = 1;
             FUNCTIONCALL(ParserExpression);
             pinfo.expressionType = 0;
+            
+            
+            /* Generator Assignment */
+            if (!GenEmptyStack(StackAssign)){
+                char *assigned = PopStack(StackAssign);
+                char *code = PopStack(StackG);
+                if (!strcmp(assigned, code));
+                else
+                    printf("MOVE %s %s\n", assigned, code);
+                free(code);
+                free(assigned);
+            }           
+ 
             break;
         case LEFT_B: // It's function call
         case IDENT:
@@ -866,12 +887,16 @@ static bool ParserExpression() {
         Ex->Last = NULL;
         Ex->First = NULL;
 	Ex->count = 0;
+	bool intOccur = false;
+	bool floatOccur = false;
         while ((tokenToPrint = StackPop(infixStack)) != NULL) {
             /* Semantic Action */
             printf("SEMCALL: Expression token:");
             AuxPrintToken(tokenToPrint);
             printf("\n");
             /* Generator Action TODO */
+            if (tokenToPrint->lexem == FLOAT) floatOccur = true;
+            if (tokenToPrint->lexem == INT) intOccur = true;
             GeneratorAddExpression(Ex, tokenToPrint->name, tokenToPrint->lexem);        
             free(tokenToPrint->name);
             free(tokenToPrint);
@@ -882,54 +907,94 @@ static bool ParserExpression() {
         Expr tmp;
         if (Ex->First)
             tmp = Ex->First;
-	
-        while (Ex->First){
-            if (tmp->lexem == INT ||
-                tmp->lexem == STR ||
-                tmp->lexem == FLOAT ||
-                tmp->lexem == IDENT){
-                operandCount++;
-            }
 
-            if (tmp->lexem == PLUS ||
-                tmp->lexem == MINUS ||
-                tmp->lexem == MULTIPLY ||
-                tmp->lexem == DIVISION){
-                operandCount = 0;
-            }
+        if (Ex->count == 1){
+                PushStack(StackG, Ex->Last->code); 
+                free(Ex->Last->name); 
+                free(Ex->Last->code); 
+                free(Ex->Last); 
+        } else {
+            while (Ex->First){
+                if (floatOccur && intOccur){
+                    if (tmp->lexem == INT){
+                        tmp->lexem = FLOAT;
+                        printf("INT2FLOAT %s %s\n", tmp->code, tmp->code);
+                    }
+                }
 
-            if (operandCount == 2){
-                char *sign = tmp->Before->Before->code;
-                char *symb1 = tmp->Before->code;
-                char *symb2 = tmp->code;
-                if(tmp->Before->Before->lexem == LESS ||
-                   tmp->Before->Before->lexem == LESS ||
-                   tmp->Before->Before->lexem == LESS ||
-                   tmp->Before->Before->lexem == LESS ||
-                   tmp->Before->Before->lexem == LESS)       
-                    printf("%s %s %s\n", sign, symb1, symb2);
-                else
-                    printf("%s %s %s %s\n", sign, symb1, symb1, symb2);
+                if (tmp->lexem == INT ||
+                    tmp->lexem == STR ||
+                    tmp->lexem == FLOAT ||
+                    tmp->lexem == IDENT){
+                    operandCount++;
+                }
+
+                if (tmp->lexem == PLUS ||
+                    tmp->lexem == MINUS ||
+                    tmp->lexem == MULTIPLY ||
+                    tmp->lexem == DIVISION ||
+                    tmp->lexem == LESS ||
+                    tmp->lexem == MORE ||
+                    tmp->lexem == EQ ||
+                    tmp->lexem == LESSEQ ||
+                    tmp->lexem == MOREEQ){
+                    operandCount = 0;
+                }
+
+                if (operandCount == 2){
+                    char *sign = tmp->Before->Before->code;
+                    char *symb1 = tmp->Before->code;
+                    char *symb2 = tmp->code;
+                    if(tmp->Before->Before->lexem == LESS ||
+                       tmp->Before->Before->lexem == MORE ||
+                       tmp->Before->Before->lexem == LESSEQ ||
+                       tmp->Before->Before->lexem == MOREEQ ||
+                       tmp->Before->Before->lexem == EQ)       
+                        printf("%s %s %s\n", sign, symb1, symb2);
+                    else
+                        printf("%s %s %s %s\n", sign, symb1, symb1, symb2);
                      
-                GeneratorDeleteExpression(Ex, tmp->Before->Before);         
-                GeneratorDeleteExpression(Ex, tmp);          
-                operandCount = 0;
-            }
+                    GeneratorDeleteExpression(Ex, tmp->Before->Before);         
+                    GeneratorDeleteExpression(Ex, tmp);          
+                    operandCount = 0;
+                }
 		
 
-            if (!tmp->Next){
-                tmp = Ex->First;
-            }
-            else
-                tmp = tmp->Next;
+                if (!tmp->Next){
+                    tmp = Ex->First;
+                }
+                else
+                    tmp = tmp->Next;
 
-            if(Ex->count == 2) break;
-        }
+                if(Ex->count == 2){
+                    PushStack(StackG, Ex->Last->code); 
+                    free(Ex->First->code);
+                    free(Ex->Last->code);
+                    free(Ex->First->name);
+                    free(Ex->Last->name);
+                    free(Ex->First);
+                    free(Ex->Last);
+		    break;
+                }
+            }   
+        } 
 	free(Ex);
-
+	
     }
 
     StackDestroy(stack);
+
+    /* Generator Assignment */
+    /* Generator Assignment */
+    if (!GenEmptyStack(StackAssign)){
+        char *assigned = PopStack(StackAssign);
+        char *code = PopStack(StackG);
+        if (!strcmp(assigned, code));
+        else
+            printf("MOVE %s %s\n", assigned, code);
+        free(code);
+        free(assigned);
+    }           
 
  next:
     switch (token->lexem) {
