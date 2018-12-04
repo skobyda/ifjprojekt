@@ -395,7 +395,7 @@ static bool ParserFunctionDeclaration() {
                 free(name);
             }
     
-            if (!alreadyDefined)
+            if (!alreadyDefined && flag)
                 functionSymbol->numOfParameters++;
 
             /* Semantic Action */
