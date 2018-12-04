@@ -1,0 +1,23 @@
+.IFJcode18
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@s1
+MOVE LF@s1 string@retezec\032s\032lomitkem\032\092\032a\010novym\035radkem\009-
+DEFVAR LF@s2
+CONCAT LF@s2 LF@s1 string@,\032ktery\032jeste\032trochu\032obohatime
+WRITE LF@s1
+WRITE string@\010
+WRITE LF@s2
+WRITE string@\010
+DEFVAR LF@s1length
+STRLEN LF@s1length LF@s1
+ADD LF@s1length LF@s1length int@1
+WRITE string@4\032znaky\032od\032
+WRITE LF@s1length
+WRITE string@.\032znaku\032v\032"
+WRITE LF@s2
+WRITE string@":
+WRITE LF@s1
+WRITE string@\010
+READ LF@s1 string
+WRITE LF@s1
