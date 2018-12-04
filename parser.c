@@ -692,6 +692,8 @@ static bool ParserDeclaration() {
                     printf("SEMCALL: Function call, function name: %s\n", name);
                     printf("SEMCALL: Function call has no arguments\n");
 //                    GeneratorFunctionCall(name);
+                } else {
+                    printf("GENCALL: Empty variable statement %s\n", name);
                 }
                 //could also be variable assigned nowhere. In that case, does nothing
             }
