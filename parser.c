@@ -684,6 +684,7 @@ static bool ParserDeclaration() {
             } else {
                 if (symbol->iType == FUNCTION) { //fuction call with no parameters
                     printf("SEMCALL: Function call, function name: %s\n", name);
+                    printf("SEMCALL: Function call has no arguments\n");
 //                    GeneratorFunctionCall(name);
                 }
                 //could also be variable assigned nowhere. In that case, does nothing
