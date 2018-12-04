@@ -404,14 +404,14 @@ static bool ParserFunctionDeclaration() {
 //        GeneratorParameterIn(order, token->name);
 //        order++;
 
-        if(token->lexem == INT ||
+/*        if(token->lexem == INT ||
            token->lexem == STR ||
            token->lexem == FLOAT ||
            token->lexem == NIL ||
            token->lexem == IDENT ){
             GeneratorParameterIn(order, token->name);
             order++;
-        }
+        }*/
 
         NEXTTOKEN;
         /* Expects end of line after right bracket */
@@ -607,7 +607,7 @@ static bool ParserWhile() {
 static bool ParserDeclaration() {
     //printf("Declaration\n");
     SymbolPtr symbol;
-    bool defined;
+//    bool defined;
     char *name = malloc(sizeof(char) * (strlen(token->name) + 1));
     strcpy(name, token->name);
 
@@ -919,8 +919,8 @@ static bool ParserExpression() {
         else
             printf("MOVE %s %s\n", assigned, code);
         free(code);
-        free(assigned);*/
-    }           
+        free(assigned);
+    }          */ 
 
  next:
     switch (token->lexem) {
