@@ -82,7 +82,6 @@ typedef struct AbsTreeNode {
 typedef struct {
     unsigned line;
     char *name;
-    bool defined;
 } FunIdent;
 
 typedef struct {
@@ -101,7 +100,7 @@ void SemanticExpAssignReset ();
 void SemanticNameSet (char *name, int varOrFun);
 bool SemanticVarNameAssignControl (TokenPtr token, char *name);
 bool SemanticFunNameDefControl(TokenPtr token, char *name);
-void SemanticFunNameCallControl(SymTablePtr currTable, TokenPtr token, char *name);
+void SemanticFunNameCallControl(SymTablePtr currTable, TokenPtr token, char *name, int block);
 void SemanticFunParamControl(SymTablePtr currTable, TokenPtr token);
 void SemanticNoMoreParam(TokenPtr token);
 void SemanticNoParamControl(TokenPtr token);

@@ -66,7 +66,6 @@ void SemanticInsertArray (CArray *a, unsigned line, char *name) {
     }
     a->arrayI[a->used].line = line;
     a->arrayI[a->used].name = name;
-    a->arrayI[a->used].defined = false;
     a->used++;
 }
 
@@ -81,8 +80,9 @@ void freeArray (CArray *a) {
  *If they are not defined, function returns false.
  *If function is not defined, it will be checked again at the end of parsing.
  *varOrFun -> 0 = variable, 1 = function
+ *block: 0 = global, 1 = function definition, 2 = no matter(looking for variable)
  */
-static bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun){
+static bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun, int block){
     
     bool defined = false;
     
@@ -96,39 +96,39 @@ static bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *n
 	//if identifier is function name 
 	else if (symbol != NULL && symbol->iType == FUNCTION && varOrFun == 1)
 		defined = true;
-    else if ((symbol == NULL && varOrFun == 1) ||
-			 (symbol != NULL && symbol->iType == VARIABLE && varOrFun == 1)) { 
-        if (!ArrayInit){
-            SemanticInitArray (&controlA, ARRAYSIZE);
-            ArrayInit = true;
-        } 
+    else if (block == 1) {
+        if ((symbol == NULL && varOrFun == 1) ||
+			 (symbol != NULL && symbol->iType == VARIABLE && varOrFun == 1)){ 
+            if (!ArrayInit){
+                SemanticInitArray (&controlA, ARRAYSIZE);
+                ArrayInit = true;
+            } 
         SemanticInsertArray (&controlA, line, name);
+    
+        }
     }
     
     return defined;
 }
              
 /*Function checks if all used functions in code are defined.
- *It checks only those functions that were called before their definition.
+ *It checks only those functions that were called before their definition in other function definition.
  */
-bool Semantic2ndDefControl() {
+void Semantic2ndDefControl() {
 
-    bool ok = false; //if all functions are defined, ok will be true
 
     if (controlA.used > 0) {
-    unsigned found = 0;
     SymbolPtr symbol = NULL;
         for (unsigned i = 0; i < controlA.used; i++) {
             symbol = SymTableFind(globalTable, controlA.arrayI[i].name);
-            if (symbol != NULL) {
-                controlA.arrayI[i].defined = true;
-                found++;
+            if (symbol == NULL) {
+                printf("ERROR: Called function '%s' on the line: %u\n is not defined", controlA.arrayI[i].name, controlA.arrayI[i].line);
             }
         }
-    if (found == controlA.used)
-        ok = true;
     }
-    return ok;
+    freeArray(&controlA);
+    free(identVarName);
+    free(identFunName);
 }
 
 /*Sets type of comparator for conditions*/
@@ -163,7 +163,7 @@ static bool SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *expr
         }
         
         if (token->lexem == IDENT) {
-            bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
+            bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0, 2);
           
             if (defined) {
                 SymbolPtr symbol = SymTableFind(currTable, token->name);
@@ -462,41 +462,52 @@ static void SemanticVarTypeSetByFunCall (SymTablePtr currTable, bool funIsDefine
 /*Function controls if called function is already defined
  *sets correct number of parameters for called function if its already defined
  *called in parser when there is function call
+ *block: 0 = global, 1 = definition of function
  */
-void SemanticFunNameCallControl(SymTablePtr currTable, TokenPtr token, char *name){
+void SemanticFunNameCallControl(SymTablePtr currTable, TokenPtr token, char *name, int block){
 //TODO simon este musi davat to tabulky pocet parametrov definovanych fcii
     SemanticNameSet (name, 1);
-    bool defined = SemanticDefinedControl(globalTable,token->line, name, 1);
+    bool defined = SemanticDefinedControl(globalTable,token->line, name, 1, block);
     if (defined) {
         SemanticVarTypeSetByFunCall (currTable, true);
         SymbolPtr symbol = SymTableFind(globalTable, name);
         numOfParam = symbol->numOfParameters;
         paramCount = 0;
     }
-    else {
+    else if (block == 1){
         SemanticVarTypeSetByFunCall (currTable, false); 
         numOfParam = -2; //unknown num of paramaters, not defined yet
         paramCount = 0;
+    }
+    else if (block == 0){
+        printf("ERROR: Called function '%s' on the line: %u\n is not defined", name, token->line);
+        identFunName = NULL;
     }
 }
 /*Function controls when called function has no arguments*/
 void SemanticNoParamControl(TokenPtr token) {
 
-    if (numOfParam != 0 && numOfParam != -2) 
-        printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
-    else if (numOfParam == -1)
-        printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    if (identFunName != NULL) {
+
+        if (numOfParam != 0 && numOfParam != -2) 
+            printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+        else if (numOfParam == -1)
+            printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    }
 
 }
 /*Function controls if number of arguments in called function is correct
  *called in parser when there is no more arguments
  */
 void SemanticNoMoreParam(TokenPtr token) {
+
+    if (identFunName != NULL) {
     
-    if (numOfParam > paramCount && numOfParam != -1 && numOfParam != -2) 
-        printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
-    else if (numOfParam < paramCount && numOfParam != -1 && numOfParam != -2) 
-        printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+        if (numOfParam > paramCount && numOfParam != -1 && numOfParam != -2) 
+            printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+        else if (numOfParam < paramCount && numOfParam != -1 && numOfParam != -2) 
+            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    }
     
 }
 /*Function controls if ident used as argument is ok*/
@@ -616,52 +627,55 @@ static void SemanticOwnFunCallControl(SymTablePtr currTable, TokenPtr token) {
 
 /*Controls if argument is ok in current funnction call*/
 void SemanticFunParamControl(SymTablePtr currTable, TokenPtr token) {
+
+    if (identFunName != NULL) {
     
-    paramCount++;
+        paramCount++;
 
-    if (strcmp(identFunName, "inputs") == 0 ||
-        strcmp(identFunName, "inputi") == 0 ||
-        strcmp(identFunName, "inputf") == 0) {
+        if (strcmp(identFunName, "inputs") == 0 ||
+            strcmp(identFunName, "inputi") == 0 ||
+            strcmp(identFunName, "inputf") == 0) {
 
-        if (paramCount == 1)//1 and more is wrong, error print only once
-            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
-    }
-    else if (strcmp(identFunName, "print") == 0)
-        SemanticPrintCallControl(currTable, token);
-
-    else if (strcmp(identFunName, "length") == 0) {
-
-        if (paramCount == 1)
-            SemanticLengthCallControl(currTable, token);
-        if (paramCount == 2) //2 and more is wrong, error print only once
-            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
-    }
-    else if (strcmp(identFunName, "substr") == 0) {
-
-        if (paramCount <= 3)
-            SemanticSubstrCallControl(currTable, token);
-        if (paramCount == 4) //4 and more is wrong, error print only once
-            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
-    }      
-    else if (strcmp(identFunName, "ord") == 0) {
-
-        if (paramCount <= 2)
-            SemanticOrdCallControl(currTable, token);
-        if (paramCount == 3)//3 and more is wrong, error print only once
+            if (paramCount == 1)//1 and more is wrong, error print only once
                 printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
-    }
-    else if (strcmp(identFunName, "chr") == 0) {
+        }
+        else if (strcmp(identFunName, "print") == 0)
+            SemanticPrintCallControl(currTable, token);
 
-        if (paramCount == 1)
-            SemanticChrCallControl(currTable, token);
-        if (paramCount == 2) //2 and more is wrong, error print only once
-            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
-    }
-    else {
-        if (paramCount <= numOfParam || numOfParam == -2)
-            SemanticOwnFunCallControl(currTable, token);
-        if (paramCount == numOfParam + 1)
-            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+        else if (strcmp(identFunName, "length") == 0) {
+
+            if (paramCount == 1)
+                SemanticLengthCallControl(currTable, token);
+            if (paramCount == 2) //2 and more is wrong, error print only once
+                printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+        }
+        else if (strcmp(identFunName, "substr") == 0) {
+
+            if (paramCount <= 3)
+                SemanticSubstrCallControl(currTable, token);
+            if (paramCount == 4) //4 and more is wrong, error print only once
+                printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+        }      
+        else if (strcmp(identFunName, "ord") == 0) {
+
+            if (paramCount <= 2)
+                SemanticOrdCallControl(currTable, token);
+            if (paramCount == 3)//3 and more is wrong, error print only once
+                    printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+        }
+        else if (strcmp(identFunName, "chr") == 0) {
+
+            if (paramCount == 1)
+                SemanticChrCallControl(currTable, token);
+            if (paramCount == 2) //2 and more is wrong, error print only once
+                printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+        }
+        else {
+            if (paramCount <= numOfParam || numOfParam == -2)
+                SemanticOwnFunCallControl(currTable, token);
+            if (paramCount == numOfParam + 1)
+                printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+        }
     }
     
 }
