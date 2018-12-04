@@ -203,7 +203,7 @@ static bool ParserArguments() {
     bool flag = true; // set to true if expects Identificator, false if expects comma
 
     /* Generator Order of Argunemt in Function */
-//    int order = 0;
+    int order = 0;
 
     /* Asks for tokens (arguments), until it sees right bracket */
     while (token->lexem != RIGHT_B && token->lexem != EOL) {
@@ -230,13 +230,13 @@ static bool ParserArguments() {
 
 
         /* Generator Function Parameter Call */
-/*	if (token->lexem == STR ||
+	if (token->lexem == STR ||
             token->lexem == FLOAT ||
             token->lexem == INT ||
             token->lexem == IDENT){
 	    GeneratorParameterOut(order, token->name, token->lexem);
 	    order++;
-        }*/
+        }
         // to secure switching of argument/comma
         flag = !flag;
 
@@ -345,7 +345,7 @@ static bool ParserFunctionDeclaration() {
     printf("SEMCALL: Function definition, name: %s\n", token->name);
     
     /* Generator Function Definition */
-//    GeneratorFunctionDefinition(token->name);
+    GeneratorFunctionDefinition(token->name);
 
     /* Change Symbol Table for function's block of code and its parameters */
     currentTable = SymTableInit(globalTable);
@@ -364,7 +364,7 @@ static bool ParserFunctionDeclaration() {
     } else {
 
         /* Generator - Parameter for function GeneratorParameterIn - parameter order */
-//        int order = 0;
+        int order = 0;
 
         /* Reads parameters of function until it sees right bracket */
         NEXTTOKEN;
@@ -411,16 +411,17 @@ static bool ParserFunctionDeclaration() {
         }
 
         /* Generator Parameter In Function */
-//        GeneratorParameterIn(order, token->name);
-//        order++;
-/*        if(token->lexem == INT ||
+        GeneratorParameterIn(order, token->name);
+        order++;
+
+        if(token->lexem == INT ||
            token->lexem == STR ||
            token->lexem == FLOAT ||
            token->lexem == NIL ||
            token->lexem == IDENT ){
             GeneratorParameterIn(order, token->name);
             order++;
-        }*/
+        }
 
         NEXTTOKEN;
         /* Expects end of line after right bracket */
@@ -447,7 +448,7 @@ static bool ParserFunctionDeclaration() {
     printf("SEMCALL: End of Function\n");
     
     /* Generator Action Function End */
-//    GeneratorFunctionEnd();
+    GeneratorFunctionEnd();
 
     /* Expects end of line after 'END' */
     NEXTTOKEN;
@@ -472,21 +473,19 @@ static bool ParserIfStatement() {
     printf("SEMCALL: IF\n");
 
     /* Generator If Statement start */
-//    GeneratorIfStart();
+    GeneratorIf();
 
     /* Function's condition can be parsed as expression */
     pinfo.expressionType = 2;
     FUNCTIONCALL(ParserExpression);
     pinfo.expressionType = 0;
 
+    /* Generator Condition Evaluation */
+    GeneratorStackPrint(StackIf);
+    
     /* Expects 'end' after function's condition */
     if (token->lexem != THEN)
         PrintError(2 , token->line, "Expected 'then' after condition");
-
-    /* Generator Condition Evaluation */
-//    char *code = PopStack(StackG);
-    //printf("%s\n", code);
-//    free(code);
 
     /* Expects end of line after 'end' */
     NEXTTOKEN;
@@ -499,13 +498,12 @@ static bool ParserIfStatement() {
     /* Function's block of code */
     FUNCTIONCALL(ParserStatement);
 
-    /* Generator If Else Label Dont Create Label At The End */
-//    bool LabelExist;
-
     /* ELSE (optional) */
     if (token->lexem == ELSE) {
         /* Expects end of line after 'else' */
         NEXTTOKEN;
+   
+
         if (token->lexem != EOL) {
             PrintError(2 , token->line, "Expected end of line after 'else'");
             while (token->lexem != EOL)
@@ -514,13 +512,16 @@ static bool ParserIfStatement() {
 
         /* Semantic Action */
         printf("SEMCALL: ELSE\n");
-
+        
         /* Generator Else Statement */
-        //GeneratorAfterIf();        
-//        LabelExist = true;        
+        GeneratorStackPrint(StackIf);
+        GeneratorStackPrint(StackIf);
 
         /* Else's block of code */
         FUNCTIONCALL(ParserStatement);
+    } else {
+        GeneratorStackPrint(StackIf);
+        GeneratorStackPrint(StackIf);	
     }
 
     /* Expects 'end' at the end of if/else statement  */
@@ -531,8 +532,7 @@ static bool ParserIfStatement() {
     printf("SEMCALL: End of IF block of code\n");
 
     /* Generator End If Label */
-//    if (!LabelExist)
-        //GeneratorAfterIf();
+    GeneratorStackPrint(StackIf);    
 
     /* Expects end of line after 'end' */
     NEXTTOKEN;
@@ -557,15 +557,15 @@ static bool ParserWhile() {
     printf("SEMCALL: WHILE\n");
 
     /* Generator While Start */
-//    GeneratorWhileStartLabel();
-
-     /* While's condition, can be parsed as Expression */
+    GeneratorWhile();
+    
+    /* While's condition, can be parsed as Expression */
     pinfo.expressionType = 2;
     FUNCTIONCALL(ParserExpression);
     pinfo.expressionType = 0;
 
     /* Generator While Condition Evaluation */
-//    GeneratorWhileCondEvaluation();
+    GeneratorStackPrint(StackIf);
 
     /* Expects 'do' after while's condition */
     if (token->lexem != DO)
@@ -590,7 +590,8 @@ static bool ParserWhile() {
     printf("SEMCALL: End of WHILE block of code\n");
 
     /* Generator While End */
-//    GeneratorWhileEnd();
+    GeneratorStackPrint(StackIf);
+    GeneratorStackPrint(StackIf);
 
     NEXTTOKEN;
     /* Expects end of line after 'end' */
@@ -612,7 +613,7 @@ static bool ParserWhile() {
 static bool ParserDeclaration() {
     //printf("Declaration\n");
     SymbolPtr symbol;
-//    bool defined;
+    bool defined;
     char *name = malloc(sizeof(char) * (strlen(token->name) + 1));
     strcpy(name, token->name);
 
@@ -626,8 +627,8 @@ static bool ParserDeclaration() {
                 // not yet defined GENERATOR
                 
                 /* Generator Assignment */
-//                defined = false;
-//                GeneratorAssign(name, defined);
+                defined = false;
+                GeneratorAssign(name, defined);
                 
                 SymbolPtr symbol = malloc(sizeof(struct Symbol));
                 if (!symbol) {
@@ -643,8 +644,8 @@ static bool ParserDeclaration() {
                 // defined GENERATOR
                 
                 /* Generator Assignment */
-//                defined = true;
-//                GeneratorAssign(name, defined);
+                defined = true;
+                GeneratorAssign(name, defined);
                 
                 free(name);
             }
@@ -654,18 +655,8 @@ static bool ParserDeclaration() {
             FUNCTIONCALL(ParserExpression);
             pinfo.expressionType = 0;
             
-            
             /* Generator Assignment */
-/*            if (!GenEmptyStack(StackAssign)){
-                char *assigned = PopStack(StackAssign);
-                char *code = PopStack(StackG);
-
-                if (!strcmp(assigned, code));
-                else
-                    printf("MOVE %s %s\n", assigned, code);
-                free(code);
-                free(assigned);
-            } */          
+            //GeneratorAssignPrint();
  
             break;
         case LEFT_B: // It's function call
@@ -678,9 +669,11 @@ static bool ParserDeclaration() {
                 NEXTTOKEN;
             /* Semantic Action */
             printf("SEMCALL: Function call, function name: %s\n", name);
+
             /* Generator Action Function Call */
-//            GeneratorFunctionCall(name);
-//            free(name);
+            GeneratorFunctionCall(name);
+            free(name);
+
             FUNCTIONCALL(ParserArguments);
             break;
         case EOL:
@@ -691,7 +684,7 @@ static bool ParserDeclaration() {
                 if (symbol->iType == FUNCTION) { //fuction call with no parameters
                     printf("SEMCALL: Function call, function name: %s\n", name);
                     printf("SEMCALL: Function call has no arguments\n");
-//                    GeneratorFunctionCall(name);
+                    GeneratorFunctionCall(name);
                 } else {
                     printf("GENCALL: Empty variable statement %s\n", name);
                 }
@@ -842,8 +835,8 @@ static bool ParserExpression() {
     SymbolPtr symbol = SymTableFind(currentTable, token->name);
     if (symbol && symbol->iType == FUNCTION) {
             printf("SEMCALL: Function call, function name: %s\n", token->name);
-            //Generator funkcia 
-            //GeneratorFunctionCall(token->name);
+            /* Generator function call */
+            GeneratorFunctionCall(token->name);
             NEXTTOKEN;
             switch (token->lexem) {
                 case LEFT_B: // It's function call
@@ -894,42 +887,36 @@ static bool ParserExpression() {
     else {
         StackPtr infixStack = ParserExpressionRevInfixToPrefix(stack);
         TokenPtr tokenToPrint;
-/*       
+       
 	ExL Ex = malloc(sizeof(struct ExprS)); 
         Ex->Last = NULL;
         Ex->First = NULL;
 	Ex->count = 0;
 	bool intOccur = false;
-	bool floatOccur = false;*/
+	bool floatOccur = false;
         while ((tokenToPrint = StackPop(infixStack)) != NULL) {
             /* Semantic Action */
             printf("SEMCALL: Expression token:");
             AuxPrintToken(tokenToPrint);
             printf("\n");
+
             /* Generator Action TODO */
-//            if (tokenToPrint->lexem == FLOAT) floatOccur = true;
-//            if (tokenToPrint->lexem == INT) intOccur = true;
-//            GeneratorAddExpression(Ex, tokenToPrint->name, tokenToPrint->lexem);        
+            if (tokenToPrint->lexem == FLOAT) floatOccur = true;
+            if (tokenToPrint->lexem == INT) intOccur = true;
+            GeneratorAddExpression(Ex, tokenToPrint->name, tokenToPrint->lexem);        
+           
             free(tokenToPrint->name);
             free(tokenToPrint);
         }
         StackDestroy(infixStack);
         /* Generate Expression in IFJcode2018 */
-//        GeneratorExpression(Ex, floatOccur, intOccur);
+        GeneratorExpression(Ex, floatOccur, intOccur);
     }
 
     StackDestroy(stack);
 
     /* Generator Assignment */
-/*    if (!GenEmptyStack(StackAssign)){
-        char *assigned = PopStack(StackAssign);
-        char *code = PopStack(StackG);
-        if (!strcmp(assigned, code));
-        else
-            printf("MOVE %s %s\n", assigned, code);
-        free(code);
-        free(assigned);
-    }          */ 
+    GeneratorAssignPrint();    
 
  next:
     switch (token->lexem) {
