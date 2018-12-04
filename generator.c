@@ -30,8 +30,8 @@
 
 
 int ExpTmp = 0;
-int IfLabel, IfTopLabel = 0;
-int WhileLabel, WhileTopLabel = 0;
+int IfLabel = 0;
+int WhileLabel = 0;
 
 FILE *outputFile;
 
@@ -158,8 +158,9 @@ bool GeneratorAddExpression(ExL Ex, char *name, lexems lexem){
             lexem == MOREEQ)
 		tmp->code = GeneratorMatcher(lexem);
 
-        if (lexem == IDENT)
-        	tmp->code = GeneratorVariable(name); 
+        if (lexem == IDENT){
+		tmp->code = GeneratorVariable(name); 
+	}
 
 	if (lexem == INT ||
 	    lexem == STR ||
@@ -272,6 +273,20 @@ void GeneratorAssign(char *name, bool defined){
 	
 }
 
+void GeneratorAssignPrint(){
+	if (!GenEmptyStack(StackAssign)){
+		char *assign = PopStack(StackAssign);
+		char *code = PopStack(StackG);
+		if(!strcmp(assign, code));
+		else
+			printf("MOVE %s %s\n", assign, code);
+
+		code = PopStack(StackG);
+		free(code);
+		free(assign);
+	}
+}
+
 void GeneratorConcat(Expr Ex, char *symb1, char *symb2){
 	if ((Ex->Before->lexem == STR || 
             Ex->Before->lexem == IDENT) &&
@@ -317,19 +332,19 @@ char *GeneratorMatcher(lexems lexem){
 	char *code;
 	switch (lexem){
 		case LESS:
-			code = GeneratorCharAppend("LT LF@$cond");
+			code = GeneratorCharAppend("LT GF@$cond");
 			break;
 		case MORE:
-			code = GeneratorCharAppend("GT LF@$cond");
+			code = GeneratorCharAppend("GT GF@$cond");
 			break;
 		case EQ:
-			code = GeneratorCharAppend("EQ LF@$cond");
+			code = GeneratorCharAppend("EQ GF@$cond");
 			break;
 		case LESSEQ:
-			code = GeneratorCharAppend("-- LF@$cond");
+			code = GeneratorCharAppend("-- GF@$cond");
 			break;
 		case MOREEQ:
-			code = GeneratorCharAppend("-- LF@$cond");
+			code = GeneratorCharAppend("-- GF@$cond");
 			break;
 		default:
 			break;
@@ -386,6 +401,7 @@ char *GeneratorConstantDefine(lexems lexem, char *name){
 void GeneratorFunctionCall(char *name){
 
 	char *code;
+
 	if (!strcmp(name, "print")){
 		code = malloc(sizeof(char) * (ownStrLen("print") + 1));
 		sprintf(code,"print");
@@ -407,7 +423,6 @@ void GeneratorFunctionCall(char *name){
 				code = PopStack(StackAssign);
 				printf("READ %s string@\n", code);
 			}
-                PushStack(StackG, code);
 	} else {
 
 		code = malloc(sizeof(char) * (strlen(name) + strlen("CALL $") + 1));
@@ -437,8 +452,6 @@ void GeneratorParameterOut(int order, char *name, lexems lexem){
 			break;
 	}
 
-printf("\n\n%s\n\n", StackG->code[0]);
-printf("\n\n%s\n\n", StackG->code[1]);
 	if (!strcmp(StackG->code[0], "print")){
 		if (lexem == IDENT)
 			printf("WRITE LF@$%s\n", name);
@@ -470,28 +483,59 @@ void GeneratorFunctionEnd(){
 	printf("RETURN\n");
 }
 
-void GeneratorWhileStartLabel(){
-	printf("LABEL $whileLabel\n");
-}
+void GeneratorWhile(){
+	/* If While Generating */
+	printf("LABEL $WhileStartLabel%d\n", WhileLabel);
+	char *codeWhileStart = malloc(sizeof(char) * ownStrLen("JUMPIFEQ $WhileEndLabel GF@$cond bool@false") + sizeof(int) + 1);
+	sprintf(codeWhileStart,"JUMPIFEQ $WhileEndLabel%d GF@$cond bool@false", WhileLabel);	
 
-void GeneratorWhileCondEvaluation(){
-        printf("JUMPIFEQ $whileLabelEnd LF@$cond bool@false\n");
-}
+	/* End While Generating */
+	char *codeEndWhile1 = malloc(sizeof(char) * ownStrLen("JUMP $WhileStartLabel") + sizeof(int) + 1);
+	char *codeEndWhile2 = malloc(sizeof(char) * ownStrLen("LABEL $WhileEndLabel") + sizeof(int) + 1);
+	sprintf(codeEndWhile1,"JUMP $WhileStartLabel%d", WhileLabel);	
+	sprintf(codeEndWhile2,"LABEL $WhileEndLabel%d", WhileLabel++);	
 
-void GeneratorWhileEnd(){
-	printf("JUMP $whileLabel\n");
-        printf("LABEL $whileLabelEnd\n");
-}
-
-void GeneratorIfStart(){
-	char *code = malloc(sizeof(char) * strlen("JUMPIFEQ $ifElseLabel LF@$cond bool@false") + 1);
-	sprintf(code,"JUMPIFEQ $ifElseLabel LF@$cond bool@false");
+	/* Pushing On Stack */
+	PushStack(StackIf, codeEndWhile2);
+	PushStack(StackIf, codeEndWhile1);
+	PushStack(StackIf, codeWhileStart);
 	
-	PushStack(StackG, code);
+        free(codeWhileStart);
+	free(codeEndWhile2);
+	free(codeEndWhile1);
 }
 
-void GeneratorEndIf(){
-	printf("LABEL $ifLabelEnd\n");
+void GeneratorIf(){
+	/* If Start Generating */
+	char *codeIfStart = malloc(sizeof(char) * ownStrLen("JUMPIFEQ $IfElseLabel GF@$cond bool@false") + sizeof(int) + 1);
+	sprintf(codeIfStart,"JUMPIFEQ $IfElseLabel%d GF@$cond bool@false", IfLabel);	
+
+	/* Else Start Generating */
+	char *codeElse1 = malloc(sizeof(char) * ownStrLen("JUMP $IfEndLabel") + sizeof(int) + 1);
+	char *codeElse2 = malloc(sizeof(char) * ownStrLen("LABEL $IfElseLabel") + sizeof(int) + 1);
+	sprintf(codeElse1,"JUMP $IfEndLabel%d", IfLabel);	
+	sprintf(codeElse2,"LABEL $IfElseLabel%d", IfLabel);	
+
+	/* End If Generating */
+	char *codeEnd = malloc(sizeof(char) * ownStrLen("LABEL $IfEndLabel") + sizeof(int) + 1);
+	sprintf(codeEnd,"LABEL $IfEndLabel%d", IfLabel++);	
+
+	/* Pushing On Stack */
+	PushStack(StackIf, codeEnd);
+	PushStack(StackIf, codeElse2);
+	PushStack(StackIf, codeElse1);
+	PushStack(StackIf, codeIfStart);
+
+	free(codeIfStart);
+	free(codeElse1);
+	free(codeElse2);
+	free(codeEnd);
+}
+
+void GeneratorStackPrint(StackGen StackG){
+	char *code = PopStack(StackG);
+	printf("%s\n", code);
+	free(code);
 }
 
 void GeneratorExpression(ExL Ex, bool floatOccur, bool intOccur){
@@ -587,11 +631,14 @@ int operandCount = 0;
 void Generator(FILE *file){
     StackG = CreateStack();	
     StackAssign = CreateStack();
+    StackIf = CreateStack();    
+
     outputFile = file;   
-    printf(".IFJcode2018\n");
+    printf(".IFJcode18\n");
     printf("CREATEFRAME\n");
     printf("PUSHFRAME\n");
-    printf("DEFVAR LF@cond\n");
+    printf("DEFVAR GF@$cond\n");
+
 }
 
 
