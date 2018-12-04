@@ -275,19 +275,9 @@ TokenPtr ScannerGetToken(){
                     state=IDKEY;
                     continue;
                 }
-                else if(c>='0' && c<='9'){
+                else if(c>='1' && c<='9'){
                     SAVENEW;
-                    if(c=='0'){
-                        c=(char)fgetc(sourceCode);
-                        if(c=='0'){
-                            state=PROBLEM;
-                            continue;
-                        }
-                    }
-                    else{
-                        c=(char)fgetc(sourceCode);
-                    }
-
+                    c=(char)fgetc(sourceCode);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -295,6 +285,18 @@ TokenPtr ScannerGetToken(){
                         return token;
                     }
                     state=NUMBER;
+                    continue;
+                }
+                else if(c=='0'){
+                    SAVENEW;
+                    state=ZERO;
+                        c=(char)fgetc(sourceCode);
+                    if(c==EOF){
+                        token->lexem=EOFILE;
+                        state=ENDFILE;
+                        token->line=n_lines;
+                        return token;
+                    }
                     continue;
                 }
                 else if(c=='+'){
@@ -485,7 +487,7 @@ TokenPtr ScannerGetToken(){
                     state=IDKEY;
                     continue;
                 }
-                else if(c>='0' && c<='9'){
+                else if(c>='1' && c<='9'){
                     SAVENEW;
                     if(c=='0'){
                         c=(char)fgetc(sourceCode);
@@ -505,6 +507,18 @@ TokenPtr ScannerGetToken(){
                         return token;
                     }
                     state=NUMBER;
+                    continue;
+                }
+                else if(c=='0'){
+                    SAVENEW;
+                    state=ZERO;
+                        c=(char)fgetc(sourceCode);
+                    if(c==EOF){
+                        token->lexem=EOFILE;
+                        state=ENDFILE;
+                        token->line=n_lines;
+                        return token;
+                    }
                     continue;
                 }
                 else if(c=='#'){
@@ -655,9 +669,7 @@ TokenPtr ScannerGetToken(){
                     continue;
                 }
                 if(c=='x'){ //if there is \x
-
                     c=(char)fgetc(sourceCode);
-
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -674,7 +686,6 @@ TokenPtr ScannerGetToken(){
                         continue;
                     }
                     c=(char)fgetc(sourceCode);
-
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -779,6 +790,46 @@ TokenPtr ScannerGetToken(){
                 state=START;
                 return token;
             }
+            case ZERO:{
+                    if(c=='.'){
+                        state=DOUBLECOM;
+                        SAVENEW;
+                        c=(char)fgetc(sourceCode);
+                        if(c==EOF){
+                            token->lexem=EOFILE;
+                            state=ENDFILE;
+                            token->line=n_lines;
+                            return token;
+                        }
+                        continue;
+                    }//next
+                    else if(c=='e'||c=='E'){
+                        state=DEXP;
+                        SAVENEW;
+                        c=(char)fgetc(sourceCode);
+                        if(c==EOF){
+                            token->lexem=EOFILE;
+                            state=ENDFILE;
+                            token->line=n_lines;
+                            return token;
+                        }
+                        continue;
+                    }
+                    else if((c=='#')||(c==' ')||(c==9)||(c=='\n')||(c==')')||(c==',')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
+                        (token)->lexem=INT;
+                        (token)->line=n_lines;
+                        if(c=='\n')
+                            state=NEWLINE;
+                        else
+                            state=START;
+                        ungetc(c,sourceCode);
+                        return token;
+                    }
+                    else{
+                        state=PROBLEM;
+                        continue;
+                    }
+            }
             case NUMBER:{
                 if(c=='.'){
                     state=DOUBLECOM;
@@ -802,7 +853,6 @@ TokenPtr ScannerGetToken(){
                         token->line=n_lines;
                         return token;
                     }
-
                     continue;
                 }
                 else if(c>='0' && c<='9'){
@@ -921,7 +971,6 @@ TokenPtr ScannerGetToken(){
                     state=DEXPD;
                     continue;
                 }
-
                 else{
                     state=PROBLEM;
                     continue;
