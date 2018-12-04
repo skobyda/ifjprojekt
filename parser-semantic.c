@@ -142,7 +142,7 @@ void SemanticCondCompSet(TokenPtr token) {
         condComp = 0;
 }
 //TODO vsade pre expression este aj nil
-/*Sets data type of expression in codition*/
+/*Sets data type of expression in conditon or expression in variable assignment*/
 bool SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
    
     bool ok = true; 
@@ -230,10 +230,8 @@ void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token) {
             break;
         case 1:
             flag1 = SemanticExprCompSet(currTable, token, &leftExprComp);
-            if (!flag1) {
-                condOK = false;
-                condState = 3;
-            }
+            if (!flag1) 
+                condOK = false;   
             condState = 2;
             break;
         case 2:
@@ -247,9 +245,7 @@ void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token) {
     }
     
     if (condState == 3) {
-        if(condOK)
-            printf("Condition is OK!\n");
-        else
+        if(!condOK)
             printf("ERROR: Using invalid operator or operands in condition on the line: %u\n", token->line);
 
         condState = 4;
@@ -269,40 +265,6 @@ void SemanticOperatorSet (TokenPtr token) {
 
 }
         
-/*Sets data type of expression in assignment*
-void SemanticExprAssignTypeSet(SymTablePtr currTable, TokenPtr token, int *exprAssignType) {
-
-    if (token->lexem == INT || token->lexem == FLOAT)
-        *exprAssignType = 1;
-    
-    else if (token->lexem == STR)
-        *exprAssignType = 0;
-    
-    else if (token->lexem == NIL)
-
-    else if (token->lexem == IDENT) {
-        bool defined = SemanticDefinedControl(currTable, token->line, token->name, 0);
-        if (defined) {
-            SymbolPtr symbol = SymTableFind(currTable, token->name);
-            switch (symbol->dType) {
-                case typeUnknown:
-                    *exprAssignType = 2;
-                    break;
-                case typeNumeric:
-                    *exprAssignType = 1;
-                    break;
-                case typeString:
-                    *exprAssignType = 0;
-                    break;
-                default:
-                    *exprAssignType = 2;
-            }
-        }
-        else {
-            printf("ERROR: Using undefined variable '%s' on the line: %u\n",token->name, token->line);
-        }
-    }
-}*/
 /*Sets type of variable when variable assignment expression
  *if OK is false, error in expression
  *if OK is true, so far no errors in expression
