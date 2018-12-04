@@ -37,12 +37,23 @@
             SAVENEW; \
             out=((var%100)-(var%10))/10; \
             if(out!=0){ \
+                c='0'; \
+                SAVENEW; \
+                c=out+'0'; \
+                SAVENEW; \
+                out=(var%10); \
                 c=out+'0'; \
                 SAVENEW; \
             } \
-            out=(var%10); \
-            c=out+'0'; \
-            SAVENEW; \
+            else{ \
+                out=(var%10); \
+                c='0'; \
+                SAVENEW; \
+                c='0'; \
+                SAVENEW; \
+                c=out+'0'; \
+                SAVENEW; \
+            } \
         } \
     else{ \
         SAVENEW; \
@@ -598,6 +609,7 @@ TokenPtr ScannerGetToken(){
                     continue;
                 }
                 else if(c=='\"'){
+                    //printf("-hereee-\n" );
                     (token)->lexem=STR;
                     (token)->line=n_lines;
                     state=START;
@@ -718,8 +730,10 @@ TokenPtr ScannerGetToken(){
                         c=a;
                         SAVENEWCHAR;
                         c=b;
-                        SAVENEWCHAR;
-                        c=(char)fgetc(sourceCode);
+                        if(c!='\"' && c!='\\'){
+                            SAVENEWCHAR;
+                            c=(char)fgetc(sourceCode);
+                        }
                         state=STRING;
                         continue;
                     }
