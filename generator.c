@@ -272,6 +272,16 @@ void GeneratorAssign(char *name, bool defined){
 	
 }
 
+void GeneratorConcat(Expr Ex, char *symb1, char *symb2){
+	if ((Ex->Before->lexem == STR || 
+            Ex->Before->lexem == IDENT) &&
+            (Ex->lexem == IDENT ||
+            Ex->lexem == STR)){
+		printf("CONCAT %s %s %s\n", symb1, symb1, symb2);
+	}
+}
+
+
 char *GeneratorMathOperation(lexems lexem){
 	char *code;
 	switch (lexem){
@@ -374,10 +384,36 @@ char *GeneratorConstantDefine(lexems lexem, char *name){
 }
 
 void GeneratorFunctionCall(char *name){
-	char *code = malloc(sizeof(char) * (strlen(name) + strlen("CALL $") + 1));
-	sprintf(code,"CALL $%s",name);
-	
-	PushStack(StackG, code);
+
+	char *code;
+	if (!strcmp(name, "print")){
+		code = malloc(sizeof(char) * (ownStrLen("print") + 1));
+		sprintf(code,"print");
+                PushStack(StackG, code);
+
+	}else if (!strcmp(name, "inputi") || 
+                  !strcmp(name, "inputf") || 
+                  !strcmp(name, "inputs")){
+		code = malloc(sizeof(char) * (ownStrLen("input") + 2));
+			if (!strcmp(name, "inputi")){
+				code = PopStack(StackAssign);
+				printf("READ %s int@\n", code);
+			}
+			if (!strcmp(name, "inputf")){
+				code = PopStack(StackAssign);
+				printf("READ %s float@\n", code);
+			}
+			if (!strcmp(name, "inputs")){
+				code = PopStack(StackAssign);
+				printf("READ %s string@\n", code);
+			}
+                PushStack(StackG, code);
+	} else {
+
+		code = malloc(sizeof(char) * (strlen(name) + strlen("CALL $") + 1));
+		sprintf(code,"CALL $%s",name);
+		PushStack(StackG, code);
+	}
 }
 
 void GeneratorParameterOut(int order, char *name, lexems lexem){
@@ -385,23 +421,33 @@ void GeneratorParameterOut(int order, char *name, lexems lexem){
 		case STR:
 			printf("DEFVAR LF@$const%d\n", ExpTmp);
 			printf("MOVE LF@$const%d string@%s\n", ExpTmp, name);
-			printf("MOVE TF@%%%d LF$const%d\n", order, ExpTmp++);
 			break;
 		case FLOAT:
 			printf("DEFVAR LF@$const%d\n", ExpTmp);
 			printf("MOVE LF@$const%d float@%s\n", ExpTmp, name);
-			printf("MOVE TF@%%%d LF$const%d\n", order, ExpTmp++);
 			break;
 		case INT:
 			printf("DEFVAR LF@$const%d\n", ExpTmp);
 			printf("MOVE LF@$const%d int@%s\n", ExpTmp, name);
-			printf("MOVE TF@%%%d LF$const%d\n", order, ExpTmp++);
 			break;
                 case IDENT:
-			printf("MOVE TF@%%%d LF$%s\n", order, name);
+			
                         break;
 		default:
 			break;
+	}
+
+printf("\n\n%s\n\n", StackG->code[0]);
+printf("\n\n%s\n\n", StackG->code[1]);
+	if (!strcmp(StackG->code[0], "print")){
+		if (lexem == IDENT)
+			printf("WRITE LF@$%s\n", name);
+		else
+			printf("WRITE LF@$const%d\n", ExpTmp++);
+		char *code = PopStack(StackG);
+		free(code);
+	} else {
+		printf("MOVE TF@%%%d LF$%s\n", order, name);
 	}
 }
 
@@ -438,15 +484,104 @@ void GeneratorWhileEnd(){
 }
 
 void GeneratorIfStart(){
-	char *code = malloc(sizeof(char) * strlen("JUMPIFEQ $ifLabelEnd LF@$cond bool@false") + 1);
-	sprintf(code,"JUMPIFEQ $ifLabelEnd LF@$cond bool@false");
+	char *code = malloc(sizeof(char) * strlen("JUMPIFEQ $ifElseLabel LF@$cond bool@false") + 1);
+	sprintf(code,"JUMPIFEQ $ifElseLabel LF@$cond bool@false");
 	
 	PushStack(StackG, code);
-
 }
 
-void GeneratorAfterIf(){
+void GeneratorEndIf(){
 	printf("LABEL $ifLabelEnd\n");
+}
+
+void GeneratorExpression(ExL Ex, bool floatOccur, bool intOccur){
+int operandCount = 0;
+        Expr tmp;
+        if (Ex->First)
+            tmp = Ex->First;
+
+        if (Ex->count == 1){
+                PushStack(StackG, Ex->Last->code);
+                free(Ex->Last->name); 
+                free(Ex->Last->code); 
+                free(Ex->Last); 
+        } else {
+            while (Ex->First){
+                if (floatOccur && intOccur){
+                    if (tmp->lexem == INT){
+                        tmp->lexem = FLOAT;
+                        printf("INT2FLOAT %s %s\n", tmp->code, tmp->code);
+                    }
+                }
+
+                if (tmp->lexem == INT ||
+                    tmp->lexem == STR ||
+                    tmp->lexem == FLOAT ||
+                    tmp->lexem == IDENT){
+                    operandCount++;
+                }
+
+                if (tmp->lexem == PLUS ||
+                    tmp->lexem == MINUS ||
+                    tmp->lexem == MULTIPLY ||
+                    tmp->lexem == DIVISION ||
+                    tmp->lexem == LESS ||
+                    tmp->lexem == MORE ||
+                    tmp->lexem == EQ ||
+                    tmp->lexem == LESSEQ ||
+                    tmp->lexem == MOREEQ){
+                    operandCount = 0;
+                }
+
+                if (operandCount == 2){
+                    char *sign = tmp->Before->Before->code;
+                    char *symb1 = tmp->Before->code;
+                    char *symb2 = tmp->code;
+		    if (tmp->Before->Before->lexem == PLUS &&
+                       (tmp->Before->lexem == STR ||
+                        tmp->lexem == STR))
+                        GeneratorConcat(tmp, symb1, symb2);
+	            else {
+                        if(tmp->Before->Before->lexem == LESS ||
+                           tmp->Before->Before->lexem == MORE ||
+                           tmp->Before->Before->lexem == LESSEQ ||
+                           tmp->Before->Before->lexem == MOREEQ ||
+                           tmp->Before->Before->lexem == EQ)       
+                            printf("%s %s %s\n", sign, symb1, symb2);
+                        else
+                            printf("%s %s %s %s\n", sign, symb1, symb1, symb2);
+                    }
+                    GeneratorDeleteExpression(Ex, tmp->Before->Before);         
+                    GeneratorDeleteExpression(Ex, tmp);          
+                    operandCount = 0;
+                }
+		
+
+                if (!tmp->Next){
+                    tmp = Ex->First;
+                }
+                else
+                    tmp = tmp->Next;
+		
+
+                if(Ex->count == 2){
+                    if(Ex->First->lexem != LESS &&
+                       Ex->First->lexem != MORE &&
+                       Ex->First->lexem != LESSEQ &&
+                       Ex->First->lexem != MOREEQ &&
+                       Ex->First->lexem != EQ)       
+                        PushStack(StackG, Ex->Last->code);
+		    free(Ex->First->code);
+                    free(Ex->Last->code);
+                    free(Ex->First->name);
+                    free(Ex->Last->name);
+                    free(Ex->First);
+                    free(Ex->Last);
+		    break;
+                }
+            }   
+        } 
+	free(Ex);	
 }
 
 void Generator(FILE *file){

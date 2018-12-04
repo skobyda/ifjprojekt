@@ -58,6 +58,7 @@ void Generator(FILE *file);
 
 bool GeneratorAddExpression(ExL Ex, char *name, lexems lexem);
 void GeneratorDeleteExpression(ExL ExpL, Expr Delete);
+void GeneratorExpression(ExL Ex, bool floatOccur, bool intOccur);
 
 int ownStrLen(char *name);
 void GeneratorAssign(char *name, bool defined);
@@ -70,10 +71,11 @@ void GeneratorFunctionEnd();
 void GeneratorFunctionCall(char *name);
 void GeneratorParameterOut(int order, char *name, lexems lexem);
 void GeneratorIfStart();
-void GeneratorAfterIf();
+void GeneratorEndIf();
 void GeneratorWhileStartLabel();
 void GeneratorWhileCondEvaluation();
 void GeneratorWhileEnd();
 char *GeneratorMatcher(lexems lexem);
 char *GeneratorCharAppend(char *name);
+void GeneratorConcat(Expr Ex, char *symb1, char *symb2);
 #endif
