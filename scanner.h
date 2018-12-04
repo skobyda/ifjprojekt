@@ -53,7 +53,6 @@ typedef enum {
     NEXT=29, //for some functions only in lex. analyser
 //    QUOTMARK,//"
 
-<<<<<<< 9642f8774a60932195d21b7e004dea56af66670e
     //EOL_ENUM,//HOW MUCH ITEMS IS THERE FOR TESTING
 	PROBLEML = -1,//PROBLEM WITH LEXEM
   PROBLEMM=-2,//PROBLEM WITH MEMORY
@@ -80,6 +79,7 @@ DEXP,//ok
 DEXPD,//ok
 DEXPS,//ok
 DCOMD,
+ZERO,
 PROBLEM,
 ENDFILE,
 }states;
@@ -94,12 +94,6 @@ typedef struct {//DANGER SHOULD NOT BE IN STRINGPTR []?
 	lexems lexem;   // type of token
 	unsigned line;  // number of line
 	char *name;   // if it is ID, contains it's name, if it is  number it's a value. The same with a string.
-=======
-typedef struct {
-	lexems lexem;   // type of the read word
-	unsigned line;  // line counter
-	string value;   // if an ID was found, contains it's name, if it was a number it has it's value. The same with a string.
->>>>>>> Update scanner.h
 } Token;
 typedef Token *TokenPtr;
 int ScannerSaveNew(TokenPtr token,int lines, char*c);
