@@ -200,9 +200,12 @@ bool SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
 bool SemanticCondControl() {
     bool condOK = false;
 
-    if (leftExprComp == rightExprComp || leftExprComp == 2 || rightExprComp == 2)
+    if (condComp == 0)
         condOK = true;
-    else if (condComp == 0)
+    else if (leftExprComp == rightExprComp && (leftExprComp != 2 && rightExprComp !=2))
+        condOK = true;
+    else if ((leftExprComp == 3 && rightExprComp !=2) ||
+             (leftExprComp != 2 && rightExprComp == 3))
         condOK = true;
     
     return condOK;            
@@ -214,7 +217,7 @@ bool SemanticCondControl() {
  */
 void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token) {
 
-    bool condOK;
+    bool condOK, flag1, flag2;
 
     if ((token->lexem >= 13 && token->lexem <= 16) ||
          token->lexem == EQ ||   
@@ -226,12 +229,19 @@ void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token) {
             condState = 1;
             break;
         case 1:
-            SemanticExprCompSet(currTable, token, &leftExprComp);
+            flag1 = SemanticExprCompSet(currTable, token, &leftExprComp);
+            if (!flag1) {
+                condOK = false;
+                condState = 3;
+            }
             condState = 2;
             break;
         case 2:
-            SemanticExprCompSet(currTable, token, &rightExprComp);
-            condOK = SemanticCondControl();
+            flag2 = SemanticExprCompSet(currTable, token, &rightExprComp);
+            if (flag2)
+                condOK = SemanticCondControl();
+            else
+                condOK = false;
             condState = 3;
             break;
     }
@@ -350,13 +360,22 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
         } 
         if ((token->lexem == NIL && exprAssignCompType == 4) ||
             (token->lexem != NIL && exprAssignCompType >= 3)) {
-                SemanticExprCompSet (currTable, token, &exprAssignCompType);
-                SemanticVarAssignTypeSet(currTable, true);
+                bool flag1 = SemanticExprCompSet (currTable, token, &exprAssignCompType);
+                if (flag1)
+                    SemanticVarAssignTypeSet(currTable, true);
+                else {
+                    SemanticVarAssignTypeSet(currTable, false);
+                    return false;
+                }
         }
         else {
             int currentExprType;
-            SemanticExprCompSet (currTable, token, &currentExprType);
-            if (currentExprType == 2 || exprAssignCompType == 2) {
+            bool flag2 = SemanticExprCompSet (currTable, token, &currentExprType);
+            if (!flag2) {
+               SemanticVarAssignTypeSet(currTable, false);
+               return false;
+            } 
+            else if (currentExprType == 2 || exprAssignCompType == 2) {
                 printf("ERROR: Invalid operation with nil variable in expression on the line: %u\n", token->line);
                 SemanticVarAssignTypeSet(currTable, false);
                 return false;
@@ -381,20 +400,21 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
  */
 void SemanticExpAssignReset () {
 
+    free(identFunName);
     exprOperator = 2;
     exprAssignCompType = 4;
 }    
 /*Sets name of variable or functions and then used in other functions*/
 void SemanticNameSet (char *name, int varOrFun) {
 
-		if (varOrFun == 1) {//function name
-        	identFunName = malloc(sizeof(char) * (strlen(name) + 1));
-        	strcpy(identFunName, name);
-		}
-		else {
-			identVarName = malloc(sizeof(char) * (strlen(name) + 1));
-        	strcpy(identVarName, name);
-		}
+    if (varOrFun == 1) {//function name
+        identFunName = malloc(sizeof(char) * (strlen(name) + 1));
+        strcpy(identFunName, name);
+    }
+    else {
+        identVarName = malloc(sizeof(char) * (strlen(name) + 1));
+        strcpy(identVarName, name);
+    }
 }
 /*Function controls name of variable in variable assignment
  *returns true if it is able to use such name
