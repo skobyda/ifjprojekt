@@ -1,6 +1,6 @@
 #TODO
 CC = gcc
-CFLAGS = -pedantic -Wall -Wextra
+CFLAGS = -pedantic -Wall -Wextra -g
 CFILES = $(wildcard *.c)
 OFILES = $(CFILES:.c=.o)
 
