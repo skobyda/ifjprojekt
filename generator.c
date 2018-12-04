@@ -141,14 +141,14 @@ FILE *outputFile;
 	"RETURN\n"
 
 bool GeneratorAddExpression(ExL Ex, char *name, lexems lexem){
-	Expr tmp;
+	Expr tmp = NULL;
 	tmp = malloc(sizeof(struct ExprS));
 
 	if (!tmp)
 		return false;
 
         tmp->name =  malloc(1 + (ownStrLen(name) * sizeof(char)));
-	tmp->name = name;
+	strcpy(tmp->name, name);
 	tmp->lexem = lexem;
 	
 	if (lexem == LESS ||
@@ -216,6 +216,8 @@ void GeneratorDeleteExpression(ExL ExpL, Expr Delete){
 
 	}
 	ExpL->count--;
+	free(Delete->name);
+	free(Delete->code);
 	free(Delete);
 }
 
@@ -262,8 +264,8 @@ void GeneratorAssign(char *name, bool defined){
 	if (!defined){
 		printf("DEFVAR LF@$%s\n", name);			
 	} 
-	char *code = malloc(sizeof(char) * (ownStrLen(name) + ownStrLen("MOVE LF@$")) + 1);
-	strcpy(code, "MOVE LF@$");
+	char *code = malloc(sizeof(char) * (ownStrLen(name) + ownStrLen("LF@$")) + 1);
+	strcpy(code, "LF@$");
 	strcat(code, name);
 
 	PushStack(StackAssign, code);	
@@ -293,10 +295,10 @@ char *GeneratorMathOperation(lexems lexem){
 
 char *GeneratorCharAppend(char *name){
 	char *code = malloc(sizeof(char) * strlen(name) + 1 );
-	sprintf(code,"%s",name);
-	
-	if (!code)
-		return NULL;
+	strcpy(code, name);	
+
+	if (!code){
+		return NULL;}
 	else 
 		return code;
 }
@@ -323,6 +325,7 @@ char *GeneratorMatcher(lexems lexem){
 			break;
 	}
 
+			
 	return code;
 }
 
@@ -354,7 +357,7 @@ char *GeneratorConstantDefine(lexems lexem, char *name){
 			break;
 		case FLOAT:
 			printf("DEFVAR LF@$const%d\n", ExpTmp);
-			printf("MOVE LF@$const%d float@%s\n", ExpTmp, name);
+			printf("MOVE LF@$const%d float@%a\n", ExpTmp, atof(name));
 			break;
 		case NIL:
 			printf("DEFVAR LF@$const%d\n", ExpTmp);
@@ -437,6 +440,8 @@ void GeneratorWhileEnd(){
 void GeneratorIfStart(){
 	char *code = malloc(sizeof(char) * strlen("JUMPIFEQ $ifLabelEnd LF@$cond bool@false") + 1);
 	sprintf(code,"JUMPIFEQ $ifLabelEnd LF@$cond bool@false");
+	
+	PushStack(StackG, code);
 
 }
 
