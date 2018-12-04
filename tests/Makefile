@@ -2,16 +2,16 @@
 CC = gcc
 CFLAGS = -pedantic -Wall -Wextra
 OTHERCFILES = $(wildcard ../[^main]*.c)
-CFILES = parsertest.c $(OTHERCFILES)
+CFILES = TestScanner.c $(OTHERCFILES)
 OFILES = $(CFILES:.c=.o)
 
-all: parsertest part-clean
+all: TestScanner
 
-parsertest: $(OFILES)
+TestScanner: $(OFILES)
 	$(CC) $(CFLAGS) $^ -o $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
 clean:
-	rm parsertest
+	rm TestScanner
