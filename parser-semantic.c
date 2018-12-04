@@ -270,29 +270,32 @@ static void SemanticOperatorSet (TokenPtr token) {
  */
 static void SemanticVarAssignTypeSet(SymTablePtr currTable, bool ok) {
 
-    SymbolPtr symbol = SymTableFind(currTable, identVarName);
+    SymbolPtr symbol = NULL;
+    symbol = SymTableFind(currTable, identVarName);
+    if (symbol != NULL) {
 
-    if (ok) {
-        switch (exprAssignCompType) {
-            case 0:
-                symbol->dType = typeString;
-                break;
-            case 1:
-                symbol->dType = typeNumeric;
-                break;
-            case 2:
-                symbol->dType = typeNil;
-                break;
-            case 3:
-                symbol->dType = typeUnknown;
-                break;
-            default:
-                break;
+        if (ok) {
+            switch (exprAssignCompType) {
+                case 0:
+                    symbol->dType = typeString;
+                    break;
+                case 1:
+                    symbol->dType = typeNumeric;
+                    break;
+                case 2:
+                    symbol->dType = typeNil;
+                    break;
+                case 3:
+                    symbol->dType = typeUnknown;
+                    break;
+                default:
+                    break;
 
-            }
+                }
+        }
+        else
+            symbol->dType = typeNil;
     }
-    else
-        symbol->dType = typeNil;
     
 }
 
@@ -382,7 +385,7 @@ void SemanticNameSet (char *name, int varOrFun) {
  *returns true if it is able to use such name
  *return false if it is not able to use such name
  */
-bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token, char *name) {
+bool SemanticVarNameAssignControl (TokenPtr token, char *name) {
 
     SemanticNameSet (name, 0);
     SymbolPtr symbol = NULL;
@@ -392,10 +395,10 @@ bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token, char *
         printf("ERROR: On the line: %u. Cannot define variable with name '%s', already defined as function.\n",token->line, identVarName);
         return false;
     }
-    else {
-        symbol = SymTableFind(currTable, identVarName);
-        symbol->dType = typeNil;
-    }
+    //else {
+     //   symbol = SymTableFind(currTable, identVarName);
+     //   symbol->dType = typeNil;
+    //}
     return true;
 }
 /*Function controls name of function in definition
@@ -423,29 +426,34 @@ bool SemanticFunNameDefControl(TokenPtr token, char *name) {
 static void SemanticVarTypeSetByFunCall (SymTablePtr currTable, bool funIsDefined) {
     
     if (identVarName != NULL) {
-        SymbolPtr symbol = SymTableFind (currTable, identVarName);
-        if (funIsDefined) { //function is already defined
-            if (strcmp(identFunName, "print") == 0)
-                symbol->dType = typeNil;
-            else if (strcmp(identFunName, "inputs") == 0)
-                symbol->dType = typeString;
-            else if (strcmp(identFunName, "inputi") == 0)
-                symbol->dType = typeNumeric;
-            else if (strcmp(identFunName, "inputf") == 0)
-                symbol->dType = typeNumeric;
-            else if (strcmp(identFunName, "length") == 0)
-                symbol->dType = typeNumeric;
-            else if (strcmp(identFunName, "substr") == 0)
-                symbol->dType = typeString;
-            else if (strcmp(identFunName, "ord") == 0)
-                symbol->dType = typeUnknown;
-            else if (strcmp(identFunName, "chr") == 0)
-                symbol->dType = typeString;
-            else
-                symbol->dType = typeUnknown;
+	    SymbolPtr symbol = NULL;
+        symbol = SymTableFind (currTable, identVarName);
+	    if (symbol != NULL) {
+                if (funIsDefined) { //function is already defined
+                    if (strcmp(identFunName, "print") == 0)
+                        symbol->dType = typeNil;
+                    else if (strcmp(identFunName, "inputs") == 0)
+                        symbol->dType = typeString;
+                    else if (strcmp(identFunName, "inputi") == 0) 
+                        symbol->dType = typeNumeric;
+                    else if (strcmp(identFunName, "inputf") == 0)
+                        symbol->dType = typeNumeric;
+                    else if (strcmp(identFunName, "length") == 0)
+                        symbol->dType = typeNumeric;
+                    else if (strcmp(identFunName, "substr") == 0)
+                        symbol->dType = typeString;
+                    else if (strcmp(identFunName, "ord") == 0)
+                        symbol->dType = typeNumeric;
+                    else if (strcmp(identFunName, "chr") == 0)
+                        symbol->dType = typeString;
+                    else
+                        symbol->dType = typeUnknown;
+                }
+                else
+                    symbol->dType = typeUnknown;
+            free(identVarName);
+            identVarName = NULL; 
         }
-        else
-            symbol->dType = typeUnknown;
     }
 }
              
@@ -473,7 +481,9 @@ void SemanticFunNameCallControl(SymTablePtr currTable, TokenPtr token, char *nam
 /*Function controls when called function has no arguments*/
 void SemanticNoParamControl(TokenPtr token) {
 
-    if ((numOfParam != 0 && numOfParam != -2) || numOfParam != -1)
+    if (numOfParam != 0 && numOfParam != -2) 
+        printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    else if (numOfParam == -1)
         printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
 
 }
@@ -518,7 +528,8 @@ static void SemanticExpectsArgString(SymTablePtr currTable, TokenPtr token) {
      if (token->lexem == IDENT) {
         bool flag = SemanticArgIdentControl(currTable, token);
         if (flag) {
-            SymbolPtr symbol = SymTableFind(currTable, token->name);
+            SymbolPtr symbol = NULL;
+            symbol = SymTableFind(currTable, token->name);
             if (symbol->dType != typeString && symbol->dType != typeUnknown)
                printf("ERROR: Wrong type of argument '%s' in function call '%s' on the line: %u. Expects string.\n", token->name, identFunName, token->line);
         }

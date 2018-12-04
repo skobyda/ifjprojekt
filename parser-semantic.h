@@ -99,11 +99,12 @@ void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token);
 bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token);
 void SemanticExpAssignReset ();
 void SemanticNameSet (char *name, int varOrFun);
-bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token, char *name);
+bool SemanticVarNameAssignControl (TokenPtr token, char *name);
 bool SemanticFunNameDefControl(TokenPtr token, char *name);
 void SemanticFunNameCallControl(SymTablePtr currTable, TokenPtr token, char *name);
 void SemanticFunParamControl(SymTablePtr currTable, TokenPtr token);
 void SemanticNoMoreParam(TokenPtr token);
+void SemanticNoParamControl(TokenPtr token);
 
 
 
