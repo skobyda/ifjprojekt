@@ -142,14 +142,15 @@ FILE *outputFile;
 
 bool GeneratorAddExpression(ExL Ex, char *name, lexems lexem){
 	Expr tmp;
-	tmp = malloc(sizeof(struct ExprS) + 1 + (ownStrLen(name) * sizeof(char)));
-	
+	tmp = malloc(sizeof(struct ExprS));
+
 	if (!tmp)
 		return false;
 
+        tmp->name =  malloc(1 + (ownStrLen(name) * sizeof(char)));
 	tmp->name = name;
 	tmp->lexem = lexem;
-
+	
 	if (lexem == LESS ||
 	    lexem == MORE ||
 	    lexem == EQ ||
@@ -158,13 +159,13 @@ bool GeneratorAddExpression(ExL Ex, char *name, lexems lexem){
 		tmp->code = GeneratorMatcher(lexem);
 
         if (lexem == IDENT)
-        	tmp->code = GeneratorVariable(tmp->name); 
+        	tmp->code = GeneratorVariable(name); 
 
 	if (lexem == INT ||
 	    lexem == STR ||
-	    lexem == FLOAT )
-		tmp->code = GeneratorConstantDefine(lexem, tmp->name);
-	
+	    lexem == FLOAT ){
+		tmp->code = GeneratorConstantDefine(lexem, name);
+	}
 	if (lexem == PLUS ||
 	    lexem == MINUS ||
 	    lexem == DIVISION ||
@@ -182,6 +183,8 @@ bool GeneratorAddExpression(ExL Ex, char *name, lexems lexem){
 		Ex->Last = tmp;
 		tmp->Next = NULL;
 	}
+
+	Ex->count++;
 	return true;
 }
 
@@ -212,6 +215,7 @@ void GeneratorDeleteExpression(ExL ExpL, Expr Delete){
 		ExpL->Last = NULL;
 
 	}
+	ExpL->count--;
 	free(Delete);
 }
 
@@ -360,8 +364,8 @@ char *GeneratorConstantDefine(lexems lexem, char *name){
 			break;
 	}
 
-	char *code = malloc(sizeof(char) * (strlen(name) + strlen("LF@const") + 1 + sizeof(int)));
-	sprintf(code,"LF@const%d",ExpTmp++);
+	char *code = malloc(sizeof(char) * (strlen(name) + strlen("LF@$const") + 2) + sizeof(int));
+	sprintf(code,"LF@$const%d",ExpTmp++);
 	
 	return code;
 }
