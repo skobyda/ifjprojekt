@@ -308,6 +308,7 @@ static bool ParserStatement() {
 static bool ParserFunctionDeclaration() {
     //printf("Function\n");
     bool flag = true; // set to true if expects identificator, false if expects comma
+    bool alreadyDefined = false;
 
     /* Expects name of function */
     NEXTTOKEN;
@@ -320,19 +321,22 @@ static bool ParserFunctionDeclaration() {
     char *name = malloc(sizeof(char) * (strlen(token->name) + 1));
     strcpy(name, token->name);
 
+    SymbolPtr functionSymbol;
     // Add declaration to symtable
     if (!SymTableFind(currentTable, name)) {
-        SymbolPtr symbol = malloc(sizeof(struct Symbol));
-        if (!symbol) {
+        functionSymbol = malloc(sizeof(struct Symbol));
+        if (!functionSymbol) {
             printf("ERROR: malloc of symbol\n");
             return false;
         }
-        symbol->name = name;
-        symbol->nextSymbol = NULL;
-        symbol->iType = FUNCTION;
-        SymTableAdd(currentTable, symbol);
+        functionSymbol->name = name;
+        functionSymbol->nextSymbol = NULL;
+        functionSymbol->numOfParameters = 0;
+        functionSymbol->iType = FUNCTION;
+        SymTableAdd(currentTable, functionSymbol);
     } else {
         free(name);
+        alreadyDefined = true;
     }
 
     printf("SEMCALL: Function definition, name: %s\n", token->name);
@@ -387,6 +391,9 @@ static bool ParserFunctionDeclaration() {
             } else {
                 free(name);
             }
+    
+            if (!alreadyDefined)
+                functionSymbol->numOfParameters++;
 
             /* Semantic Action */
             if (flag) {
@@ -403,7 +410,6 @@ static bool ParserFunctionDeclaration() {
         /* Generator Parameter In Function */
 //        GeneratorParameterIn(order, token->name);
 //        order++;
-
 /*        if(token->lexem == INT ||
            token->lexem == STR ||
            token->lexem == FLOAT ||
