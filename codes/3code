@@ -1,0 +1,44 @@
+.IFJcode18
+
+DEFVAR GF@counter
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@a
+DEFVAR LF@b
+DEFVAR LF@c
+DEFVAR LF@cond
+MOVE LF@a int@0
+MOVE LF@b float@0x1.999999999999ap-3
+
+MOVE LF@c float@0x0p+0
+
+LABEL while
+JUMPIFEQ end LF@a int@16
+ADD LF@a LF@a int@1
+WRITE LF@a
+WRITE string@\010
+    LABEL while1
+    GT LF@cond LF@b float@0x1.4p+2
+    JUMPIFEQ end1 LF@cond bool@true
+    ADD LF@b LF@b float@0x1.3333333333333p+0
+    WRITE LF@b
+    WRITE string@\010
+    INT2FLOAT LF@a LF@a
+    ADD LF@c LF@a LF@b
+    WRITE LF@c
+    WRITE string@\010
+    FLOAT2INT LF@a LF@a
+
+    JUMP while1
+
+    LABEL end1
+
+JUMP while
+
+LABEL end
+WRITE LF@b
+WRITE string@\010
+WRITE LF@a
+WRITE string@\010
+WRITE LF@c
+WRITE string@\010

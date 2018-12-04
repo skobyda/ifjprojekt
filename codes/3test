@@ -1,0 +1,24 @@
+print "Zadejte cislo pro vypocet faktorialu: "
+a=0;
+b=0.5;
+c=0;
+while a <= 15 do
+	a = a+1
+    print a
+    print "\n"
+    while b<=5
+        b=b+1.2
+        print b
+        print "\n"
+        c=a-b
+        print c
+        print "\n"
+    end
+end
+print b
+print "\n"
+print a
+print "\n"
+print c
+print "\n"
+end

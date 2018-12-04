@@ -119,7 +119,7 @@ FILE* sourceCode;
 int main(int argc, char *argv[])
 {
 // //e+a
-// char a[]="1e1";
+ //char a[]="1e1";
 // char b[]="1e-0";
 // char c[]="0e-0";
 // char d[]="0.1e0";
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 //
 // char g[]="9.5e+55";
 // char h[]="9.5e55";
-// printf("%a\n",atof(a) );
+ //printf("%a\n",1.2+0.5 );
 // printf("%a\n",atof(b) );
 // printf("%a\n",atof(c) );
 // printf("%a\n",atof(d) );
