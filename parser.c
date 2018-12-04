@@ -861,83 +861,71 @@ static bool ParserExpression() {
     else {
         StackPtr infixStack = ParserExpressionRevInfixToPrefix(stack);
         TokenPtr tokenToPrint;
-        ExL Ex = malloc(sizeof(struct ExprS)); 
+       
+	ExL Ex = malloc(sizeof(struct ExprS)); 
         Ex->Last = NULL;
         Ex->First = NULL;
-
+	Ex->count = 0;
         while ((tokenToPrint = StackPop(infixStack)) != NULL) {
             /* Semantic Action */
             printf("SEMCALL: Expression token:");
             AuxPrintToken(tokenToPrint);
             printf("\n");
-            free(tokenToPrint->name);
-            free(tokenToPrint);
             /* Generator Action TODO */
             GeneratorAddExpression(Ex, tokenToPrint->name, tokenToPrint->lexem);        
+            free(tokenToPrint->name);
+            free(tokenToPrint);
         }
         StackDestroy(infixStack);
 
         int operandCount = 0;
-        int matcherCount = 0;
         Expr tmp;
         if (Ex->First)
             tmp = Ex->First;
-        printf("TOTO NASTALO\n");
+	
         while (Ex->First){
             if (tmp->lexem == INT ||
                 tmp->lexem == STR ||
                 tmp->lexem == FLOAT ||
                 tmp->lexem == IDENT){
                 operandCount++;
-                matcherCount++;
             }
 
             if (tmp->lexem == PLUS ||
                 tmp->lexem == MINUS ||
                 tmp->lexem == MULTIPLY ||
                 tmp->lexem == DIVISION){
-                operandCount++;
-                matcherCount = 0;
-            }
-
-            if (tmp->lexem == LESS ||
-                tmp->lexem == MORE ||
-                tmp->lexem == EQ ||
-                tmp->lexem == LESSEQ ||
-                tmp->lexem == MOREEQ){
                 operandCount = 0;
-                matcherCount++;
             }
 
-            if (matcherCount == 3){
+            if (operandCount == 2){
                 char *sign = tmp->Before->Before->code;
                 char *symb1 = tmp->Before->code;
-                char *symb2 = tmp->code;       
-                printf("%s %s %s\n", sign, symb1, symb2);
+                char *symb2 = tmp->code;
+                if(tmp->Before->Before->lexem == LESS ||
+                   tmp->Before->Before->lexem == LESS ||
+                   tmp->Before->Before->lexem == LESS ||
+                   tmp->Before->Before->lexem == LESS ||
+                   tmp->Before->Before->lexem == LESS)       
+                    printf("%s %s %s\n", sign, symb1, symb2);
+                else
+                    printf("%s %s %s %s\n", sign, symb1, symb1, symb2);
+                     
                 GeneratorDeleteExpression(Ex, tmp->Before->Before);         
                 GeneratorDeleteExpression(Ex, tmp);          
                 operandCount = 0;
-                matcherCount = 0;
             }
-
-            if (operandCount == 3){
-                char *sign = tmp->Before->Before->code;
-                char *symb1 = tmp->Before->code;
-                char *symb2 = tmp->code;       
-                printf("%s %s %s %s\n", sign, symb1, symb1, symb2);
-                GeneratorDeleteExpression(Ex, tmp->Before->Before);         
-                GeneratorDeleteExpression(Ex, tmp);
-                operandCount = 0;
-                matcherCount = 0;         
-            }
+		
 
             if (!tmp->Next){
                 tmp = Ex->First;
-                break;
             }
             else
                 tmp = tmp->Next;
+
+            if(Ex->count == 2) break;
         }
+	free(Ex);
 
     }
 
