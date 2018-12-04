@@ -95,17 +95,17 @@ void SemanticInitArray (CArray *a, size_t initSize);
 void SemanticInsertArray (CArray *a, unsigned line, char *name);
 void freeArray (CArray *a);
 
-bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun);
 void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token);
 bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token);
 void SemanticExpAssignReset ();
 void SemanticNameSet (char *name, int varOrFun);
 bool SemanticVarNameAssignControl (SymTablePtr currTable, TokenPtr token, char *name);
 bool SemanticFunNameDefControl(TokenPtr token, char *name);
-void SemanticFunNameCallControl(TokenPtr token, char *name);
+void SemanticFunNameCallControl(SymTablePtr currTable, TokenPtr token, char *name);
+void SemanticFunParamControl(SymTablePtr currTable, TokenPtr token);
+void SemanticNoMoreParam(TokenPtr token);
 
-// Initializes abstract tree before first usage
-void SemanticTreeInit (ATreeNodePtr *RootPtr);
+
 
 /* Runs Semantic analysis over derivation tree.
  * throws some error if semantic bug was detected.

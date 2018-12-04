@@ -43,8 +43,8 @@ int exprOperator = 2;
 /*0 stands for strings, 1 for int or float,  2 nil, 3 for unkown, 4 reset*/
 int exprAssignCompType = 4;
 
-char* identVarName;
-char* identFunName;
+char* identVarName = NULL;
+char* identFunName = NULL;
 /*-1 means 1 or more params are correct*/
 int numOfParam;
 /*-2 means unknown num of parameters, not defined yet*/
@@ -82,8 +82,7 @@ void freeArray (CArray *a) {
  *If function is not defined, it will be checked again at the end of parsing.
  *varOrFun -> 0 = variable, 1 = function
  */
-//TODO dokoncit pre vstavane funkcie, mozno aj na to upravit symtab
-bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun){
+static bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun){
     
     bool defined = false;
     
@@ -133,7 +132,7 @@ bool Semantic2ndDefControl() {
 }
 
 /*Sets type of comparator for conditions*/
-void SemanticCondCompSet(TokenPtr token) {
+static void SemanticCondCompSet(TokenPtr token) {
 
     if (token->lexem >= 13 && token->lexem <= 16)
         condComp = 1;
@@ -141,9 +140,9 @@ void SemanticCondCompSet(TokenPtr token) {
     else if (token->lexem == EQ || token->lexem == NOTEQ)
         condComp = 0;
 }
-//TODO vsade pre expression este aj nil
+
 /*Sets data type of expression in conditon or expression in variable assignment*/
-bool SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
+static bool SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
    
     bool ok = true; 
     switch (token->lexem) {
@@ -197,7 +196,7 @@ bool SemanticExprCompSet(SymTablePtr currTable, TokenPtr token, int *exprComp) {
 /*condComp 0 stands for != and == , 1 stands for others
  *exprComp 0 stands for strings, 1 for int or float, 2 for unknown
  */
-bool SemanticCondControl() {
+static bool SemanticCondControl() {
     bool condOK = false;
 
     if (condComp == 0)
@@ -213,7 +212,7 @@ bool SemanticCondControl() {
 
 /*Makes full control of condition in if or while statement
  *now in parser called in parserExpression like SemanticFullCondControl(currentTable, tokenToPrint);
- *calling could change a bit in parser
+ *calling: parser have to decide if expression is condition
  */
 void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token) {
 
@@ -254,7 +253,7 @@ void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token) {
 }
 
 /*Sets type of operator in assignment expression control*/
-void SemanticOperatorSet (TokenPtr token) {
+static void SemanticOperatorSet (TokenPtr token) {
 
     if (token->lexem == PLUS && exprOperator != 1)
         exprOperator = 0;
@@ -269,7 +268,7 @@ void SemanticOperatorSet (TokenPtr token) {
  *if OK is false, error in expression
  *if OK is true, so far no errors in expression
  */
-void SemanticVarAssignTypeSet(SymTablePtr currTable, bool ok) {
+static void SemanticVarAssignTypeSet(SymTablePtr currTable, bool ok) {
 
     SymbolPtr symbol = SymTableFind(currTable, identVarName);
 
@@ -299,7 +298,7 @@ void SemanticVarAssignTypeSet(SymTablePtr currTable, bool ok) {
 
 /*Makes control of assignment expression
  *now in parser called in parserExpression like SemanticExprAssignCotrol(currentTable, tokenToPrint);
- *calling could change a bit in parser
+ *calling: before expression was variable assignment
  */
 bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
 
@@ -359,6 +358,7 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
     return ok;
 }
 /*Called when expression in assignment is fully checked or when is semantic error in expression
+ *calling: when expression stack is empty
  */
 void SemanticExpAssignReset () {
 
@@ -413,34 +413,245 @@ bool SemanticFunNameDefControl(TokenPtr token, char *name) {
         return false;
     }
     else if (symbol != NULL && symbol->iType == FUNCTION) {
-        printf("ERROR: On the line: %u. Function with name '%s' already exists.\n",token->line, identFunName);
+        printf("ERROR: On the line: %u. Cannot redefine function '%s'.\n",token->line, identFunName);
         return false;
     }
     else 
         return true;
 }
+/*Function sets type of variable by called function - its return type*/
+static void SemanticVarTypeSetByFunCall (SymTablePtr currTable, bool funIsDefined) {
+    
+    if (identVarName != NULL) {
+        SymbolPtr symbol = SymTableFind (currTable, identVarName);
+        if (funIsDefined) { //function is already defined
+            if (strcmp(identFunName, "print") == 0)
+                symbol->dType = typeNil;
+            else if (strcmp(identFunName, "inputs") == 0)
+                symbol->dType = typeString;
+            else if (strcmp(identFunName, "inputi") == 0)
+                symbol->dType = typeNumeric;
+            else if (strcmp(identFunName, "inputf") == 0)
+                symbol->dType = typeNumeric;
+            else if (strcmp(identFunName, "length") == 0)
+                symbol->dType = typeNumeric;
+            else if (strcmp(identFunName, "substr") == 0)
+                symbol->dType = typeString;
+            else if (strcmp(identFunName, "ord") == 0)
+                symbol->dType = typeUnknown;
+            else if (strcmp(identFunName, "chr") == 0)
+                symbol->dType = typeString;
+            else
+                symbol->dType = typeUnknown;
+        }
+        else
+            symbol->dType = typeUnknown;
+    }
+}
+             
 
 /*Function controls if called function is already defined
  *sets correct number of parameters for called function if its already defined
+ *called in parser when there is function call
  */
-void SemanticFunNameCallControl(TokenPtr token, char *name){
+void SemanticFunNameCallControl(SymTablePtr currTable, TokenPtr token, char *name){
 //TODO simon este musi davat to tabulky pocet parametrov definovanych fcii
     SemanticNameSet (name, 1);
     bool defined = SemanticDefinedControl(globalTable,token->line, name, 1);
     if (defined) {
+        SemanticVarTypeSetByFunCall (currTable, true);
         SymbolPtr symbol = SymTableFind(globalTable, name);
         numOfParam = symbol->numOfParameters;
         paramCount = 0;
     }
-    else { 
+    else {
+        SemanticVarTypeSetByFunCall (currTable, false); 
         numOfParam = -2; //unknown num of paramaters, not defined yet
         paramCount = 0;
     }
-}	
+}
+/*Function controls when called function has no arguments*/
+void SemanticNoParamControl(TokenPtr token) {
 
+    if ((numOfParam != 0 && numOfParam != -2) || numOfParam != -1)
+        printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
 
-void SemanticTreeInit (ATreeNodePtr *RootPtr) {
-    *RootPtr = NULL;
+}
+/*Function controls if number of arguments in called function is correct
+ *called in parser when there is no more arguments
+ */
+void SemanticNoMoreParam(TokenPtr token) {
+    
+    if (numOfParam > paramCount && numOfParam != -1 && numOfParam != -2) 
+        printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    else if (numOfParam < paramCount && numOfParam != -1 && numOfParam != -2) 
+        printf("ERROR: Wrong number of arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    
+}
+/*Function controls if ident used as argument is ok*/
+static bool SemanticArgIdentControl(SymTablePtr currTable, TokenPtr token) {
+
+    bool ok = true;
+    if (token->lexem == IDENT) {
+        SymbolPtr symbol = NULL;
+        symbol = SymTableFind(globalTable, token->name);
+
+        if (symbol != NULL && symbol->iType == FUNCTION) {
+            printf("ERROR: On the line: %u.Function cannot be used as argument in function call. Argument '%s'.\n",token->line, token->name);
+            ok = false;
+        }
+        else {
+            symbol = SymTableFind(currTable, token->name);
+             if (symbol == NULL) {
+             printf("ERROR: Using undefined variable '%s' on the line: %u\n",token->name, token->line);
+            ok = false;
+            }
+        }
+    }
+    return ok;
+}
+/*Function checks expected string argument*/
+static void SemanticExpectsArgString(SymTablePtr currTable, TokenPtr token) {
+    
+     if (token->lexem != STR && token->lexem != IDENT)
+       printf("ERROR: Wrong type of argument '%s' in function call '%s' on the line: %u. Expects string.\n", token->name, identFunName, token->line);
+     if (token->lexem == IDENT) {
+        bool flag = SemanticArgIdentControl(currTable, token);
+        if (flag) {
+            SymbolPtr symbol = SymTableFind(currTable, token->name);
+            if (symbol->dType != typeString && symbol->dType != typeUnknown)
+               printf("ERROR: Wrong type of argument '%s' in function call '%s' on the line: %u. Expects string.\n", token->name, identFunName, token->line);
+        }
+    }    
+ 
+}
+/*Function checks expected int argument*/
+static void SemanticExpectsArgInt(SymTablePtr currTable, TokenPtr token) {
+
+    if (token->lexem != INT && token->lexem != IDENT)
+       printf("ERROR: Wrong type of argument '%s' in function call '%s' on the line: %u. Expects integer.\n", token->name, identFunName, token->line);
+    if (token->lexem == IDENT) {
+        bool flag = SemanticArgIdentControl(currTable, token);
+        if (flag) {
+            SymbolPtr symbol = SymTableFind(currTable, token->name);
+            if (symbol->dType != typeNumeric && symbol->dType != typeUnknown)
+               printf("ERROR: Wrong type of argument '%s' in function call '%s' on the line: %u. Expects integer.\n", token->name, identFunName, token->line);
+        }
+    }    
+ 
+}
+/*Function checks arguments of print function*/
+static void SemanticPrintCallControl(SymTablePtr currTable, TokenPtr token) {
+    
+    //expects only string, int, float, nil or indent as correct argument
+    if (token->lexem < 2 && token->lexem < 6) 
+        printf("ERROR: Wrong type of argument in function call '%s' on the line: %u\n", identFunName, token->line);
+    if (token->lexem == IDENT)
+        SemanticArgIdentControl(currTable, token);
+}
+
+/*Function checks arguments of length function*/
+static void SemanticLengthCallControl(SymTablePtr currTable, TokenPtr token){
+
+    //expects only string or string variable
+    SemanticExpectsArgString(currTable, token);
+} 
+ /*Function checks arguments of substr function*/    
+static void SemanticSubstrCallControl(SymTablePtr currTable, TokenPtr token){
+
+    switch (paramCount) {
+        case 1:
+            SemanticExpectsArgString(currTable, token);
+            break;
+        case 2: case 3:
+            SemanticExpectsArgInt(currTable, token);
+            break;
+        default:
+            break;
+    }
+}
+/*Function checks arguments of ord function*/            
+static void SemanticOrdCallControl(SymTablePtr currTable, TokenPtr token) {
+
+    switch (paramCount) {
+        case 1:
+            SemanticExpectsArgString(currTable, token);
+            break;
+        case 2:
+            SemanticExpectsArgInt(currTable, token); 
+            break;
+        default:
+            break;
+    }
+
+}
+/*Function checks arguments of chr function*/           
+static void SemanticChrCallControl(SymTablePtr currTable, TokenPtr token) {
+
+    //expects only integer or numeric(int) variable
+    SemanticExpectsArgInt(currTable, token);
+    
+}
+/*Function checks arguments of user defined function*/
+static void SemanticOwnFunCallControl(SymTablePtr currTable, TokenPtr token) {
+
+    //expects only string, int, float, nil or indent as correct argument
+    if (token->lexem < 2 && token->lexem < 6) 
+        printf("ERROR: Wrong type of argument in function call '%s' on the line: %u\n", identFunName, token->line);
+    if (token->lexem == IDENT)
+        SemanticArgIdentControl(currTable, token);
+}
+
+/*Controls if argument is ok in current funnction call*/
+void SemanticFunParamControl(SymTablePtr currTable, TokenPtr token) {
+    
+    paramCount++;
+
+    if (strcmp(identFunName, "inputs") == 0 ||
+        strcmp(identFunName, "inputi") == 0 ||
+        strcmp(identFunName, "inputf") == 0) {
+
+        if (paramCount == 1)//1 and more is wrong, error print only once
+            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    }
+    else if (strcmp(identFunName, "print") == 0)
+        SemanticPrintCallControl(currTable, token);
+
+    else if (strcmp(identFunName, "length") == 0) {
+
+        if (paramCount == 1)
+            SemanticLengthCallControl(currTable, token);
+        if (paramCount == 2) //2 and more is wrong, error print only once
+            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    }
+    else if (strcmp(identFunName, "substr") == 0) {
+
+        if (paramCount <= 3)
+            SemanticSubstrCallControl(currTable, token);
+        if (paramCount == 4) //4 and more is wrong, error print only once
+            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    }      
+    else if (strcmp(identFunName, "ord") == 0) {
+
+        if (paramCount <= 2)
+            SemanticOrdCallControl(currTable, token);
+        if (paramCount == 3)//3 and more is wrong, error print only once
+                printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    }
+    else if (strcmp(identFunName, "chr") == 0) {
+
+        if (paramCount == 1)
+            SemanticChrCallControl(currTable, token);
+        if (paramCount == 2) //2 and more is wrong, error print only once
+            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    }
+    else {
+        if (paramCount <= numOfParam || numOfParam == -2)
+            SemanticOwnFunCallControl(currTable, token);
+        if (paramCount == numOfParam + 1)
+            printf("ERROR: Too many arguments in function call '%s' on the line: %u\n", identFunName, token->line);
+    }
+    
 }
 
 bool ParserSemantic(ParTreePtr tree) {
