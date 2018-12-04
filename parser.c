@@ -461,7 +461,7 @@ static bool ParserIfStatement() {
     printf("SEMCALL: IF\n");
 
     /* Generator If Statement start */
-    GeneratorIfStart();
+//    GeneratorIfStart();
 
     /* Function's condition can be parsed as expression */
     pinfo.expressionType = 2;
@@ -834,7 +834,7 @@ static bool ParserExpression() {
     if (symbol && symbol->iType == FUNCTION) {
             printf("SEMCALL: Function call, function name: %s\n", token->name);
             //Generator funkcia 
-            GeneratorFunctionCall(token->name);
+            //GeneratorFunctionCall(token->name);
             NEXTTOKEN;
             switch (token->lexem) {
                 case LEFT_B: // It's function call
@@ -885,13 +885,13 @@ static bool ParserExpression() {
     else {
         StackPtr infixStack = ParserExpressionRevInfixToPrefix(stack);
         TokenPtr tokenToPrint;
-       
+/*       
 	ExL Ex = malloc(sizeof(struct ExprS)); 
         Ex->Last = NULL;
         Ex->First = NULL;
 	Ex->count = 0;
 	bool intOccur = false;
-	bool floatOccur = false;
+	bool floatOccur = false;*/
         while ((tokenToPrint = StackPop(infixStack)) != NULL) {
             /* Semantic Action */
             printf("SEMCALL: Expression token:");
@@ -906,7 +906,7 @@ static bool ParserExpression() {
         }
         StackDestroy(infixStack);
         /* Generate Expression in IFJcode2018 */
-        GeneratorExpression(Ex, floatOccur, intOccur);
+//        GeneratorExpression(Ex, floatOccur, intOccur);
     }
 
     StackDestroy(stack);
