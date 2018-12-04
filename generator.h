@@ -36,6 +36,7 @@ struct ExprS {
 
 typedef struct ExList *ExL;
 struct ExList {
+    int count;
     struct ExprS *First;
     struct ExprS *Last;
 };
