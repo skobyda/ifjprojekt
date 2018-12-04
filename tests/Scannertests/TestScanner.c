@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../scanner.h"
+#include "../../scanner.h"
 #include <stdio.h>
 #include <stdlib.h>
 void PrintToken(int token)
@@ -205,4 +205,3 @@ if(argc==1)return 1;
     (void)sourceCode;
     return 1;
 }
-
