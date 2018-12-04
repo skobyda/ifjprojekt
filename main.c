@@ -21,6 +21,21 @@
 #include "scanner.h"
 #include "generator.h"
 
+int retval = 0;
+
+void PrintError(int val, unsigned int line, const char *message) {
+    if (!message)
+        return;
+
+    if (!retval)
+        retval = val;
+
+    if (line)
+        fprintf(stderr, "ERROR: Line %u: %s\n", line, message);
+    else
+        fprintf(stderr, "ERROR: %s\n", message);
+}
+
 int main(int argc, char **argv) {
     (void)(argc);
     (void)(argv);
@@ -51,5 +66,5 @@ int main(int argc, char **argv) {
  error:
     //TODO
     fprintf(stderr, "THIS COMPILER DOESN'T WORK YET :)\n");
-    return 0;
+    return retval;
 }

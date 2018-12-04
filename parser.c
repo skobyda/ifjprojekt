@@ -17,6 +17,7 @@
 
 /***LOCAL FILES***/
 #include "generator.h"
+#include "main.h"
 #include "parser.h"
 #include "parser-semantic.h"
 #include "scanner.h"
@@ -25,7 +26,7 @@
 
 typedef struct {
     int expressionType; // 0 - NOTHING, 1 - statement, 2 - condition
-    int blockOfCodeType; // 0 - global, 1 - if/else/while
+    int blockOfCodeType; // 0 - global, 1 - definition of function 
 } ParserInfo;
 
 ParserInfo pinfo;
@@ -213,10 +214,10 @@ static bool ParserArguments() {
             token->lexem != NIL &&
             token->lexem != FLOAT )
             ) {
-            printf("ERROR\n");
+            PrintError(2 , token->line, "Expected identifier or constant");
             goto end;
         } else if (!flag && token->lexem != COMA) { // comma
-            printf("ERRORa\n");
+            PrintError(2 , token->line, "Expected comma");
             goto end;
         }
 
@@ -249,7 +250,7 @@ static bool ParserArguments() {
         /* If arguments of function call are inside brackets, expects end of line after right bracket */
         NEXTTOKEN;
         if (token->lexem != EOL) {
-            printf("ERROR\n");
+            PrintError(2 , token->line, "Expected right bracket");
             goto end;
         }
     }
@@ -296,8 +297,10 @@ static bool ParserStatement() {
             //printf("End\n");
             break;
         default:
-            //TODO END OF LINE
-            return false;
+            PrintError(2 , token->line, "Unknown statement");
+            while (token->lexem != EOL)
+                NEXTTOKEN;
+            FUNCTIONCALL(ParserStatement);
     }
 
     return true;
@@ -313,7 +316,7 @@ static bool ParserFunctionDeclaration() {
     /* Expects name of function */
     NEXTTOKEN;
     if (token->lexem != IDENT) {
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected identifier (name of function)");
         while (token->lexem != EOL)
             NEXTTOKEN;
     }
@@ -326,7 +329,7 @@ static bool ParserFunctionDeclaration() {
     if (!SymTableFind(currentTable, name)) {
         functionSymbol = malloc(sizeof(struct Symbol));
         if (!functionSymbol) {
-            printf("ERROR: malloc of symbol\n");
+            PrintError(99 , 0, "Could not malloc");
             return false;
         }
         functionSymbol->name = name;
@@ -347,7 +350,7 @@ static bool ParserFunctionDeclaration() {
     /* Change Symbol Table for function's block of code and its parameters */
     currentTable = SymTableInit(globalTable);
     if (!currentTable) {
-        printf("ERROR\n");
+        PrintError(99 , 0, "Could not malloc");
         return NULL;
     }
 
@@ -355,7 +358,7 @@ static bool ParserFunctionDeclaration() {
     /* Expects left bracked after function name */
     NEXTTOKEN;
     if (token->lexem != LEFT_B) {
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected left bracked after function name");
         while (token->lexem != EOL)
             NEXTTOKEN;
     } else {
@@ -367,11 +370,11 @@ static bool ParserFunctionDeclaration() {
         NEXTTOKEN;
         while (token->lexem != RIGHT_B) {
             if (flag && token->lexem != IDENT) {
-                printf("ERROR\n");
+                PrintError(2 , token->line, "Expected function parameter (identifier)");
                 while (token->lexem != EOL)
                     NEXTTOKEN;
             } else if (!flag && token->lexem != COMA) {
-                printf("ERROR\n");
+                PrintError(2 , token->line, "Expected comma");
                 while (token->lexem != EOL)
                     NEXTTOKEN;
             }
@@ -383,7 +386,7 @@ static bool ParserFunctionDeclaration() {
             if (!SymTableFind(currentTable, name)) {
                 SymbolPtr symbol = malloc(sizeof(struct Symbol));
                 if (!symbol)
-                    printf("ERROR: malloc of symbol\n");
+                    PrintError(99 , 0, "Could not malloc");
                 symbol->name = name;
                 symbol->nextSymbol = NULL;
                 symbol->iType = VARIABLE;
@@ -422,21 +425,23 @@ static bool ParserFunctionDeclaration() {
         NEXTTOKEN;
         /* Expects end of line after right bracket */
         if (token->lexem != EOL) {
-            printf("ERROR\n");
+            PrintError(2 , token->line, "Expected end of line after right bracket");
             while (token->lexem != EOL)
                 NEXTTOKEN;
         }
     }
 
     /* Statement(s) inside a function (aka body of function) */
+    pinfo.blockOfCodeType = 1;
     FUNCTIONCALL(ParserStatement);
+    pinfo.blockOfCodeType = 0;
 
     SymTableDestroy(currentTable);
     currentTable = globalTable;
 
     /* Body of function should end with 'END' */
     if (token->lexem != END)
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected 'end' after function's definition");
     
     /* Semantic Action */
     printf("SEMCALL: End of Function\n");
@@ -476,7 +481,7 @@ static bool ParserIfStatement() {
 
     /* Expects 'end' after function's condition */
     if (token->lexem != THEN)
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected 'then' after condition");
 
     /* Generator Condition Evaluation */
 //    char *code = PopStack(StackG);
@@ -486,15 +491,13 @@ static bool ParserIfStatement() {
     /* Expects end of line after 'end' */
     NEXTTOKEN;
     if (token->lexem != EOL) {
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected end of line after 'end'");
         while (token->lexem != EOL)
             NEXTTOKEN;
     }
 
     /* Function's block of code */
-    pinfo.blockOfCodeType = 1;
     FUNCTIONCALL(ParserStatement);
-    pinfo.blockOfCodeType = 0;
 
     /* Generator If Else Label Dont Create Label At The End */
 //    bool LabelExist;
@@ -504,7 +507,7 @@ static bool ParserIfStatement() {
         /* Expects end of line after 'else' */
         NEXTTOKEN;
         if (token->lexem != EOL) {
-            printf("ERROR\n");
+            PrintError(2 , token->line, "Expected end of line after 'else'");
             while (token->lexem != EOL)
                 NEXTTOKEN;
         }
@@ -517,14 +520,12 @@ static bool ParserIfStatement() {
 //        LabelExist = true;        
 
         /* Else's block of code */
-        pinfo.blockOfCodeType = 1;
         FUNCTIONCALL(ParserStatement);
-        pinfo.blockOfCodeType = 0;
     }
 
     /* Expects 'end' at the end of if/else statement  */
     if (token->lexem != END)
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected 'end' after if/else's block of code");
 
     /* Semantic Action */
     printf("SEMCALL: End of IF block of code\n");
@@ -536,7 +537,7 @@ static bool ParserIfStatement() {
     /* Expects end of line after 'end' */
     NEXTTOKEN;
     if (token->lexem != EOL) {
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected end of line after 'end'");
         while (token->lexem != EOL)
             NEXTTOKEN;
     }
@@ -568,24 +569,22 @@ static bool ParserWhile() {
 
     /* Expects 'do' after while's condition */
     if (token->lexem != DO)
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected 'do' after condition");
 
     /* Expects end of line after 'do' */
     NEXTTOKEN;
     if (token->lexem != EOL) {
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected end ofline after 'do'");
         while (token->lexem != EOL)
             NEXTTOKEN;
     }
 
     /* While's block of code */
-    pinfo.blockOfCodeType = 1;
     FUNCTIONCALL(ParserStatement);
-    pinfo.blockOfCodeType = 0;
 
     /* Expects 'end' at the end of while statement */
     if (token->lexem != END)
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected 'end'");
 
     /* Semantic Action */
     printf("SEMCALL: End of WHILE block of code\n");
@@ -596,7 +595,7 @@ static bool ParserWhile() {
     NEXTTOKEN;
     /* Expects end of line after 'end' */
     if (token->lexem != EOL) {
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected end of line 'end'");
         while (token->lexem != EOL)
             NEXTTOKEN;
     }
@@ -632,7 +631,7 @@ static bool ParserDeclaration() {
                 
                 SymbolPtr symbol = malloc(sizeof(struct Symbol));
                 if (!symbol) {
-                    printf("ERROR: malloc of symbol\n");
+                    PrintError(99 , token->line, "Can't malloc");
                     return false;
                 }
                 symbol->name = name;
@@ -686,7 +685,7 @@ static bool ParserDeclaration() {
         case EOL:
             symbol = SymTableFind(currentTable, name);
             if (!symbol) {
-                printf("ERROR, usage of undefined variable/function\n");
+                //PrintError(2 , token->line, "Expected end of line 'end'");
             } else {
                 if (symbol->iType == FUNCTION) { //fuction call with no parameters
                     printf("SEMCALL: Function call, function name: %s\n", name);
@@ -699,7 +698,7 @@ static bool ParserDeclaration() {
             free(name);
             break;
         default:
-            printf("ERRORA\n");
+            PrintError(2 , token->line, "Unknown token");
             while (token->lexem != EOL)
                 NEXTTOKEN;
             // AuxPrintToken(token);
@@ -722,7 +721,7 @@ static bool ParserExpressionCheckError(bool flag) {
             token->lexem != FLOAT &&
             token->lexem != NIL) {
 
-            printf("ERROR\n");
+            PrintError(2 , token->line, "Expected operand or left bracket in the expression");
             while (token->lexem != EOL &&
                    token->lexem != DO &&
                    token->lexem != THEN &&
@@ -743,7 +742,7 @@ static bool ParserExpressionCheckError(bool flag) {
                     token->lexem != EQ &&
                     token->lexem != NOTEQ) {
 
-            printf("ERRORk\n");
+            PrintError(2 , token->line, "Expected operator or right bracket int the expression");
             while (token->lexem != EOL &&
                    token->lexem != DO &&
                    token->lexem != THEN &&
@@ -878,7 +877,7 @@ static bool ParserExpression() {
 
         // push it to stack, so we get reversed expression
         if(!StackPush(stack, newToken))
-           printf("ERROR: StackPush() Failed\n");
+            PrintError(99, 0, "Internal error: Stack Push failed");
 
         // to secure switching of operator and operand
         if (token->lexem != LEFT_B && token->lexem != RIGHT_B)
@@ -888,7 +887,7 @@ static bool ParserExpression() {
 
     // last token in expression is operator
     if (flag == true)
-        printf("ERROR\n");
+        PrintError(2, token->line, "Operator cannot be last token in epxression");
     else {
         StackPtr infixStack = ParserExpressionRevInfixToPrefix(stack);
         TokenPtr tokenToPrint;
@@ -958,7 +957,7 @@ Parser() {
 
     currentTable = SymTableInit(NULL);
     if (!currentTable) {
-        printf("ERROR\n");
+        PrintError(99, 0, "Operator cannot be last token in epxression");
         return NULL;
     }
     globalTable = currentTable;
