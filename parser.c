@@ -111,25 +111,6 @@ static TokenPtr DummyGetToken() {
         return false; \
 } while(0)
 
-/* Rule of LL gramar for list of statements.
- */
-/* static bool ParserStatList() {
-    printf("StatList\n");
-
-    NEXTTOKEN;
-
-    switch (token->lexem) {
-        case EOFILE:
-            return true;
-            break;
-        default:
-            FUNCTIONCALL(ParserStatement);
-            break;
-    }
-
-    return true;
-}*/
-
 static TokenPtr CopyToken(TokenPtr token) {
     TokenPtr newtoken = malloc(sizeof(Token));
     if (!newtoken)
@@ -199,7 +180,6 @@ static void AuxPrintToken(TokenPtr token) {
 /* Rule of LL gramar for Arguments of function calling.
  */
 static bool ParserArguments() {
-    //printf("Functioncall arguments\n");
     bool flag = true; // set to true if expects Identificator, false if expects comma
 
     /* Generator Order of Argunemt in Function */
@@ -222,12 +202,8 @@ static bool ParserArguments() {
         }
 
         /* Semantic Action */
-        if (flag) {
-            printf("SEMCALL: Function call parameter:");
-            AuxPrintToken(token);
-            printf("\n");
+        if (flag)
             SemanticFunParamControl(currentTable, token);
-        }
 
 
         /* Generator Function Parameter Call */
@@ -275,9 +251,6 @@ static bool ParserArguments() {
 /* Rule of LL gramar for statement.
  */
 static bool ParserStatement() {
-    printf("SEMCALL: Statement\n");
-    //TODO SEMCALL
-
     NEXTTOKEN;
     switch (token->lexem) {
         case DEF:
@@ -298,10 +271,8 @@ static bool ParserStatement() {
         case EOFILE:
             break;
         case ELSE:
-            //printf("Else\n");
             break;
         case END:
-            //printf("End\n");
             break;
         default:
             PrintError(2 , token->line, "Unknown statement");
@@ -352,8 +323,6 @@ static bool ParserFunctionDeclaration() {
         free(name);
         alreadyDefined = true;
     }
-
-    printf("SEMCALL: Function definition, name: %s\n", token->name);
     
     /* Generator Function Definition */
     GeneratorFunctionDefinition(token->name);
@@ -409,12 +378,7 @@ static bool ParserFunctionDeclaration() {
             if (!alreadyDefined && flag)
                 functionSymbol->numOfParameters++;
 
-            /* Semantic Action */
             if (flag) {
-                printf("SEMCALL: Function definition parameter:");
-                AuxPrintToken(token);
-                printf("\n");
-                
                 /* Generator Parameter In Function */
                 GeneratorParameterIn(order, token->name);
                 order++;
@@ -455,17 +419,14 @@ static bool ParserFunctionDeclaration() {
     /* Body of function should end with 'END' */
     if (token->lexem != END)
         PrintError(2 , token->line, "Expected 'end' after function's definition");
-    
-    /* Semantic Action */
-    printf("SEMCALL: End of Function\n");
-    
+
     /* Generator Action Function End */
     GeneratorFunctionEnd();
 
     /* Expects end of line after 'END' */
     NEXTTOKEN;
     if (token->lexem != EOL) {
-        printf("ERROR\n");
+        PrintError(2 , token->line, "Expected end of line after 'end'");
         while (token->lexem != EOL)
             NEXTTOKEN;
     }
@@ -479,11 +440,6 @@ static bool ParserFunctionDeclaration() {
 /* Rule of LL gramar for If statement.
  */
 static bool ParserIfStatement() {
-    //printf("If\n");
-
-    /* Semantic Action */
-    printf("SEMCALL: IF\n");
-
     /* Generator If Statement start */
     GeneratorIf();
 
@@ -524,9 +480,6 @@ static bool ParserIfStatement() {
                 NEXTTOKEN;
         }
 
-        /* Semantic Action */
-        printf("SEMCALL: ELSE\n");
-        
         /* Generator Else Statement */
         GeneratorStackPrint(StackIf);
         GeneratorStackPrint(StackIf);
@@ -543,9 +496,6 @@ static bool ParserIfStatement() {
     /* Expects 'end' at the end of if/else statement  */
     if (token->lexem != END)
         PrintError(2 , token->line, "Expected 'end' after if/else's block of code");
-
-    /* Semantic Action */
-    printf("SEMCALL: End of IF block of code\n");
 
     /* Generator End If Label */
     GeneratorStackPrint(StackIf);    
@@ -567,11 +517,6 @@ static bool ParserIfStatement() {
 /* Rule of LL gramar for If statement.
  */
 static bool ParserWhile() {
-    //printf("While\n");
-
-    /* Semantic Action */
-    printf("SEMCALL: WHILE\n");
-
     /* Generator While Start */
     WhileEnd++;
     GeneratorWhile();
@@ -605,9 +550,6 @@ static bool ParserWhile() {
     if (token->lexem != END)
         PrintError(2 , token->line, "Expected 'end'");
 
-    /* Semantic Action */
-    printf("SEMCALL: End of WHILE block of code\n");
-
     /* Generator While End */
     GeneratorStackPrint(StackWhile);
     GeneratorStackPrint(StackWhile);
@@ -616,7 +558,7 @@ static bool ParserWhile() {
        while (!GenEmptyStack(StackWhileAll)){
             char *code = NULL;
             code = FrontStack(StackWhileAll);
-	    fprintf(stdout,"%s\n",code);
+            fprintf(stdout,"%s\n",code);
             free(code);         
         }
     }
@@ -638,7 +580,6 @@ static bool ParserWhile() {
  * variables or function call
  */
 static bool ParserDeclaration() {
-    //printf("Declaration\n");
     SymbolPtr symbol;
     bool defined;
     char *name = malloc(sizeof(char) * (strlen(token->name) + 1));
@@ -647,8 +588,6 @@ static bool ParserDeclaration() {
     NEXTTOKEN;
     switch (token->lexem) {
         case ADDITION: // It's declaration of variable
-            /* Semantic Action */
-            printf("SEMCALL: Variable Assignment, variable name: %s\n", name);
             bool test = SemanticVarNameAssignControl(token, name);
             // Add declaration to symtable
             if (!SymTableFind(currentTable, name) && test) {
@@ -695,8 +634,6 @@ static bool ParserDeclaration() {
         case NIL:
             if (token->lexem == LEFT_B)
                 NEXTTOKEN;
-            /* Semantic Action */
-            printf("SEMCALL: Function call, function name: %s\n", name);
             SemanticFunNameCallControl(currentTable, token, name,pinfo.blockOfCodeType);
 
             /* Generator Action Function Call */
@@ -708,21 +645,17 @@ static bool ParserDeclaration() {
         case EOL:
             symbol = SymTableFind(currentTable, name);
             if (!symbol) {
-                printf("SEMCALL: Statement with just 1 identifier. Could be function call??? name: %s\n", name);
-		SemanticFunNameCallControl(currentTable, token, name,pinfo.blockOfCodeType);
+                SemanticFunNameCallControl(currentTable, token, name,pinfo.blockOfCodeType);
 		
                 //PrintError(2 , token->line, "Expected end of line 'end'");
             } else {
                 if (symbol->iType == FUNCTION) { //fuction call with no parameters
-                    printf("SEMCALL: Function call, function name: %s\n", name);
                     SemanticFunNameCallControl(currentTable, token, name,pinfo.blockOfCodeType);
-                    printf("SEMCALL: Function call has no arguments\n");
                     SemanticNoParamControl(token);
                     /* Generator Function without arguments CALL */
-		    GeneratorFunctionCall(name);
+                    GeneratorFunctionCall(name);
                     GeneratorStackPrint(StackG);
                 } else {
-                    printf("GENCALL: Empty variable statement %s\n", name);
                     GeneratorRetValInFunction(name);
                 }
                 //could also be variable assigned nowhere. In that case, does nothing
@@ -734,9 +667,6 @@ static bool ParserDeclaration() {
             PrintError(2 , token->line, "Unknown token");
             while (token->lexem != EOL)
                 NEXTTOKEN;
-            // AuxPrintToken(token);
-            // NEXTTOKEN;
-            // AuxPrintToken(token);
             FUNCTIONCALL(ParserStatement);
             free(name);
     }
@@ -862,8 +792,6 @@ static StackPtr ParserExpressionRevInfixToPrefix(StackPtr RevInfixStack) {
  * This expression will handled by precedence parsing.
  */
 static bool ParserExpression() {
-    //printf("Expression\n");
-
     bool flag = true;
 
     /* Reads operators and operadns of expression */
@@ -871,7 +799,6 @@ static bool ParserExpression() {
 
     SymbolPtr symbol = SymTableFind(currentTable, token->name);
     if (symbol && symbol->iType == FUNCTION) {
-            printf("SEMCALL: Function call, function name: %s\n", token->name);
             SemanticFunNameCallControl(currentTable, token,token->name,pinfo.blockOfCodeType);
             /* Generator function call */
             GeneratorFunctionCall(token->name);
@@ -888,7 +815,6 @@ static bool ParserExpression() {
                     FUNCTIONCALL(ParserArguments);
                     break;
                 case EOL:
-                    printf("SEMCALL: Function call has no arguments\n");
                     SemanticNoParamControl(token);
                     //could also be variable assigned nowhere. In that case, does nothing
                     break;
@@ -934,10 +860,6 @@ static bool ParserExpression() {
 	bool intOccur = false;
 	bool floatOccur = false;
         while ((tokenToPrint = StackPop(infixStack)) != NULL) {
-            /* Semantic Action */
-            printf("SEMCALL: Expression token:");
-            AuxPrintToken(tokenToPrint);
-            printf("\n");
             if(pinfo.expressionType == 2) 
                 SemanticFullCondControl(currentTable, tokenToPrint);
             else
