@@ -186,6 +186,7 @@ int ScannerTestW(char*str){
 int ScannerSaveNew(TokenPtr token,int lines,char* c){
     if(ScannerStradd((token)->name,c)==0){
         (token)->lexem=PROBLEMC;
+        PrintError(99, n_lines, "Concatenation of the strings failed");
         (token)->line=lines;
         return 0;
     }
@@ -250,12 +251,14 @@ TokenPtr ScannerGetToken(){
     token=malloc(sizeof(Token));    //allocation of the token
     if(token==NULL){
         (token)->lexem=PROBLEMM;
+        PrintError(99, 0, "Problem with allocation of memory");
         (token)->line=n_lines;
         return token;
     }
     (token)->name=malloc((sizeof(char))*50);    //here we save our chars
     if(token->name==NULL){//
         (token)->lexem=PROBLEMM;
+        PrintError(99, 0, "Problem with allocation of memory");
         (token)->line=n_lines;
         return token;
     }
@@ -392,6 +395,7 @@ TokenPtr ScannerGetToken(){
                     if(ScannerTestWord("begin ")==1){
 
                         state=PROBLEM;
+                        PrintError(1, n_lines, "Problem that Begin of the comment \"=begin\" is not at the new line");
                         continue;
                     }
 
@@ -419,6 +423,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else{
                     (token)->lexem=PROBLEML;
+                    PrintError(1, n_lines, "Problem unknown token");
                     (token)->line=n_lines;
                     return token;
                 }
@@ -448,6 +453,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else{
                     state=PROBLEML;
+                    PrintError(1, n_lines, "Problem with name of function,identifier or keyword");
                     continue;
                 }
             }
@@ -480,6 +486,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else{
                     state=PROBLEM;
+                    PrintError(1, n_lines, "Problem with name of function,identifier or keyword");
                     continue;
                 }
             }
@@ -500,17 +507,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c>='1' && c<='9'){
                     SAVENEW;
-                    if(c=='0'){
                         c=(char)fgetc(sourceCode);
-                        if(c=='0'){
-                            state=PROBLEM;
-                            continue;
-                        }
-                    }
-                    else{
-                        c=(char)fgetc(sourceCode);
-                    }
-
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -555,11 +552,13 @@ TokenPtr ScannerGetToken(){
                     }
                     else{
                         state=PROBLEM;
+                        PrintError(1, n_lines, "Problem that token \"=\" cannot be at the begining of the line");
                         continue;
                     }
                 }
                 else{
                     state=PROBLEM;
+                    PrintError(1, n_lines, "Problem Unknown token at the begining of the line");
                     continue;
                 }
             }
@@ -695,6 +694,7 @@ TokenPtr ScannerGetToken(){
                     }
                     else{
                         state=PROBLEM;
+                        PrintError(1, n_lines, "Problem that after \\x is something out of range 0-f");
                         continue;
                     }
                     c=(char)fgetc(sourceCode);
@@ -841,6 +841,7 @@ TokenPtr ScannerGetToken(){
                     }
                     else{
                         state=PROBLEM;
+                        PrintError(1, n_lines, "Problem that after 0 is not valid character");
                         continue;
                     }
             }
@@ -893,6 +894,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else{
                     state=PROBLEM;
+                    PrintError(1, n_lines, "Problem with number");
                     continue;
                 }
             }
@@ -911,6 +913,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else{
                     state=PROBLEM;
+                    PrintError(1, n_lines, "Problem with number that after \".\" is not character from range 0-9");
                     continue;
                 }
             }
@@ -941,6 +944,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else{
                     state=PROBLEM;
+                    PrintError(1, n_lines, "Problem with number that after character of exponent which is \"e or E\" is not + nor - nor value from range 0-9");
                     continue;
                 }
                 }
@@ -969,6 +973,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else{
                 state=PROBLEM;
+                    PrintError(1, n_lines, "Problem with number that after number e/E number->here is not valid character");
                     continue;
                 }
             }
@@ -987,6 +992,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else{
                     state=PROBLEM;
+                    PrintError(1, n_lines, "Problem with number that after number e/E +/- -> here is not character from range 0-9");
                     continue;
                 }
             }
@@ -1027,6 +1033,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else{
                     state=PROBLEM;
+                    PrintError(1, n_lines, "Problem with number that after number.number->here is not valid character");
                     continue;
                 }
             }
