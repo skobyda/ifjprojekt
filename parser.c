@@ -321,6 +321,7 @@ static bool ParserFunctionDeclaration() {
                 symbol->name = name;
                 symbol->nextSymbol = NULL;
                 symbol->iType = VARIABLE;
+                symbol->dType = typeUnknown;
                 SymTableAdd(currentTable, symbol);
             } else {
                 free(name);
@@ -541,7 +542,7 @@ static bool ParserDeclaration() {
         case ADDITION: // It's declaration of variable
             test = SemanticVarNameAssignControl(token, name);
             // Add declaration to symtable
-            if (!SymTableFind(currentTable, name) && test) {
+            if (!SymTableFind(currentTable, name) && !SymTableFind(globalTable, name) && test) {
                 // not yet defined GENERATOR
                 
                 /* Generator Assignment */
@@ -570,6 +571,7 @@ static bool ParserDeclaration() {
 
 
             pinfo.expressionType = 1;
+            printf("HELLLO\n");
             FUNCTIONCALL(ParserExpression);
             pinfo.expressionType = 0;
             
