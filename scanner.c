@@ -609,7 +609,6 @@ TokenPtr ScannerGetToken(){
                     continue;
                 }
                 else if(c=='\"'){
-                    //printf("-hereee-\n" );
                     (token)->lexem=STR;
                     (token)->line=n_lines;
                     state=START;
@@ -858,7 +857,7 @@ TokenPtr ScannerGetToken(){
                         return token;
                     }
                     continue;
-                }//next
+                }
                 else if(c=='e'||c=='E'){
                     state=DEXP;
                     SAVENEW;
@@ -882,7 +881,6 @@ TokenPtr ScannerGetToken(){
                     }
                     continue;
                 }
-
                 else if((c=='#')||(c==' ')||(c==9)||(c=='\n')||(c==')')||(c==',')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=INT;
                     (token)->line=n_lines;

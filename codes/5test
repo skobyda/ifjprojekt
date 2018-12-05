@@ -1,0 +1,16 @@
+def a(m,n)
+  print(m)
+end
+
+a=5
+
+while a<10
+  a=a+1
+  print a,"\n"
+  b=a+2
+  print b,"\n"
+  end
+print a,"\n"
+print b,"\n"
+x=8.5/6
+print x
