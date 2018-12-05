@@ -384,8 +384,8 @@ bool SemanticExprAssignCotrol (SymTablePtr currTable, TokenPtr token) {
  */
 void SemanticExpAssignReset () {
 
-    free(identFunName);
-    identFunName = NULL;
+    identVarName = malloc(sizeof(char) * (strlen("!!!") + 1));
+        strcpy(identVarName, "!!!"); //will not be in symtable
     exprOperator = 2;
     exprAssignCompType = 4;
 }    
