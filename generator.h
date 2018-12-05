@@ -24,7 +24,6 @@
 
 #define MAXSIZE 1000
 
-
 typedef struct ExprS *Expr;
 struct ExprS {
     lexems lexem;
@@ -47,14 +46,19 @@ struct StackGen {
     int top;
 };
 
+int WhileEnd = 0;
+
 StackGen StackG;
 StackGen StackAssign;
 StackGen StackIf;
+StackGen StackFunction;
+StackGen StackWhileAll;
 
 StackGen CreateStack();
 bool PushStack(StackGen StackS, char *code);
 bool GenEmptyStack(StackGen StackS);
 char *PopStack(StackGen StackS);
+char *FrontStack(StackGen StackS);
 void Generator(FILE *file);
 
 bool GeneratorAddExpression(ExL Ex, char *name, lexems lexem);
@@ -72,10 +76,13 @@ void GeneratorParameterIn(int order, char *name);
 void GeneratorFunctionEnd();
 void GeneratorFunctionCall(char *name);
 void GeneratorParameterOut(int order, char *name, lexems lexem);
+void GeneratorRetValInFunction(char *name);
+void GeneratorRetValAssign(char *name);
 void GeneratorIf();
 void GeneratorWhile();
 char *GeneratorMatcher(lexems lexem);
 char *GeneratorCharAppend(char *name);
 void GeneratorConcat(Expr Ex, char *symb1, char *symb2);
 void GeneratorStackPrint(StackGen StackG);
+
 #endif
