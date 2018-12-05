@@ -26,7 +26,8 @@
 
 typedef struct {
     int expressionType; // 0 - NOTHING, 1 - statement, 2 - condition
-    int blockOfCodeType; // 0 - global, 1 - definition of function 
+    int blockOfCodeType; // 0 - global, 1 - definition of function
+    int blockOfStatements; // 0 - global, 1 - definition of function
 } ParserInfo;
 
 ParserInfo pinfo;
@@ -309,9 +310,11 @@ static bool ParserStatement() {
 /* Rule of LL gramar for If statement.
  */
 static bool ParserFunctionDeclaration() {
-    //printf("Function\n");
     bool flag = true; // set to true if expects identificator, false if expects comma
     bool alreadyDefined = false;
+
+    if (pinfo.blockOfCodeType != 0 || pinfo.blockOfStatements != 0)
+        PrintError(2 , token->line, "Cannot use a nested function definition (definition inside function or if/while)");
 
     /* Expects name of function */
     NEXTTOKEN;
@@ -496,7 +499,9 @@ static bool ParserIfStatement() {
     }
 
     /* Function's block of code */
+    pinfo.blockOfStatements = 1;
     FUNCTIONCALL(ParserStatement);
+    pinfo.blockOfStatements = 0;
 
     /* ELSE (optional) */
     if (token->lexem == ELSE) {
@@ -518,7 +523,9 @@ static bool ParserIfStatement() {
         GeneratorStackPrint(StackIf);
 
         /* Else's block of code */
+        pinfo.blockOfStatements = 1;
         FUNCTIONCALL(ParserStatement);
+        pinfo.blockOfStatements = 0;
     } else {
         GeneratorStackPrint(StackIf);
         GeneratorStackPrint(StackIf);	
@@ -560,7 +567,7 @@ static bool ParserWhile() {
     GeneratorWhile();
     
     /* While's condition, can be parsed as Expression */
-    pinfo.expressionType = 2;
+    pinfo.expressionType = 1;
     FUNCTIONCALL(ParserExpression);
     pinfo.expressionType = 0;
 
@@ -580,7 +587,9 @@ static bool ParserWhile() {
     }
 
     /* While's block of code */
+    pinfo.blockOfStatements = 2;
     FUNCTIONCALL(ParserStatement);
+    pinfo.blockOfStatements = 0;
 
     /* Expects 'end' at the end of while statement */
     if (token->lexem != END)
@@ -944,6 +953,7 @@ ParTreePtr
 Parser() {
     pinfo.expressionType = 0;
     pinfo.blockOfCodeType = 0;
+    pinfo.blockOfStatements = 0;
 
     currentTable = SymTableInit(NULL);
     if (!currentTable) {
