@@ -29,19 +29,14 @@ typedef struct {
     unsigned line;
     char *name;
     int numOfParam;		
-
 } FunIdent;
 
 typedef struct {
     FunIdent *arrayI;
     size_t used;
     size_t size;
-} CArray;
+} CArray;//array of undefined functions that were called function definition
 
-void SemanticInitArray (CArray *a, size_t initSize);
-void SemanticInsertArray (CArray *a, unsigned line, char *name);
-void SemanticArrayParamInsert(char *name, int numOfParam);
-void SemanticFreeArray (CArray *a);
 
 void Semantic2ndDefControl();
 void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token);
@@ -54,13 +49,5 @@ void SemanticFunParamControl(SymTablePtr currTable, TokenPtr token);
 void SemanticNoMoreParam(TokenPtr token);
 void SemanticNoParamControl(TokenPtr token);
 
-
-
-/* Runs Semantic analysis over derivation tree.
- * throws some error if semantic bug was detected.
- * @tree Pointer to derivation tree.
- * Returns: true in case of success, false in case of error
- */
-bool ParserSemantic(ParTreePtr tree);
 
 #endif

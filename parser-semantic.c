@@ -52,14 +52,14 @@ static int numOfParam;
 static int paramCount;
 
 
-void SemanticInitArray (CArray *a, size_t initSize) {
+static void SemanticInitArray (CArray *a, size_t initSize) {
     
     a->arrayI = (FunIdent *)malloc (initSize * sizeof(FunIdent));
     a->used = 0;
     a->size = initSize;
 }
 
-void SemanticInsertArray (CArray *a, unsigned line, char *name) {
+static void SemanticInsertArray (CArray *a, unsigned line, char *name) {
 
 
     if (a->used == a->size) {
@@ -74,7 +74,7 @@ void SemanticInsertArray (CArray *a, unsigned line, char *name) {
    
 }
 
-void SemanticArrayParamInsert(char *name, int numOfParam) {
+static void SemanticArrayParamInsert(char *name, int numOfParam) {
 
     if (controlA.used > 0) {
         for (unsigned i = 0; i < controlA.used; i++) {
@@ -86,7 +86,7 @@ void SemanticArrayParamInsert(char *name, int numOfParam) {
         }
     }
 }
-void SemanticFreeArray (CArray *a) {
+static void SemanticFreeArray (CArray *a) {
     free(a->arrayI);
     a->arrayI = NULL;
     a->used = 0;
@@ -699,13 +699,5 @@ void SemanticFunParamControl(SymTablePtr currTable, TokenPtr token) {
         }
     }
     
-}
-
-bool ParserSemantic(ParTreePtr tree) {
-    (void)(tree); //DELETE THIS LINE
-
-    //TODO
-
-    return NULL;
 }
 
