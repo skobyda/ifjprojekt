@@ -19,37 +19,37 @@
 #include <string.h>
 
 typedef enum {
-    EOL=0,//OK        //ok
-    EOFILE=1,         //ok
-    IDENT=2,             //
-    STR=3,         //nok but little ok
-    INT=4,            //
-    FLOAT=5,          //
-    NIL=6,            //
+    EOL=0,//OK        //token for end of the line
+    EOFILE=1,         //token for end of the file
+    IDENT=2,          //token for identifier of function or identifier     abc,
+    STR=3,            //token for string value
+    INT=4,            //token for integer value
+    FLOAT=5,          //token for float value
+    NIL=6,            //token for nil
     //SYMBOLS
-    LEFT_B=7,//(      // ok
-    RIGHT_B=8,//)     //ok
-    PLUS=9,           //ok
-    MINUS=10,         //ok
-    MULTIPLY=11,      //ok
-    DIVISION=12,// /  //
-    LESS=13,//<       //ok
-    MORE=14,//>       //ok
-    LESSEQ=15,//<=    //ok
-    MOREEQ=16,//>=    //ok
-    EQ=17,//==        //ok
-    ADDITION=18, //=  //ok
-    NOTEQ=19, // !=   //ok
+    LEFT_B=7,//(      //token for left bracket  (
+    RIGHT_B=8,//)     //token for right bracket )
+    PLUS=9,           //token for sign PLUS     +
+    MINUS=10,         //token for sign MINUS    -
+    MULTIPLY=11,      //token for sign MULTIPLY *
+    DIVISION=12,// /  //token for sign DIVISION /
+    LESS=13,//<       //token for sign LESS     <
+    MORE=14,//>       //token for sign MORE     >
+    LESSEQ=15,//<=    //token for sign lessequal <=
+    MOREEQ=16,//>=    //token for sign moreequal >=
+    EQ=17,//==        //token for sign EQUAL    ==
+    ADDITION=18, //=  //token for ADDITION      =
+    NOTEQ=19, // !=   //token for NOTEQ         !=
     //keywords
-    DEF=20,           //ok
-    DO=21,            //ok
-    ELSE=22,          //ok
-    END=23,           //ok
-    IF=24,            //ok
-    NOT=25,           //ok
-    THEN=26,          //ok
-    WHILE=27,         //ok
-    COMA=28,//,       //ok
+    DEF=20,           //token for keyword DEF
+    DO=21,            //token for keyword DO
+    ELSE=22,          //token for keyword ELSE
+    END=23,           //token for keyword END
+    IF=24,            //token for keyword IF
+    NOT=25,           //token for keyword NOT
+    THEN=26,          //token for keyword THEN
+    WHILE=27,         //token for keyword WHILE
+    COMA=28,//,       //token for COMA
     NEXT=29, //for some functions only in lex. analyser
 //    QUOTMARK,//"
 

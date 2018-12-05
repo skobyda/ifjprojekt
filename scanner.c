@@ -186,7 +186,7 @@ int ScannerTestW(char*str){
 int ScannerSaveNew(TokenPtr token,int lines,char* c){
     if(ScannerStradd((token)->name,c)==0){
         (token)->lexem=PROBLEMC;
-        PrintError(99, n_lines, "Concatenation of the strings failed");
+        PrintError(99, lines, "Concatenation of the strings failed");
         (token)->line=lines;
         return 0;
     }
