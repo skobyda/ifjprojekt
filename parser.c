@@ -98,9 +98,7 @@ static TokenPtr DummyGetToken() {
 /****** REMOVE THIS LATER ******/
 
 #define FUNCTIONCALL(function) do { \
-    if (!function()) { \
-        printf("ERRORc\n"); \
-    } \
+    function(); \
 } while(0)
 
 #define NEXTTOKEN do { \
