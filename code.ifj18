@@ -1,3 +1,5 @@
-print (, "AHOJ AKO SA MAS")
-a = inputi
-print ahoj
+x = 1
+y = 0
+while x > 0 do 
+	y = y + 1
+end

@@ -30,6 +30,7 @@ typedef struct {
     int blockOfStatements; // 0 - global, 1 - definition of function
 } ParserInfo;
 
+
 ParserInfo pinfo;
 /* Always point to current token */
 TokenPtr token = NULL;
@@ -244,7 +245,12 @@ static bool ParserArguments() {
     }
 
     /* Generator Function Call */
-    //printf("%s\n", PopStack(StackG));    // CALL functionName
+    GeneratorStackPrint(StackG);
+    char *code = PopStack(StackAssign);
+    if (code){
+        GeneratorRetValAssign(code);
+	free(code);
+    }   
 
     if (token->lexem == RIGHT_B) {
         /* If arguments of function call are inside brackets, expects end of line after right bracket */
@@ -408,6 +414,10 @@ static bool ParserFunctionDeclaration() {
                 printf("SEMCALL: Function definition parameter:");
                 AuxPrintToken(token);
                 printf("\n");
+                
+                /* Generator Parameter In Function */
+                GeneratorParameterIn(order, token->name);
+                order++;
             }
 
             // to secure switching of argument/comma
@@ -415,9 +425,6 @@ static bool ParserFunctionDeclaration() {
             NEXTTOKEN;
         }
 
-        /* Generator Parameter In Function */
-        GeneratorParameterIn(order, token->name);
-        order++;
 
         if(token->lexem == INT ||
            token->lexem == STR ||
@@ -566,6 +573,8 @@ static bool ParserWhile() {
     printf("SEMCALL: WHILE\n");
 
     /* Generator While Start */
+    WhileEnd++;
+    printf("%d\n", WhileEnd);
     GeneratorWhile();
     
     /* While's condition, can be parsed as Expression */
@@ -574,7 +583,7 @@ static bool ParserWhile() {
     pinfo.expressionType = 0;
 
     /* Generator While Condition Evaluation */
-    GeneratorStackPrint(StackIf);
+    GeneratorStackPrint(StackWhileAll);
 
     /* Expects 'do' after while's condition */
     if (token->lexem != DO)
@@ -601,8 +610,12 @@ static bool ParserWhile() {
     printf("SEMCALL: End of WHILE block of code\n");
 
     /* Generator While End */
-    GeneratorStackPrint(StackIf);
-    GeneratorStackPrint(StackIf);
+    if (WhileEnd == 0)
+        while (!GenEmptyStack(StackWhileAll)){
+            char *code = NULL;
+            code = FrontStack(StackWhileAll);
+            free(code);         
+        }
 
     NEXTTOKEN;
     /* Expects end of line after 'end' */
@@ -668,7 +681,7 @@ static bool ParserDeclaration() {
             pinfo.expressionType = 0;
             
             /* Generator Assignment */
-            //GeneratorAssignPrint();
+            GeneratorAssignPrint();
  
             break;
         case LEFT_B: // It's function call
@@ -702,9 +715,12 @@ static bool ParserDeclaration() {
                     SemanticFunNameCallControl(currentTable, token, name,pinfo.blockOfCodeType);
                     printf("SEMCALL: Function call has no arguments\n");
                     SemanticNoParamControl(token);
-                    GeneratorFunctionCall(name);
+                    /* Generator Function without arguments CALL */
+		    GeneratorFunctionCall(name);
+                    GeneratorStackPrint(StackG);
                 } else {
                     printf("GENCALL: Empty variable statement %s\n", name);
+                    GeneratorRetValInFunction(name);
                 }
                 //could also be variable assigned nowhere. In that case, does nothing
             }
