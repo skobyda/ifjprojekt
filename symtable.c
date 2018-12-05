@@ -19,7 +19,6 @@
 
 /***LOCAL FILES***/
 #include "symtable.h"
-#include "main.h"
 
 SymTablePtr globalTable = NULL; //table contains all identifiers of functions
 
@@ -92,7 +91,6 @@ SymTablePtr SymTableInit(SymTablePtr ParentTable) {
     SymTablePtr table = NULL;
     table = malloc(sizeof(struct SymTable));
     if (!table) {
-        PrintError(99, 0, "SymTableINIT: Internal Error");
         return NULL;
     }
     table->parentTable = ParentTable;
@@ -120,12 +118,10 @@ void SymTableDestroy(SymTablePtr table) {
 
 void SymTableAdd(SymTablePtr table, SymbolPtr symbol) {
     if (!symbol) {
-        PrintError(99, 0, "SymTableADD: Internal Error");
         return;
     }
 
     if (!table) {
-        PrintError(99, 0, "SymTableADD2: Internal Error");
         return;
     }
 
@@ -145,7 +141,6 @@ void SymTableAdd(SymTablePtr table, SymbolPtr symbol) {
 
 SymbolPtr SymTableFind(SymTablePtr table, char *name) {
     if (!name) {
-        PrintError(99, 0, "SymTableFIND: Internal Error");
         return NULL;
     }
 

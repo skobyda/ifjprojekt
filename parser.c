@@ -571,7 +571,6 @@ static bool ParserDeclaration() {
 
 
             pinfo.expressionType = 1;
-            printf("HELLLO\n");
             FUNCTIONCALL(ParserExpression);
             pinfo.expressionType = 0;
             
@@ -751,7 +750,8 @@ static bool ParserExpression() {
     NEXTTOKEN;
 
     SymbolPtr symbol = SymTableFind(currentTable, token->name);
-    if (symbol && symbol->iType == FUNCTION) {
+    SymbolPtr symbol2 = SymTableFind(globalTable, token->name);
+    if ((symbol && symbol->iType == FUNCTION) || (symbol2 && symbol2->iType == FUNCTION)) {
             SemanticFunNameCallControl(currentTable, token,token->name,pinfo.blockOfCodeType);
             /* Generator function call */
             GeneratorFunctionCall(token->name);
