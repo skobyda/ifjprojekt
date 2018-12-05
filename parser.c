@@ -227,6 +227,7 @@ static bool ParserArguments() {
             printf("SEMCALL: Function call parameter:");
             AuxPrintToken(token);
             printf("\n");
+            SemanticFunParamControl(currentTable, token);
         }
 
 
@@ -260,6 +261,7 @@ static bool ParserArguments() {
     while (token->lexem != EOL)
         NEXTTOKEN;
 
+    SemanticNoMoreParam(token);
     /* Statement on another line */
     FUNCTIONCALL(ParserStatement);
 
@@ -327,9 +329,11 @@ static bool ParserFunctionDeclaration() {
     char *name = malloc(sizeof(char) * (strlen(token->name) + 1));
     strcpy(name, token->name);
 
+    bool test = SemanticFunNameDefControl(token, name);
+
     SymbolPtr functionSymbol;
     // Add declaration to symtable
-    if (!SymTableFind(currentTable, name)) {
+    if (test) {
         functionSymbol = malloc(sizeof(struct Symbol));
         if (!functionSymbol) {
             PrintError(99 , 0, "Could not malloc");
@@ -678,6 +682,7 @@ static bool ParserDeclaration() {
                 NEXTTOKEN;
             /* Semantic Action */
             printf("SEMCALL: Function call, function name: %s\n", name);
+            SemanticFunNameCallControl(currentTable, token, name,pinfo.blockOfCodeType);
 
             /* Generator Action Function Call */
             GeneratorFunctionCall(name);
@@ -693,7 +698,9 @@ static bool ParserDeclaration() {
             } else {
                 if (symbol->iType == FUNCTION) { //fuction call with no parameters
                     printf("SEMCALL: Function call, function name: %s\n", name);
+                    SemanticFunNameCallControl(currentTable, token, name,pinfo.blockOfCodeType);
                     printf("SEMCALL: Function call has no arguments\n");
+                    SemanticNoParamControl(token);
                     GeneratorFunctionCall(name);
                 } else {
                     printf("GENCALL: Empty variable statement %s\n", name);
@@ -845,6 +852,7 @@ static bool ParserExpression() {
     SymbolPtr symbol = SymTableFind(currentTable, token->name);
     if (symbol && symbol->iType == FUNCTION) {
             printf("SEMCALL: Function call, function name: %s\n", token->name);
+            SemanticFunNameCallControl(currentTable, token,token->name,pinfo.blockOfCodeType);
             /* Generator function call */
             GeneratorFunctionCall(token->name);
             NEXTTOKEN;
@@ -861,6 +869,7 @@ static bool ParserExpression() {
                     break;
                 case EOL:
                     printf("SEMCALL: Function call has no arguments\n");
+                    SemanticNoParamControl(token);
                     //could also be variable assigned nowhere. In that case, does nothing
                     break;
                 default:
@@ -972,6 +981,7 @@ Parser() {
     while (token->lexem != EOFILE) {
         FUNCTIONCALL(ParserStatement);
     }
+    Semantic2ndDefControl();
 
     //} while (token);
 

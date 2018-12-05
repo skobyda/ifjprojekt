@@ -24,9 +24,12 @@
 
 #define ARRAYSIZE 5
 
+
 typedef struct {
     unsigned line;
     char *name;
+    int numOfParam;		
+
 } FunIdent;
 
 typedef struct {
@@ -37,7 +40,8 @@ typedef struct {
 
 void SemanticInitArray (CArray *a, size_t initSize);
 void SemanticInsertArray (CArray *a, unsigned line, char *name);
-void freeArray (CArray *a);
+void SemanticArrayParamInsert(char *name, int numOfParam);
+void SemanticFreeArray (CArray *a);
 
 void Semantic2ndDefControl();
 void SemanticFullCondControl(SymTablePtr currTable, TokenPtr token);

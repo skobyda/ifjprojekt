@@ -61,16 +61,32 @@ void SemanticInitArray (CArray *a, size_t initSize) {
 
 void SemanticInsertArray (CArray *a, unsigned line, char *name) {
 
+
     if (a->used == a->size) {
         a->size += ARRAYSIZE;
         a->arrayI = (FunIdent *)realloc (a->arrayI, a->size * sizeof(FunIdent));
     }
     a->arrayI[a->used].line = line;
-    a->arrayI[a->used].name = name;
+    a->arrayI[a->used].name = malloc(sizeof(char) * (strlen(name) + 1));
+    strcpy(a->arrayI[a->used].name, name);
+    a->arrayI[a->used].numOfParam = -2; //unknown yet
     a->used++;
+   
 }
 
-void freeArray (CArray *a) {
+void SemanticArrayParamInsert(char *name, int numOfParam) {
+
+    if (controlA.used > 0) {
+        for (unsigned i = 0; i < controlA.used; i++) {
+            if (strcmp(controlA.arrayI[i].name, name) == 0 &&
+                controlA.arrayI[i].numOfParam == -2) {
+                    controlA.arrayI[i].numOfParam = numOfParam;
+                    break;
+            }  
+        }
+    }
+}
+void SemanticFreeArray (CArray *a) {
     free(a->arrayI);
     a->arrayI = NULL;
     a->used = 0;
@@ -86,6 +102,7 @@ void freeArray (CArray *a) {
 static bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *name, int varOrFun, int block){
     
     bool defined = false;
+
     
     SymbolPtr symbol = NULL;
     symbol = SymTableFind(currTable, name);
@@ -117,7 +134,6 @@ static bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *n
  */
 void Semantic2ndDefControl() {
 
-
     if (controlA.used > 0) {
     SymbolPtr symbol = NULL;
         for (unsigned i = 0; i < controlA.used; i++) {
@@ -125,9 +141,11 @@ void Semantic2ndDefControl() {
             if (symbol == NULL) {
                 PrintError(3, controlA.arrayI[i].line,"Called function '%s' is not defined.", controlA.arrayI[i].name);
             }
+            else if (symbol->numOfParameters != controlA.arrayI[i].numOfParam)
+                PrintError(5, controlA.arrayI[i].line,"Wrong number of arguments in function call '%s'.", controlA.arrayI[i].name);
         }
     }
-    freeArray(&controlA);
+    SemanticFreeArray(&controlA);
     free(identVarName);
     free(identFunName);
 }
@@ -462,6 +480,7 @@ static void SemanticVarTypeSetByFunCall (SymTablePtr currTable, bool funIsDefine
  *block: 0 = global, 1 = definition of function
  */
 void SemanticFunNameCallControl(SymTablePtr currTable, TokenPtr token, char *name, int block){
+    
 //TODO simon este musi davat to tabulky pocet parametrov definovanych fcii
     SemanticNameSet (name, 1);
     bool defined = SemanticDefinedControl(globalTable,token->line, name, 1, block);
@@ -487,6 +506,9 @@ void SemanticNoParamControl(TokenPtr token) {
 
     if (identFunName != NULL) {
 
+       if (numOfParam == -2)
+           SemanticArrayParamInsert(identFunName, paramCount);
+
         if (numOfParam != 0 && numOfParam != -2) 
             PrintError(5, token->line,"Wrong number of arguments in function call '%s'.", identFunName);
         else if (numOfParam == -1)
@@ -500,6 +522,9 @@ void SemanticNoParamControl(TokenPtr token) {
 void SemanticNoMoreParam(TokenPtr token) {
 
     if (identFunName != NULL) {
+
+        if (numOfParam == -2) 
+            SemanticArrayParamInsert(identFunName, paramCount);
     
         if (numOfParam > paramCount && numOfParam != -1 && numOfParam != -2) 
             PrintError(5, token->line,"Wrong number of arguments in function call '%s'.", identFunName);
