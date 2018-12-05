@@ -128,55 +128,6 @@ static TokenPtr CopyToken(TokenPtr token) {
     return newtoken;
 }
 
-static void AuxPrintToken(TokenPtr token) {
-    char *lexem;
-    char *name;
-
-    switch (token->lexem) {
-        case EOL: lexem = "EOL"; break;
-        case EOFILE: lexem = "EOFILE"; break;
-        case IDENT: lexem = "IDENT"; break;
-        case STR: lexem = "STR"; break;
-        case INT: lexem = "INT"; break;
-        case FLOAT: lexem = "FLOAT"; break;
-        case NIL: lexem = "NIL"; break;
-        case LEFT_B: lexem = "LEFT_B"; break;
-        case RIGHT_B: lexem = "RIGHT_B"; break;
-        case PLUS: lexem = "PLUS"; break;
-        case MINUS: lexem = "MINUS"; break;
-        case MULTIPLY: lexem = "MULTIPLY"; break;
-        case DIVISION: lexem = "DIVISION"; break;
-        case LESS: lexem = "LESS"; break;
-        case MORE: lexem = "MORE"; break;
-        case LESSEQ: lexem = "LESSEQ"; break;
-        case MOREEQ: lexem = "MOREEQ"; break;
-        case EQ: lexem = "EQ"; break;
-        case ADDITION: lexem = "ADDITION"; break;
-        case NOTEQ: lexem = "NOTEQ"; break;
-        case DEF: lexem = "DEF"; break;
-        case DO: lexem = "DO"; break;
-        case ELSE: lexem = "ELSE"; break;
-        case END: lexem = "END"; break;
-        case IF: lexem = "IF"; break;
-        case NOT: lexem = "NOT"; break;
-        case THEN: lexem = "THEN"; break;
-        case WHILE: lexem = "WHILE"; break;
-        case COMA: lexem = "COMA"; break;
-        case NEXT: lexem = "NEXT"; break;
-        default: lexem = malloc(sizeof(char) * 3);
-                 sprintf(lexem, "%d", token->lexem);
-                 break;
-
-    }
-
-    if(token->name)
-        name = token->name;
-    else
-        name = "NULL";
-
-    printf("Lexem: %s, Name: %s", lexem, name);
-}
-
 /* Rule of LL gramar for Arguments of function calling.
  */
 static bool ParserArguments() {
@@ -581,14 +532,14 @@ static bool ParserWhile() {
  */
 static bool ParserDeclaration() {
     SymbolPtr symbol;
-    bool defined;
+    bool defined, test;
     char *name = malloc(sizeof(char) * (strlen(token->name) + 1));
     strcpy(name, token->name);
 
     NEXTTOKEN;
     switch (token->lexem) {
         case ADDITION: // It's declaration of variable
-            bool test = SemanticVarNameAssignControl(token, name);
+            test = SemanticVarNameAssignControl(token, name);
             // Add declaration to symtable
             if (!SymTableFind(currentTable, name) && test) {
                 // not yet defined GENERATOR
