@@ -17,6 +17,7 @@
 
 /***LOCAL FILES***/
 #include "scanner.h"
+#include "main.h"
 
 //THIS macro will check if we have enough space for saving next character, if not it will make it :)
 #define SAVENEW do { \
