@@ -1,5 +1,18 @@
-x = 1
-y = 0
-while x > 0 do 
-	y = y + 1
+x = inputi
+y = inputi
+a = 0
+b = 0
+print b
+
+
+while a < x do
+	while b < y do
+		print y
+		print " "
+		b = b + 1
+	end
+	print " "
+	print "\n"
+	b = 0
+	a = a + 1 
 end

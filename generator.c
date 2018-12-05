@@ -29,7 +29,7 @@
  */
 
 
-
+int WhileEnd = 0;
 int ExpTmp = 0;
 int IfLabel = 0;
 int WhileLabel = 0;
@@ -289,7 +289,7 @@ char *PopStack(StackGen StackS){
 /* Generates assignment in IFJcode2018 and stack it on stack */
 void GeneratorAssign(char *name, bool defined){
 	if (!defined){
-		printf("DEFVAR LF@$%s\n", name);			
+		fprintf(stdout,"DEFVAR LF@$%s\n", name);			
 	} 
 	char *code = malloc(sizeof(char) * (ownStrLen(name) + ownStrLen("LF@$")) + 1);
 	strcpy(code, "LF@$");
@@ -316,7 +316,7 @@ void GeneratorAssignPrint(){
 
 		if(!strcmp(assign, code));
 		else
-			printf("MOVE %s %s\n", assign, code);
+			GeneratorPrintWrapper(0, "MOVE %s %s\n", assign, code);
 
 		code = PopStack(StackG);
 		free(code);
@@ -330,7 +330,7 @@ void GeneratorConcat(Expr Ex, char *symb1, char *symb2){
             Ex->Before->lexem == IDENT) &&
             (Ex->lexem == IDENT ||
             Ex->lexem == STR)){
-		printf("CONCAT %s %s %s\n", symb1, symb1, symb2);
+		fprintf(stdout,"CONCAT %s %s %s\n", symb1, symb1, symb2);
 	}
 }
 
@@ -421,26 +421,26 @@ char *GeneratorConstantDefine(lexems lexem, char *name){
 		case INT:
 			//code = malloc(sizeof(char) * (strlen(name) + strlen("int@") + 1));
 			//sprintf(code,"int@%s", name);
-			printf("DEFVAR LF@$const%d\n", ExpTmp);
-			printf("MOVE LF@$const%d int@%s\n", ExpTmp, name);
+			fprintf(stdout,"DEFVAR LF@$const%d\n", ExpTmp);
+			GeneratorPrintWrapper(0,"MOVE LF@$const%d int@%s\n", ExpTmp, name);
 			break;
 		case STR:
 			//code = malloc(sizeof(char) * (strlen(name) + strlen("string@") + 1 ));
 			//sprintf(code,"string@%s", name);
-			printf("DEFVAR LF@$const%d\n", ExpTmp);
-			printf("MOVE LF@$const%d string@%s\n", ExpTmp, name);
+			fprintf(stdout,"DEFVAR LF@$const%d\n", ExpTmp);
+			GeneratorPrintWrapper(0,"MOVE LF@$const%d string@%s\n", ExpTmp, name);
 			break;
 		case FLOAT:
 			//code = malloc(sizeof(char) * (strlen(name) + strlen("float@") + 1) + sizeof(float));
 			//sprintf(code,"float@%a",atof(name));
-			printf("DEFVAR LF@$const%d\n", ExpTmp);
-			printf("MOVE LF@$const%d float@%a\n", ExpTmp, atof(name));
+			fprintf(stdout,"DEFVAR LF@$const%d\n", ExpTmp);
+			GeneratorPrintWrapper(0,"MOVE LF@$const%d float@%a\n", ExpTmp, atof(name));
 			break;
 		case NIL:
 			//code = malloc(sizeof(char) * (strlen(name) + strlen("nil@") + 1));
 			//sprintf(code,"nil@%s", name);
-			printf("DEFVAR LF@$const%d\n", ExpTmp);
-			printf("MOVE LF@$const%d nil@%s\n", ExpTmp, name);
+			fprintf(stdout,"DEFVAR LF@$const%d\n", ExpTmp);
+			GeneratorPrintWrapper(0,"MOVE LF@$const%d nil@%s\n", ExpTmp, name);
 			break;
 		default:
 			break;
@@ -468,18 +468,18 @@ void GeneratorFunctionCall(char *name){
 		code = malloc(sizeof(char) * (ownStrLen("input") + 2));
 			if (!strcmp(name, "inputi")){
 				code = PopStack(StackAssign);
-				printf("READ %s int\n", code);
+				GeneratorPrintWrapper(0,"READ %s int\n", code);
 			}
 			if (!strcmp(name, "inputf")){
 				code = PopStack(StackAssign);
-				printf("READ %s float\n", code);
+				GeneratorPrintWrapper(0,"READ %s float\n", code);
 			}
 			if (!strcmp(name, "inputs")){
 				code = PopStack(StackAssign);
-				printf("READ %s string\n", code);
+				GeneratorPrintWrapper(0,"READ %s string\n", code);
 			}
 	} else {
-		printf("CREATEFRAME\n");
+		fprintf(stdout,"CREATEFRAME\n");
 		code = malloc(sizeof(char) * (strlen(name) + strlen("CALL $") + 1));
 		sprintf(code,"CALL $%s",name);
 		PushStack(StackG, code);
@@ -491,16 +491,16 @@ void GeneratorFunctionCall(char *name){
 void GeneratorParameterOut(int order, char *name, lexems lexem){
 	switch(lexem){
 		case STR:
-			printf("DEFVAR LF@$const%d\n", ExpTmp);
-			printf("MOVE LF@$const%d string@%s\n", ExpTmp, name);
+			fprintf(stdout,"DEFVAR LF@$const%d\n", ExpTmp);
+			GeneratorPrintWrapper(0,"MOVE LF@$const%d string@%s\n", ExpTmp, name);
 			break;
 		case FLOAT:
-			printf("DEFVAR LF@$const%d\n", ExpTmp);
-			printf("MOVE LF@$const%d float@%s\n", ExpTmp, name);
+			fprintf(stdout,"DEFVAR LF@$const%d\n", ExpTmp);
+			GeneratorPrintWrapper(0,"MOVE LF@$const%d float@%s\n", ExpTmp, name);
 			break;
 		case INT:
-			printf("DEFVAR LF@$const%d\n", ExpTmp);
-			printf("MOVE LF@$const%d int@%s\n", ExpTmp, name);
+			fprintf(stdout,"DEFVAR LF@$const%d\n", ExpTmp);
+			GeneratorPrintWrapper(0,"MOVE LF@$const%d int@%s\n", ExpTmp, name);
 			break;
                 case IDENT:
 			
@@ -511,52 +511,52 @@ void GeneratorParameterOut(int order, char *name, lexems lexem){
 
 	if (!strcmp(StackG->code[0], "print")){
 		if (lexem == IDENT)
-			printf("WRITE LF@$%s\n", name);
+			GeneratorPrintWrapper(0,"WRITE LF@$%s\n", name);
 		else
-			printf("WRITE LF@$const%d\n", ExpTmp++);
+			GeneratorPrintWrapper(0,"WRITE LF@$const%d\n", ExpTmp++);
 		char *code = PopStack(StackG);
 		free(code);
 	} else {
-		printf("DEFVAR TF@%%%d\n", order);
-		printf("MOVE TF@%%%d LF@$%s\n", order, name);
+		GeneratorPrintWrapper(0,"DEFVAR TF@%%%d\n", order);
+		GeneratorPrintWrapper(0,"MOVE TF@%%%d LF@$%s\n", order, name);
 	}
 }
 
 /* Define start of function in IFJcode18 */
 void GeneratorFunctionDefinition(char *name){
-	printf("#Start of function called: %s.\n", name);
-	printf("JUMP $$function%sEnd\n", name);
+	fprintf(stdout,"#Start of function called: %s.\n", name);
+	fprintf(stdout,"JUMP $$function%sEnd\n", name);
 	PushStack(StackFunction, name);
-	printf("LABEL $%s\n", name);
-	printf("PUSHFRAME\n");
-	printf("DEFVAR LF@%%retval\n");
-	printf("MOVE LF@%%retval nil@nil\n");
-	printf("#Parameters: \n");
+	fprintf(stdout,"LABEL $%s\n", name);
+	fprintf(stdout,"PUSHFRAME\n");
+	fprintf(stdout,"DEFVAR LF@%%retval\n");
+	fprintf(stdout,"MOVE LF@%%retval nil@nil\n");
+	fprintf(stdout,"#Parameters: \n");
 }
 
 /* Parameter used in funct definicion */
 void GeneratorParameterIn(int order, char *name){
-	printf("DEFVAR LF@$%s\n", name);
-	printf("MOVE LF@$%s LF@%%%d\n", name, order);
+	fprintf(stdout,"DEFVAR LF@$%s\n", name);
+	fprintf(stdout,"MOVE LF@$%s LF@%%%d\n", name, order);
 }
 
 /* End of function */
 void GeneratorFunctionEnd(){
-	printf("POPFRAME\n");
-	printf("RETURN\n");
+	fprintf(stdout,"POPFRAME\n");
+	fprintf(stdout,"RETURN\n");
 	char *code = PopStack(StackFunction);
-	printf("LABEL $$function%sEnd\n", code);
+	fprintf(stdout,"LABEL $$function%sEnd\n", code);
 	free(code);
 }
 
 /* Generate RETVAL for function */
 void GeneratorRetValInFunction(char *name){
-	printf("MOVE LF@%%retval LF@$%s\n", name);
+	GeneratorPrintWrapper(0,"MOVE LF@%%retval LF@$%s\n", name);
 }
 
 /* Generate */
 void GeneratorRetValAssign(char *name){
-	printf("MOVE %s TF@%%retval \n", name);
+	GeneratorPrintWrapper(0,"MOVE %s TF@%%retval \n", name);
 }
 
 void GeneratorPrintWrapper(int size, const char *format, ...) {
@@ -585,7 +585,7 @@ void GeneratorPrintWrapper(int size, const char *format, ...) {
 /* Generate While statement in IFJcode18 */
 void GeneratorWhile(){
 	/* If While Generating */
-	printf("LABEL $WhileStartLabel%d\n", WhileLabel);
+	GeneratorPrintWrapper(0,"LABEL $WhileStartLabel%d\n", WhileLabel);
 	char *codeWhileStart = malloc(sizeof(char) * ownStrLen("JUMPIFEQ $WhileEndLabel GF@$cond bool@false") + sizeof(int) + 1);
 	sprintf(codeWhileStart,"JUMPIFEQ $WhileEndLabel%d GF@$cond bool@false", WhileLabel);	
 
@@ -596,13 +596,13 @@ void GeneratorWhile(){
 	sprintf(codeEndWhile2,"LABEL $WhileEndLabel%d", WhileLabel++);	
 
 	/* Pushing On Stack */
-	PushStack(StackWhileAll, codeWhileStart);
-	PushStack(StackWhileAll, codeEndWhile1);
-	PushStack(StackWhileAll, codeEndWhile2);
+	PushStack(StackWhile, codeEndWhile2);
+	PushStack(StackWhile, codeEndWhile1);
+	PushStack(StackWhile, codeWhileStart);
 
-        free(codeWhileStart);
-	free(codeEndWhile2);
 	free(codeEndWhile1);
+	free(codeEndWhile2);
+        free(codeWhileStart);
 }
 
 /* Generate If statement in IFJcode18 */
@@ -637,7 +637,7 @@ void GeneratorIf(){
 void GeneratorStackPrint(StackGen StackG){
 	char *code = PopStack(StackG);
 	if (code){
-		printf("%s\n", code);
+		GeneratorPrintWrapper(0,"%s\n", code);
 		free(code);
 	}
 }
@@ -659,7 +659,7 @@ int operandCount = 0;
                 if (floatOccur && intOccur){
                     if (tmp->lexem == INT){
                         tmp->lexem = FLOAT;
-                        printf("INT2FLOAT %s %s\n", tmp->code, tmp->code);
+                        GeneratorPrintWrapper(0,"INT2FLOAT %s %s\n", tmp->code, tmp->code);
                     }
                 }
 
@@ -698,15 +698,16 @@ int operandCount = 0;
                            tmp->Before->Before->lexem == MOREEQ ||
                            tmp->Before->Before->lexem == EQ ||       
                            tmp->Before->Before->lexem == NOTEQ){   
-                            	printf("%s %s %s\n", sign, symb1, symb2);
+                            	GeneratorPrintWrapper(0,"%s %s %s\n", sign, symb1, symb2);
 		        	if (tmp->Before->Before->lexem == NOTEQ)
-					printf("NOT GF@$cond GF@$cond\n");    
+					GeneratorPrintWrapper(0,"NOT GF@$cond GF@$cond\n");    
+
                        } else {
 			    if (!strcmp(tmp->Before->Before->code, "DIV") && 
 			        tmp->Before->lexem == INT && tmp->lexem == INT)
-				printf("IDIV %s %s %s\n", symb1, symb1, symb2);
+				GeneratorPrintWrapper(0,"IDIV %s %s %s\n", symb1, symb1, symb2);
   	                    else
-				printf("%s %s %s %s\n", sign, symb1, symb1, symb2);
+				GeneratorPrintWrapper(0,"%s %s %s %s\n", sign, symb1, symb1, symb2);
 			}
 		    }
                     GeneratorDeleteExpression(Ex, tmp->Before->Before);         
@@ -747,13 +748,14 @@ void Generator(FILE *file){
     StackAssign = CreateStack();
     StackIf = CreateStack();    
     StackFunction = CreateStack();
+    StackWhile = CreateStack();
     StackWhileAll = CreateStack();
 
     outputFile = file;   
-    printf(".IFJcode18\n");
-    printf("CREATEFRAME\n");
-    printf("PUSHFRAME\n");
-    printf("DEFVAR GF@$cond\n");
+    fprintf(stdout,".IFJcode18\n");
+    fprintf(stdout,"CREATEFRAME\n");
+    fprintf(stdout,"PUSHFRAME\n");
+    fprintf(stdout,"DEFVAR GF@$cond\n");
 
 }
 

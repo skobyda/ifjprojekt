@@ -574,7 +574,6 @@ static bool ParserWhile() {
 
     /* Generator While Start */
     WhileEnd++;
-    printf("%d\n", WhileEnd);
     GeneratorWhile();
     
     /* While's condition, can be parsed as Expression */
@@ -583,7 +582,7 @@ static bool ParserWhile() {
     pinfo.expressionType = 0;
 
     /* Generator While Condition Evaluation */
-    GeneratorStackPrint(StackWhileAll);
+    GeneratorStackPrint(StackWhile);
 
     /* Expects 'do' after while's condition */
     if (token->lexem != DO)
@@ -610,13 +609,17 @@ static bool ParserWhile() {
     printf("SEMCALL: End of WHILE block of code\n");
 
     /* Generator While End */
-    if (WhileEnd == 0)
-        while (!GenEmptyStack(StackWhileAll)){
+    GeneratorStackPrint(StackWhile);
+    GeneratorStackPrint(StackWhile);
+    WhileEnd--;
+    if (WhileEnd == 0){
+       while (!GenEmptyStack(StackWhileAll)){
             char *code = NULL;
             code = FrontStack(StackWhileAll);
+	    fprintf(stdout,"%s\n",code);
             free(code);         
         }
-
+    }
     NEXTTOKEN;
     /* Expects end of line after 'end' */
     if (token->lexem != EOL) {
@@ -648,7 +651,7 @@ static bool ParserDeclaration() {
             printf("SEMCALL: Variable Assignment, variable name: %s\n", name);
             bool test = SemanticVarNameAssignControl(token, name);
             // Add declaration to symtable
-            if (test) {
+            if (!SymTableFind(currentTable, name) && test) {
                 // not yet defined GENERATOR
                 
                 /* Generator Assignment */
