@@ -695,6 +695,8 @@ static bool ParserDeclaration() {
             symbol = SymTableFind(currentTable, name);
             if (!symbol) {
                 printf("SEMCALL: Statement with just 1 identifier. Could be function call??? name: %s\n", name);
+		SemanticFunNameCallControl(currentTable, token, name,pinfo.blockOfCodeType);
+		
                 //PrintError(2 , token->line, "Expected end of line 'end'");
             } else {
                 if (symbol->iType == FUNCTION) { //fuction call with no parameters

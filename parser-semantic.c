@@ -116,7 +116,7 @@ static bool SemanticDefinedControl(SymTablePtr currTable, unsigned line, char *n
 		defined = true;
     else if (block == 1) {
         if ((symbol == NULL && varOrFun == 1) ||
-			 (symbol != NULL && symbol->iType == VARIABLE && varOrFun == 1)){ 
+	        (symbol != NULL && symbol->iType == VARIABLE && varOrFun == 1)){ 
             if (!ArrayInit){
                 SemanticInitArray (&controlA, ARRAYSIZE);
                 ArrayInit = true;
@@ -138,7 +138,7 @@ void Semantic2ndDefControl() {
     SymbolPtr symbol = NULL;
         for (unsigned i = 0; i < controlA.used; i++) {
             symbol = SymTableFind(globalTable, controlA.arrayI[i].name);
-            if (symbol == NULL) {
+            if (symbol == NULL || (symbol != NULL && symbol->iType == VARIABLE)) {
                 PrintError(3, controlA.arrayI[i].line,"Called function '%s' is not defined.", controlA.arrayI[i].name);
             }
             else if (symbol->numOfParameters != controlA.arrayI[i].numOfParam)
