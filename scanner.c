@@ -61,21 +61,6 @@
     } \
 } while(0)
 
-FILE *sourceCode = NULL;
-
-/* Firstly, file with source code is passed to Scanner
- *
- * @sourceCode File with code written in IFJ18 language
- *
- * Returns: true in case of success, false in case of error
- */
-bool
-Scanner(FILE *file) {
-    sourceCode = file;
-
-    return true;
-}
-
 //THIS will skip the rest of the line
 int ScannerSkipLineE(){
     char c=0;

@@ -19,6 +19,7 @@
 
 /***LOCAL FILES***/
 #include "symtable.h"
+#include "main.h"
 
 SymTablePtr globalTable = NULL; //table contains all identifiers of functions
 
@@ -91,8 +92,8 @@ SymTablePtr SymTableInit(SymTablePtr ParentTable) {
     SymTablePtr table = NULL;
     table = malloc(sizeof(struct SymTable));
     if (!table) {
-        fprintf(stderr, "SymTableInit: Allocation of symTable failed");
-        exit(1);
+        PrintError(99, 0, "SymTableINIT: Internal Error");
+        return NULL;
     }
     table->parentTable = ParentTable;
     for (int i = 0; i < TABLESIZE; i++)
@@ -119,13 +120,13 @@ void SymTableDestroy(SymTablePtr table) {
 
 void SymTableAdd(SymTablePtr table, SymbolPtr symbol) {
     if (!symbol) {
-        fprintf(stderr, "SymTableAdd symbol: symbol passed as argument is NULL");
-        exit(1);
+        PrintError(99, 0, "SymTableADD: Internal Error");
+        return;
     }
 
     if (!table) {
-        fprintf(stderr, "SymTableAddSymbol: table passed as argument is NULL");
-        exit(1);
+        PrintError(99, 0, "SymTableADD2: Internal Error");
+        return;
     }
 
     unsigned int index = HashFunction(symbol->name);
@@ -144,8 +145,8 @@ void SymTableAdd(SymTablePtr table, SymbolPtr symbol) {
 
 SymbolPtr SymTableFind(SymTablePtr table, char *name) {
     if (!name) {
-        fprintf(stderr, "SymTableFind: string passed as argument is NULL");
-        exit(1);
+        PrintError(99, 0, "SymTableFIND: Internal Error");
+        return NULL;
     }
 
     unsigned int index = HashFunction(name);

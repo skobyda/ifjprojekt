@@ -47,35 +47,12 @@ void PrintError(int val, unsigned int line, const char *format, ...) {
     va_end(args);
 }
 
-int main(int argc, char **argv) {
-    (void)(argc);
-    (void)(argv);
-    FILE *inputCode;
-    FILE *outputCode;
-
-    inputCode = fopen("code.ifj18", "r");
-    outputCode = fopen("outputcode.IFJcode18", "wr");
-
-    if (!inputCode || !outputCode)
-        goto error;
-
-    /* Pokes Scanner*/
-    Scanner(inputCode);
-
+int main() {
     /* Pokes generator */
-    Generator(outputCode);
+    Generator();
 
-    ParTreePtr tree = Parser();
-    (void)(tree);
-
-    /* Runs semantic analysis over symbolic table */
-    //if (!ParserSemantic(tree))
-        //TODO
-
-    fclose(inputCode);
-
- error:
-    //TODO
-    fprintf(stderr, "THIS COMPILER DOESN'T WORK YET :)\n");
-    return retval;
+    if (!Parser())
+        return 99;
+    else
+        return retval;
 }

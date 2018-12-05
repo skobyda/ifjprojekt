@@ -984,7 +984,7 @@ static bool ParserExpression() {
  *
  * Return: intermediate code
  */
-ParTreePtr
+bool
 Parser() {
     pinfo.expressionType = 0;
     pinfo.blockOfCodeType = 0;
@@ -993,7 +993,7 @@ Parser() {
     currentTable = SymTableInit(NULL);
     if (!currentTable) {
         PrintError(99, 0, "Operator cannot be last token in epxression");
-        return NULL;
+        return true;
     }
     globalTable = currentTable;
 
@@ -1010,14 +1010,10 @@ Parser() {
 
     //} while (token);
 
-    /* Creates Derivation tree from tokens */
-    ParTreePtr tree = NULL;
-    //TODO
-
     if (token) \
         free (token->name); \
     free(token);
     SymTableDestroy(currentTable);
 
-    return tree;
+    return false;
 }

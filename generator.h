@@ -60,7 +60,7 @@ bool PushStack(StackGen StackS, char *code);
 bool GenEmptyStack(StackGen StackS);
 char *PopStack(StackGen StackS);
 char *FrontStack(StackGen StackS);
-void Generator(FILE *file);
+void Generator();
 
 bool GeneratorAddExpression(ExL Ex, char *name, lexems lexem);
 void GeneratorDeleteExpression(ExL ExpL, Expr Delete);

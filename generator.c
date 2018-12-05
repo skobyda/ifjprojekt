@@ -35,8 +35,6 @@ int IfLabel = 0;
 int WhileLabel = 0;
 int FunctionLabel = 0;
 
-FILE *outputFile;
-
 /* Build-in Funstions */
 #define FUNCTION_LENGTH							\
 	"# Built-in function Length\n"					\
@@ -743,7 +741,7 @@ int operandCount = 0;
 	free(Ex);	
 }
 /* Function used in main.c its just touch Generator create stack and start of IFJcode18 program*/
-void Generator(FILE *file){
+void Generator(){
     StackG = CreateStack();	
     StackAssign = CreateStack();
     StackIf = CreateStack();    
@@ -751,7 +749,6 @@ void Generator(FILE *file){
     StackWhile = CreateStack();
     StackWhileAll = CreateStack();
 
-    outputFile = file;   
     fprintf(stdout,".IFJcode18\n");
     fprintf(stdout,"CREATEFRAME\n");
     fprintf(stdout,"PUSHFRAME\n");

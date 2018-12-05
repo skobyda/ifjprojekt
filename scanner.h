@@ -106,10 +106,6 @@ typedef Token *TokenPtr;//Pointer to Token, because parser will free our space T
 //Basicaly calling function ScannerStradd and check if everything is okay
 int ScannerSaveNew(TokenPtr token,int lines, char*c);
 
-//saving name of the file we get
-bool Scanner();
-
-
 //Function that test if some of the keywords are not string we have
 int ScannerTestWord(char *str);
 
