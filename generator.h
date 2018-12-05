@@ -46,12 +46,13 @@ struct StackGen {
     int top;
 };
 
-int WhileEnd = 0;
+extern int WhileEnd;
 
 StackGen StackG;
 StackGen StackAssign;
 StackGen StackIf;
 StackGen StackFunction;
+StackGen StackWhile;
 StackGen StackWhileAll;
 
 StackGen CreateStack();
@@ -84,5 +85,6 @@ char *GeneratorMatcher(lexems lexem);
 char *GeneratorCharAppend(char *name);
 void GeneratorConcat(Expr Ex, char *symb1, char *symb2);
 void GeneratorStackPrint(StackGen StackG);
+void GeneratorPrintWrapper(int size, const char *format, ...);
 
 #endif
