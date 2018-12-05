@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include "../../scanner.h"
+#include "../../main.h"
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 void PrintToken(int token)
 {
 
@@ -137,19 +140,19 @@ int main(int argc, char *argv[])
 // printf("%a\n",atof(h) );
 // printf("RES=%a\n",atof(a)+atof(b) );
 
-if(argc==1)return 1;
-    FILE *ptr=NULL;
-    ptr=fopen(argv[1],"r");
+//if(argc==1)return 1;
+//    FILE *ptr=NULL;
+//    ptr=fopen(argv[1],"r");
 
-    if(ptr==NULL)
-     return 0;
+//    if(ptr==NULL)
+//     return 0;
 
-    sourceCode=ptr;
+//    sourceCode=ptr;
     TokenPtr token;
     int i=0;
     while((i<300) ){
 
-        token=(ScannerGetToken(ptr));
+        token=(ScannerGetToken());
         //printf("here\n" );
         printf("Line: %d --Token: ",(token)->line);
         // printf("here\n" );
@@ -168,7 +171,7 @@ if(argc==1)return 1;
                         //printf("zatvorim\n");
                         free(token->name);
                         free(token);
-                        fclose(ptr);
+                        //fclose(ptr);
                         return 0;
                     }
                     //printf("\n");
@@ -192,13 +195,13 @@ if(argc==1)return 1;
 
         if(token->lexem==EOFILE){
             free(token);
-            fclose(ptr);
+            //fclose(ptr);
             return 0;
         }
         free(token);
         i++;
     }
-    fclose(ptr);
+    //fclose(ptr);
 
     (void)argv;
     (void)(argc);

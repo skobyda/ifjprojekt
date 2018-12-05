@@ -80,12 +80,12 @@ Scanner(FILE *file) {
 int ScannerSkipLineE(){
     char c=0;
     while(c!='\n')
-     c=(char)fgetc(sourceCode);
+     c=(char)fgetc(stdin);
 
     if(c==EOF){
         return 1;
     }
-    ungetc(c,sourceCode);
+    ungetc(c,stdin);
     return 0;
 }
 
@@ -93,9 +93,9 @@ int ScannerSkipLineE(){
 void ScannerWhite(){
     char c=0;
     do
-        c=(char)fgetc(sourceCode);
+        c=(char)fgetc(stdin);
     while(c==' '|| c==9);
-    ungetc( c,  sourceCode);
+    ungetc( c,  stdin);
     return;
 }
 
@@ -197,8 +197,8 @@ int ScannerSaveNew(TokenPtr token,int lines,char* c){
 //this check the word, char by char
 int ScannerTestWord(char *str){
     char c;
-     c=fgetc(sourceCode);
-     ungetc(c,sourceCode);
+     c=fgetc(stdin);
+     ungetc(c,stdin);
     if(str==NULL)
         return 0;
     if((c==' ')||(c==9))
@@ -212,12 +212,12 @@ int ScannerTestWord(char *str){
     char cmp[lenght1+1];
     int step=0;
     while(step!=lenght1){
-        cmp[step]=fgetc(sourceCode);
+        cmp[step]=fgetc(stdin);
         if(cmp[step]==EOF){
             return 0;
         }
         while(step==0 && ((cmp[step]==' ')||(cmp[step]==9)))
-            cmp[step]=fgetc(sourceCode);
+            cmp[step]=fgetc(stdin);
         if(cmp[step]==EOF){
             return 0;
         }
@@ -227,13 +227,13 @@ int ScannerTestWord(char *str){
             step++;
         else if((cmp[step]=='\n' || cmp[step]=='#' || cmp[step]==' ' || cmp[step]==9)&& (step==lenght1-1)){
             if(cmp[step]=='\n'){
-                ungetc(cmp[step],sourceCode);
+                ungetc(cmp[step],stdin);
             }
             return 1;
         }
         else {
             for(int i=0;i<=step;step--){
-                ungetc(cmp[step],sourceCode);
+                ungetc(cmp[step],stdin);
             }
             return 0;
         }
@@ -265,7 +265,7 @@ TokenPtr ScannerGetToken(){
     }
     token->name[0]='\0';    //first char is this, initialization
     ScannerWhite(); //check for white spaces
-    c =(char)fgetc(sourceCode);
+    c =(char)fgetc(stdin);
     if(c==EOF){
         token->lexem=EOFILE;
         state=ENDFILE;
@@ -292,7 +292,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c>='1' && c<='9'){
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -305,7 +305,7 @@ TokenPtr ScannerGetToken(){
                 else if(c=='0'){
                     SAVENEW;
                     state=ZERO;
-                        c=(char)fgetc(sourceCode);
+                        c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -330,7 +330,7 @@ TokenPtr ScannerGetToken(){
                     return token;
                 }
                 else if((c==' ') || (c==9)){ // 9 is TAB
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -361,7 +361,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c=='>'){
                     state=BIGGER;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -372,7 +372,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c=='<'){
                     state=SMALLER;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -383,7 +383,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c=='!'){
                     state=NEQ;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -401,7 +401,7 @@ TokenPtr ScannerGetToken(){
                     }
 
                     state=EQUAL;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -413,7 +413,7 @@ TokenPtr ScannerGetToken(){
                 else if(c=='\"'){
                     state=STRING;
                     (token)->lexem=STR;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -436,14 +436,14 @@ TokenPtr ScannerGetToken(){
                     if((c!=' ') && (c!=9))
                         SAVENEW;
                     if(c==' '||c==','|| c==9)
-                        ungetc(c,sourceCode);
+                        ungetc(c,stdin);
                     state=START;
                     return token;
                 }
                 if((c>='A'&& c<='Z')||((c>='a')&& (c<='z'))||(c>='0'&& c<='9')||c=='_'){
                     state=ID;
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -465,7 +465,7 @@ TokenPtr ScannerGetToken(){
                     if((c=='?'|| c=='!' )&&( (c!=' ') && (c!=9)))
                         SAVENEW;
                     if(c==' ' || c==9)
-                        ungetc(c,sourceCode);
+                        ungetc(c,stdin);
                     int smth=ScannerTestW(token->name);
                     if(smth!=0)
                         token->lexem=smth;
@@ -474,11 +474,11 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(((c>='a') && (c<='z'))||((c>='A') && (c<='Z'))||((c>='0') && (c<='9'))||(c=='_')){
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     continue;
                 }
                 else if((c==',')||(c==' ')||(c==9)||(c=='\n')||(c=='#')||(c=='(')||(c=='=')||(c=='!')||(c=='>')||(c=='<')||(c==')')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
-                    ungetc(c,sourceCode);
+                    ungetc(c,stdin);
                     int smth=ScannerTestW(token->name);
                     if(smth!=0)
                         token->lexem=smth;
@@ -508,7 +508,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c>='1' && c<='9'){
                     SAVENEW;
-                        c=(char)fgetc(sourceCode);
+                        c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -521,7 +521,7 @@ TokenPtr ScannerGetToken(){
                 else if(c=='0'){
                     SAVENEW;
                     state=ZERO;
-                        c=(char)fgetc(sourceCode);
+                        c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -532,7 +532,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c=='#'){
                     state=BCOMMENT;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -544,7 +544,7 @@ TokenPtr ScannerGetToken(){
                 else if(c=='='){
                     if(ScannerTestWord("begin ")==1){
                         while(c!='\n'){
-                            c=(char)fgetc(sourceCode);
+                            c=(char)fgetc(stdin);
                         }
                         token->line++;
 
@@ -568,7 +568,7 @@ TokenPtr ScannerGetToken(){
                     n_lines++;
                     state=LCOMMENTEND;
                 }
-                c=(char)fgetc(sourceCode);
+                c=(char)fgetc(stdin);
                 if(c==EOF){
                     token->lexem=EOFILE;
                     state=ENDFILE;
@@ -582,10 +582,10 @@ TokenPtr ScannerGetToken(){
                 if(c=='='){
                     if(ScannerTestWord("end ")==1){
                         while(c!='\n'){
-                            c=(char)fgetc(sourceCode);
+                            c=(char)fgetc(stdin);
                         }
                         n_lines--;
-                        ungetc(c,sourceCode);
+                        ungetc(c,stdin);
                         state=START;
                         continue;
                     }
@@ -599,7 +599,7 @@ TokenPtr ScannerGetToken(){
             case STRING:{
                 if(c!='\"' && c!='\\'){
                     SAVENEWCHAR;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -616,7 +616,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else{
                     state=CHARCODEF;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -631,7 +631,7 @@ TokenPtr ScannerGetToken(){
                 if(c=='s'){
                     c=' ';
                     SAVENEWCHAR;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -643,7 +643,7 @@ TokenPtr ScannerGetToken(){
                 }
                 if(c=='\\' || c=='\"'){
                     SAVENEWCHAR;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -656,7 +656,7 @@ TokenPtr ScannerGetToken(){
                 if(c=='n'){
                     c='\n';
                     SAVENEWCHAR;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -669,7 +669,7 @@ TokenPtr ScannerGetToken(){
                 if(c=='t'){
                     c='\t';
                     SAVENEWCHAR;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -680,7 +680,7 @@ TokenPtr ScannerGetToken(){
                     continue;
                 }
                 if(c=='x'){ //if there is \x
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -697,7 +697,7 @@ TokenPtr ScannerGetToken(){
                         PrintError(1, n_lines, "Problem that after \\x is something out of range 0-f");
                         continue;
                     }
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -712,7 +712,7 @@ TokenPtr ScannerGetToken(){
                         c=a;
                         SAVENEWCHAR;
                         state=STRING;
-                        c=(char)fgetc(sourceCode);
+                        c=(char)fgetc(stdin);
 
                         if(c==EOF){
                             token->lexem=EOFILE;
@@ -732,7 +732,7 @@ TokenPtr ScannerGetToken(){
                         c=b;
                         if(c!='\"' && c!='\\'){
                             SAVENEWCHAR;
-                            c=(char)fgetc(sourceCode);
+                            c=(char)fgetc(stdin);
                         }
                         state=STRING;
                         continue;
@@ -745,7 +745,7 @@ TokenPtr ScannerGetToken(){
             }
             case BCOMMENT:{
                 while(c!='\n'){
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -764,7 +764,7 @@ TokenPtr ScannerGetToken(){
                     (token)->lexem=MOREEQ;
                 else{
                     (token)->lexem=MORE;
-                    ungetc(c,sourceCode);
+                    ungetc(c,stdin);
                 }
                 (token)->line=n_lines;
                 state=START;
@@ -775,7 +775,7 @@ TokenPtr ScannerGetToken(){
                     (token)->lexem=LESSEQ;
                 else{
                     (token)->lexem=LESS;
-                    ungetc(c,sourceCode);
+                    ungetc(c,stdin);
                 }
                 (token)->line=n_lines;
                 state=START;
@@ -788,7 +788,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else{
                     (token)->lexem=ADDITION;
-                    state=START;ungetc(c,sourceCode);
+                    state=START;ungetc(c,stdin);
                 }
                 (token)->line=n_lines;
                 return token;
@@ -798,7 +798,7 @@ TokenPtr ScannerGetToken(){
                     (token)->lexem=NOTEQ;
                 else{
                     (token)->lexem=NOT;
-                    ungetc(c,sourceCode);
+                    ungetc(c,stdin);
                 }
                 (token)->line=n_lines;
                 state=START;
@@ -808,7 +808,7 @@ TokenPtr ScannerGetToken(){
                     if(c=='.'){
                         state=DOUBLECOM;
                         SAVENEW;
-                        c=(char)fgetc(sourceCode);
+                        c=(char)fgetc(stdin);
                         if(c==EOF){
                             token->lexem=EOFILE;
                             state=ENDFILE;
@@ -820,7 +820,7 @@ TokenPtr ScannerGetToken(){
                     else if(c=='e'||c=='E'){
                         state=DEXP;
                         SAVENEW;
-                        c=(char)fgetc(sourceCode);
+                        c=(char)fgetc(stdin);
                         if(c==EOF){
                             token->lexem=EOFILE;
                             state=ENDFILE;
@@ -836,7 +836,7 @@ TokenPtr ScannerGetToken(){
                             state=NEWLINE;
                         else
                             state=START;
-                        ungetc(c,sourceCode);
+                        ungetc(c,stdin);
                         return token;
                     }
                     else{
@@ -849,7 +849,7 @@ TokenPtr ScannerGetToken(){
                 if(c=='.'){
                     state=DOUBLECOM;
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -861,7 +861,7 @@ TokenPtr ScannerGetToken(){
                 else if(c=='e'||c=='E'){
                     state=DEXP;
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -872,7 +872,7 @@ TokenPtr ScannerGetToken(){
                 }
                 else if(c>='0' && c<='9'){
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -888,7 +888,7 @@ TokenPtr ScannerGetToken(){
                         state=NEWLINE;
                     else
                         state=START;
-                    ungetc(c,sourceCode);
+                    ungetc(c,stdin);
                     return token;
                 }
                 else{
@@ -901,7 +901,7 @@ TokenPtr ScannerGetToken(){
                 if(c>='0'&&c<='9'){
                     state=DCOMD;
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -919,7 +919,7 @@ TokenPtr ScannerGetToken(){
             case DEXP:{
                 if((c=='+')||(c=='-')){
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -932,7 +932,7 @@ TokenPtr ScannerGetToken(){
                 if(c>='0'&&c<='9'){
                     state=DEXPD;
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -950,7 +950,7 @@ TokenPtr ScannerGetToken(){
             case DEXPD:{
                 if(c>='0'&& c<='9'){
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -963,7 +963,7 @@ TokenPtr ScannerGetToken(){
 
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
-                    ungetc(c,sourceCode);
+                    ungetc(c,stdin);
                     if(c=='\n')
                         state=NEWLINE;
                     else
@@ -979,7 +979,7 @@ TokenPtr ScannerGetToken(){
             case DEXPS:{
                 if(c>='0'&& c<='9'){
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -998,7 +998,7 @@ TokenPtr ScannerGetToken(){
             case DCOMD:{
                 if(c=='e'||c=='E'){
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -1010,7 +1010,7 @@ TokenPtr ScannerGetToken(){
                 }
                 if(c<='9'&&c>='0'){
                     SAVENEW;
-                    c=(char)fgetc(sourceCode);
+                    c=(char)fgetc(stdin);
                     if(c==EOF){
                         token->lexem=EOFILE;
                         state=ENDFILE;
@@ -1022,7 +1022,7 @@ TokenPtr ScannerGetToken(){
                 else if((c=='#')||(c=='\n')||(c=='\n')||(c==' ')||(c==',')||(c==9)||(c==')')||(c=='(')||(c=='+')||(c=='-')||(c=='*')||(c=='/')){
                     (token)->lexem=FLOAT;
                     (token)->line=n_lines;
-                    ungetc(c,sourceCode);
+                    ungetc(c,stdin);
                     if(c=='\n')
                         {
                             state=NEWLINE;}

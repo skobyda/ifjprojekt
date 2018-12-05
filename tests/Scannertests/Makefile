@@ -1,7 +1,7 @@
 #TODO
 CC = gcc
 CFLAGS = -pedantic -Wall -Wextra
-OTHERCFILES = $(wildcard ../../[^main]*.c)
+OTHERCFILES = $(wildcard ../../*.c)
 CFILES = TestScanner.c $(OTHERCFILES)
 OFILES = $(CFILES:.c=.o)
 
