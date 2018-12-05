@@ -16,6 +16,7 @@ var2=15
 print var2
 
 a=5
-b=(a+15)/(a/5)*2+2*a
+print "\n"
+b=(15)*(5)*2+2
 print b
 
