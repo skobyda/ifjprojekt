@@ -4,7 +4,6 @@ print s1, "\n", s2, "\n"
 s1len =length(s1)
 s1len = s1len - 4 + 1
 
-print "4␣znaky␣od␣", s1len, ".␣znaku␣v␣\"", s2, "\":", s1, "\n"
 
 s1 = inputs
 print s1

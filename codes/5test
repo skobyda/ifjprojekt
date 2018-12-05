@@ -2,15 +2,15 @@ def a(m,n)
   print(m)
 end
 
-a=5
+q=5
 
-while a<10
-  a=a+1
-  print a,"\n"
-  b=a+2
-  print b,"\n"
+while q<10 do
+  q=q+1
+  print q
+    print "\n"
   end
-print a,"\n"
-print b,"\n"
-x=8.5/6
-print x
+print q
+  print "\n"
+print b
+  print "\n"
+#x=8.5/6

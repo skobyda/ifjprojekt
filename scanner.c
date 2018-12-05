@@ -782,8 +782,9 @@ TokenPtr ScannerGetToken(){
                 if(c=='=')
                     (token)->lexem=NOTEQ;
                 else{
-                    (token)->lexem=NOT;
-                    ungetc(c,stdin);
+                    state=PROBLEM;
+                    PrintError(1, n_lines, "Problem that after ! is not character =");
+                    continue;
                 }
                 (token)->line=n_lines;
                 state=START;
