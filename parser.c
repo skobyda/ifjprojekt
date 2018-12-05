@@ -635,8 +635,9 @@ static bool ParserDeclaration() {
         case ADDITION: // It's declaration of variable
             /* Semantic Action */
             printf("SEMCALL: Variable Assignment, variable name: %s\n", name);
+            bool test = SemanticVarNameAssignControl(token, name);
             // Add declaration to symtable
-            if (!SymTableFind(currentTable, name)) {
+            if (test) {
                 // not yet defined GENERATOR
                 
                 /* Generator Assignment */
@@ -918,6 +919,10 @@ static bool ParserExpression() {
             printf("SEMCALL: Expression token:");
             AuxPrintToken(tokenToPrint);
             printf("\n");
+            if(pinfo.expressionType == 2) 
+                SemanticFullCondControl(currentTable, tokenToPrint);
+            else
+                SemanticExprAssignCotrol (currentTable, tokenToPrint);
 
             /* Generator Action TODO */
             if (tokenToPrint->lexem == FLOAT) floatOccur = true;
@@ -927,6 +932,7 @@ static bool ParserExpression() {
             free(tokenToPrint->name);
             free(tokenToPrint);
         }
+        SemanticExpAssignReset();
         StackDestroy(infixStack);
         /* Generate Expression in IFJcode2018 */
         GeneratorExpression(Ex, floatOccur, intOccur);
